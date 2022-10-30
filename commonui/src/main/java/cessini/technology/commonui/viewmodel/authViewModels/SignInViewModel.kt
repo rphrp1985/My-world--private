@@ -41,7 +41,11 @@ class SignInViewModel @Inject constructor(
             val apiProfile = newAuthRepository.authenticate(account.idToken!!)
             val profile = apiProfile.profile
             val token = apiProfile.token
-            registrationRepository.registerAuthUser()
+            try {
+                registrationRepository.registerAuthUser()
+            } catch (e: Exception) {
+                Log.d(TAG, "${e.localizedMessage} : ${e.message}")
+            }
 
             try {
                 val authEntity = AuthEntity(

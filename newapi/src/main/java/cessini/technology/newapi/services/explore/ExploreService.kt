@@ -73,13 +73,13 @@ interface ExploreService {
     @POST(ExploreConstants.REGISTER_VIDEO_CATEGORY_AUTH_ENDPOINT)
     suspend fun registerCategory(
         @Body registerAuthUserBody: RegisterAuthUserBody,
-    ): ApiMessage
+    ): Response<ApiMessage>
 
     @Headers(ApiParameters.NO_AUTH_HEADER)
     @POST(ExploreConstants.REGISTER_VIDEO_CATEGORY_PUBLIC_ENDPOINT)
     suspend fun registerCategory(
         @Body userRegistrationBody: UserRegistrationBody,
-    ): ApiMessage
+    ): Response<ApiMessage>
 
     @Headers(ApiParameters.NO_AUTH_HEADER)
     @GET(ExploreConstants.VIDEO_CATEGORIES_END_POINT)
