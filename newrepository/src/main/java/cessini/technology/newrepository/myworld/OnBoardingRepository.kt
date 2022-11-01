@@ -2,10 +2,8 @@ package cessini.technology.newrepository.myworld
 
 import android.app.Application
 import android.provider.Settings
-import android.util.Log
 import cessini.technology.newapi.services.myworld.MyWorldService
 import cessini.technology.newapi.services.myworld.model.body.OnBoardingSubmission
-import cessini.technology.newapi.services.myworld.model.response.OnBoardingSubmissionResponse
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,13 +22,14 @@ class OnBoardingRepository @Inject constructor(
     suspend fun submitOnBoardingSelection(
         language: String,
         subcategories: List<String>
-    ) {
-        service.submitOnBoardingSelection(
+    ): Boolean {
+        val result = service.submitOnBoardingSelection(
             OnBoardingSubmission(
                 language = language,
                 subCategories = subcategories,
                 deviceId = deviceId
             )
         )
+        return result.isSuccessful
     }
 }

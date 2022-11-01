@@ -63,7 +63,7 @@ class SignInFragment : BottomSheetDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        setLightNavigationBar(dialog)
+        //setLightNavigationBar(dialog)
         return dialog
 
     }

@@ -21,9 +21,10 @@ class RegistrationRepository @Inject constructor(
     }
 
     suspend fun registerAuthUser() {
-        exploreService.registerCategory(
+       val result = exploreService.registerCategory(
             RegisterAuthUserBody(userIdentifierPreferences.uuid)
         )
+        Log.d("resultyehwalla",result.toString())
     }
 
     suspend fun registerNotification(token: String) {

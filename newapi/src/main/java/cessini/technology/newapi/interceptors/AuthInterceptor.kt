@@ -4,7 +4,6 @@ import cessini.technology.newapi.ApiParameters.AUTH_HEADER
 import cessini.technology.newapi.ApiParameters.NO_AUTH
 import cessini.technology.newapi.ApiParameters.TOKEN_TYPE
 import cessini.technology.newapi.preferences.AuthPreferences
-import cessini.technology.newapi.services.myworld.MyWorldConstants.BASE_ENDPOINT
 import cessini.technology.newapi.services.myworld.MyWorldConstants.REFRESH_TOKEN_ENDPOINT
 import cessini.technology.newapi.services.myworld.model.body.RefreshBody
 import cessini.technology.newapi.services.myworld.model.response.ApiAccessToken

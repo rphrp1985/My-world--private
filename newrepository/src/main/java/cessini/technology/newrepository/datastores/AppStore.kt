@@ -19,18 +19,19 @@ class AppStore @Inject constructor(
 ) {
 
     private object Keys {
-        val darkThemeEnabled = booleanPreferencesKey(name="dark_theme_enabled")
-        val isOnBoardingFinished = booleanPreferencesKey(name="on_boarding_finished")
+        val darkThemeEnabled = booleanPreferencesKey(name = "dark_theme_enabled")
+        val isOnBoardingFinished = booleanPreferencesKey(name = "on_boarding_finished")
     }
 
     private val Context.dataStore by preferencesDataStore(
         name = "app_preferences"
     )
 
-    val isDarkThemeEnabled: Flow<Boolean> get() =
-        context.dataStore.data.map {
-            it[Keys.darkThemeEnabled] ?: false
-        }
+    val isDarkThemeEnabled: Flow<Boolean>
+        get() =
+            context.dataStore.data.map {
+                it[Keys.darkThemeEnabled] ?: false
+            }
 
     suspend fun setDarkThemeEnabled(enabled: Boolean) {
         context.dataStore.edit {
@@ -38,9 +39,10 @@ class AppStore @Inject constructor(
         }
     }
 
-    val isOnBoardingFinished: Flow<Boolean> = context.dataStore.data.map {
-        it[Keys.isOnBoardingFinished] ?: false
-    }
+    val isOnBoardingFinished: Flow<Boolean>
+        get() = context.dataStore.data.map {
+            it[Keys.isOnBoardingFinished] ?: false
+        }
 
     suspend fun setIsOnBoardingFinished(isOnBoardingFinished: Boolean) {
         context.dataStore.edit {

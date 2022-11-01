@@ -17,7 +17,10 @@ import cessini.technology.commonui.databinding.FragmentLanguageBinding
 import cessini.technology.commonui.viewmodel.suggestionViewModel.LanguageSelectionFragmentViewModel
 import cessini.technology.navigation.MainNavGraphDirections
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class LanguageFragment : BaseFragment<FragmentLanguageBinding>(R.layout.fragment_language) {
@@ -51,8 +54,15 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(R.layout.fragment
         }
 
         try {
-            viewModel.submitOnBoardingSelection()
-            findNavController().navigate(MainNavGraphDirections.actionGlobalHomeFlow())
+            lifecycleScope.launch {
+                val success = async { viewModel.submitOnBoardingSelection() }
+                if (success.await())
+                    withContext(Dispatchers.Main) {
+                        findNavController().navigate(
+                            MainNavGraphDirections.actionGlobalHomeFlow()
+                        )
+                    }
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Unable to submit on-boarding selection", e)
             Toast.makeText(

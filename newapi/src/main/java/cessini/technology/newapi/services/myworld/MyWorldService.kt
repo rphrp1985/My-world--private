@@ -99,8 +99,9 @@ interface MyWorldService {
     @GET(MyWorldConstants.MESSAGE_USER)
     suspend fun getRoomMessages() : ApiCreateRoomMessage
 
+    @Headers(ApiParameters.NO_AUTH_HEADER)
     @POST(MyWorldConstants.ONBOARD_SUBMISSION)
     suspend fun submitOnBoardingSelection(
         @Body submission: OnBoardingSubmission
-    ): OnBoardingSubmissionResponse
+    ): Response<OnBoardingSubmissionResponse>
 }
