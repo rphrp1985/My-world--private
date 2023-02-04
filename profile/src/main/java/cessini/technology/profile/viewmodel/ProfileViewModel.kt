@@ -79,6 +79,9 @@ class ProfileViewModel @Inject constructor(
     private val _upiData = MutableLiveData<String>()
     val upiData: LiveData<String> = _upiData
 
+     var hasMessages: Boolean = false
+    var isHasMessagesCalled:Boolean = false
+
     // FIXME: Remove this activity reference
     lateinit var activity: Activity
 
