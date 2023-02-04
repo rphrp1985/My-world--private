@@ -64,7 +64,6 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
     lateinit var navigator: Navigator
 
     // FIXME: View states should be moved to view model
-    private var hasMessages: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,11 +155,14 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
     }
 
     private fun fetchHasMessages() {
-        lifecycleScope.launch {
-            kotlin.runCatching { profileViewModel.getMessageForRoom() }
-                .onSuccess {
-                    hasMessages = it.isNotEmpty()
-                }
+        if(!profileViewModel.isHasMessagesCalled) {
+            profileViewModel.isHasMessagesCalled= true
+            lifecycleScope.launch {
+                kotlin.runCatching { profileViewModel.getMessageForRoom() }
+                    .onSuccess {
+                        profileViewModel.hasMessages = it.isNotEmpty()
+                    }
+            }
         }
     }
 
@@ -186,7 +188,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         binding.addStoryProfileFragment.setOnClickListener {
             val homeActivity = run { requireActivity() as HomeActivity }
 
-            if (!profileViewModel.rooms.value.isNullOrEmpty() && !hasMessages) {
+            if (!profileViewModel.rooms.value.isNullOrEmpty() && !profileViewModel.hasMessages) {
                 val createRoomFragment = CreateRoomFragment(null)
                 createRoomFragment.show(parentFragmentManager, createRoomFragment.tag)
                 return@setOnClickListener

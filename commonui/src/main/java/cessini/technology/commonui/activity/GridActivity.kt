@@ -26,6 +26,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,6 +35,7 @@ import cessini.technology.commonui.activity.live.PeerConnectionAdapter
 import cessini.technology.commonui.activity.live.SdpAdapter
 import cessini.technology.commonui.activity.live.SignalingClient
 import cessini.technology.commonui.activity.services.screen_share.MediaProjectionService
+import cessini.technology.commonui.adapter.RecAdapter
 import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
 import cessini.technology.commonui.fragment.commonChat.CommonChatFragment
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatPayload
@@ -57,8 +59,10 @@ import com.amazonaws.util.IOUtils
 import com.google.android.gms.common.internal.service.Common
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.kurento.client.Hub
 import org.slf4j.helpers.Util.report
 import org.webrtc.*
 import org.webrtc.PeerConnectionFactory.InitializationOptions
@@ -66,113 +70,47 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.*
+import javax.inject.Inject
 
 
+@AndroidEntryPoint
 class GridActivity : AppCompatActivity() , SignalingClient.Callback {
-
-
-
 
     private lateinit var snackViewBinding : CommonChatSnackviewBinding
     private lateinit var snackbar: Snackbar
     private lateinit var customSnackView: CommonChatSnackviewBinding
 
-    private var isFront = true
+    @Inject
+    lateinit var credentials: BasicAWSCredentials
 
-    private val CAPTURE_PERMISSION_REQUEST_CODE = 1
-
-
-    private val REQUEST_CODE_STREAM = 179 //random num
-
-    private val REQUEST_CODE_RECORD = 180 //random num
+    @Inject
+    lateinit var clientConfiguration:ClientConfiguration
 
     private var mMediaProjectionPermissionResultData: Intent? = null
     private var mMediaProjectionPermissionResultCode = 0
 
     val KEY = true
 
-    var STREAM_NAME_PREFIX = "android_device_stream"
-    var videoFileName=""
-    var fileName: String? = "VID" + System.currentTimeMillis() + ".mp4".also {
-        videoFileName = it
-    }
+    val hubViewModel:HubViewModel by viewModels()
 
-    private val awsconfig="""
-  {
-  "UserAgent": "MobileHub/1.0",
-  "Version": "1.0",
-  "CredentialsProvider": {
-"CognitoIdentity": {
-  "Default": {
-    "PoolId": "ap-south-1:1ef82df2-73d2-4714-a978-5afbf42dc816",
-    "Region": "ap-south-1"
-  }
-}
-  },
-  "IdentityManager": {
-    "Default": {}
-  },
-  "S3TransferUtility": {
-    "Default": {
-      "Bucket": "kurento-recorded-file",
-      "Region": "ap-south-1"
-    }
-  }
-}"""
-    private val amplifyconfig="""
-  {
-    "auth": {
-        "plugins": {
-            "awsCognitoAuthPlugin": {
-                "IdentityManager": {
-                    "Default": {}
-                },
-                "CredentialsProvider": {
-                    "CognitoIdentity": {
-                        "Default": {
-                            "PoolId": "ap-south-1:1ef82df2-73d2-4714-a978-5afbf42dc816",
-                            "Region": "ap-south-1"
-                        }
-                    }
-                },
-                "CognitoUserPool": {
-                    "Default": {
-                        "PoolId": "ap-south-1_tdZpslecO",
-                        "AppClientId": "64frfm3gdkcnhij3amj9750dq7",
-                        "Region": "ap-south-1"
-                    }
-                }
-                
-            }
-        }
-    },
-    "storage": {
-        "plugins": {
-            "awsS3StoragePlugin": {
-                  "bucket": "kurento-recorded-file",
-                  "region": "ap-south-1"
-            }
-        }
-    }
-}"""
+
 
     private val audioManager by lazy { RTCAudioManager.create(this) }
-    private lateinit var fileRenderer:FileRenderer
-    private lateinit var remoteVideoTrack:VideoTrack
-    private lateinit var eglBaseContext: EglBase.Context
-    private lateinit var peerConnectionFactory: PeerConnectionFactory
+    @Inject
+    lateinit var eglBaseContext: EglBase.Context
+
+    @Inject
+    lateinit var peerConnectionFactory: PeerConnectionFactory
     private lateinit var localView: SurfaceViewRenderer
-    private lateinit var mediaStream: MediaStream
-    private lateinit var iceServers: List<PeerConnection.IceServer>
-    private lateinit var peerConnectionMap: HashMap<String, PeerConnection>
+
+
     private lateinit var  remoteViews: Array<SurfaceViewRenderer>
     private lateinit var camera: ImageView
     private lateinit var screenShare: Button
     private lateinit var audio: ImageView
 
-    private  var isScreenShare=false
-    private  var isCameraShare=false
-   private lateinit var recAdapter:RecAdapter
+
+    private lateinit var recAdapter: RecAdapter
     private var count = 0
 
 
@@ -184,14 +122,11 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     val options = InitializationOptions.builder(this)
         .createInitializationOptions()
-    var remoteViewsIndex = 1
-    private var videoTrack:VideoTrack? = null
-    private var videoTrackScreen:VideoTrack? = null
-    private var localAudioTrack : AudioTrack? = null
-    private var localAudioTrackScreen : AudioTrack? = null
-    private val audioSource by lazy { peerConnectionFactory.createAudioSource(MediaConstraints())}
+
+    @Inject
+    lateinit var audioSource : AudioSource
+
     private val chatViewModel : CommonChatViewModel by viewModels()
-    var rname="RoomLive"
 
     val recyclerDataArrayList:ArrayList<data> = ArrayList()
 
@@ -200,8 +135,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         setContentView(R.layout.activity_grid)
 
         setupCustomSnackBar()
-
-
 
 
         (this@GridActivity).window.apply {
@@ -220,24 +153,23 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
             val sendIntent = mediaProjectionService.sendIntent()
             if (sendIntent != null) {
-                startActivityForResult(sendIntent, REQUEST_CODE_STREAM)
+                startActivityForResult(sendIntent, hubViewModel.REQUEST_CODE_STREAM)
             }
         }
-
 
         val mediaProjectionManager = application.getSystemService(
             Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         // Get Permission for screen Capturing
         if(mediaProjectionManager!=null){
-            startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), REQUEST_CODE_STREAM)
+            startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), hubViewModel.REQUEST_CODE_STREAM)
         }
 
-        Log.e("jsom",JSONObject(awsconfig).toString())
+        Log.e("jsom",JSONObject(HubConstants.awsconfig).toString())
         /**
          * AWS Config
          */
-        AWSMobileClient.getInstance().initialize(applicationContext,AWSConfiguration(JSONObject(awsconfig)),object : Callback<UserStateDetails?> {
+        AWSMobileClient.getInstance().initialize(applicationContext,AWSConfiguration(JSONObject(HubConstants.awsconfig)),object : Callback<UserStateDetails?> {
             override fun onResult(result: UserStateDetails?) {
                 Log.e("aws",result.toString())
             }
@@ -256,18 +188,18 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         screenShare = findViewById<Button>(R.id.btnShareScreen)
 //        localView = findViewById(R.id.localView)
         handleIntent(intent)
-        if(rname=="RoomLive") {
+        if(hubViewModel.rname=="RoomLive") {
             try {
-                rname = intent.getStringExtra("Room Name").toString()
-                Log.e("room name", rname)
+                hubViewModel.rname = intent.getStringExtra("Room Name").toString()
+                Log.e("room name", hubViewModel.rname)
 
             } catch (e: Exception) {
 
             }
         }
 
-        chatViewModel.setSocket(rname)
-        chatViewModel.listenTo(rname)
+        chatViewModel.setSocket(hubViewModel.rname)
+        chatViewModel.listenTo(hubViewModel.rname)
         chatViewModel.messages.observe(this){
             //TODO
             val lastMessage = it.last()
@@ -297,42 +229,27 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             createRoomLink()
         }
         endcall.setOnClickListener {
-           onBackPressed()
+            onBackPressed()
         }
 
         screenShare.setOnClickListener {
             onScreenShare()
         }
-        peerConnectionMap = HashMap()
+        hubViewModel.peerConnectionMap = HashMap()
 
         audioManager.selectAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE)
-
-        iceServers = listOf(
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302")
-                .createIceServer(),
-
-            PeerConnection.IceServer.builder("stun:rooms-api.joinmyworld.live")
-                .createIceServer(),
-
-            PeerConnection.IceServer.builder("turn:rooms-api.joinmyworld.live")
-                .setUsername("Admin")
-                .setPassword("password")
-                .createIceServer(),
-
-        )
-
-
-        peerConnectionFactory= createPeerFactory()!!
+//        peerConnectionFactory= createPeerFactory()!!
 
 
         /**
          * Starting the camera if permission is granted else requesting for permission
          */
+
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             askPermission()
         }else{
 //            localView.isEnabled = true
-            isFront = true
+            hubViewModel.isFront = true
             showCamera()
         }
 
@@ -353,6 +270,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         snackbar.show()
     }
 
+
     private fun setupCustomSnackBar(){
         snackViewBinding = CommonChatSnackviewBinding.inflate(layoutInflater)
         snackbar = Snackbar.make(snackViewBinding.root, "", Snackbar.LENGTH_LONG)
@@ -368,26 +286,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
 
     /**
-    * Creating PeerConnectionFactory to create PeerConnection, establishing peer to peer connection
-    */
-    fun createPeerFactory(): PeerConnectionFactory? {
-        eglBaseContext=EglBase.create().eglBaseContext
-        val options = InitializationOptions.builder(applicationContext)
-            .createInitializationOptions()
-        PeerConnectionFactory.initialize(options)
-        return PeerConnectionFactory.builder()
-            .setVideoDecoderFactory(DefaultVideoDecoderFactory(eglBaseContext))
-            .setVideoEncoderFactory(
-                DefaultVideoEncoderFactory(
-                    eglBaseContext,
-                    true,
-                    true
-                )
-            ).createPeerConnectionFactory()
-    }
-
-
-    /**
      * Handling the permissions for the user camera
      */
     private fun askPermission() {
@@ -399,7 +297,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.MANAGE_EXTERNAL_STORAGE
             ),
-            CAPTURE_PERMISSION_REQUEST_CODE
+            hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE
         )
     }
 
@@ -412,7 +310,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAPTURE_PERMISSION_REQUEST_CODE) {
+        if (requestCode == hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 showCamera()
             } else {
@@ -436,7 +334,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         val surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext)
         // create VideoCapturer
-        val videoCapturer = createCameraCapturer(isFront)
+        val videoCapturer = createCameraCapturer(hubViewModel.isFront)
         val videoSource = peerConnectionFactory.createVideoSource(
             false
         )
@@ -447,19 +345,19 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         )
         videoCapturer.startCapture(480, 640, 30)
 
-        videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource)
+        hubViewModel.videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource)
 
 
-        localAudioTrack = peerConnectionFactory.createAudioTrack("100" + "_audio", audioSource)
+        hubViewModel.localAudioTrack = peerConnectionFactory.createAudioTrack("100" + "_audio", audioSource)
 
-        mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
-        mediaStream.addTrack(videoTrack)
-        mediaStream.addTrack(localAudioTrack)
+        hubViewModel.mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
+        hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrack)
+        hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrack)
 
-        userData = data("userLocal", 0, videoTrack!!, true, eglBaseContext, null)
+        userData = data("userLocal", 0, hubViewModel.videoTrack!!, true, eglBaseContext, null)
         recyclerDataArrayList.add(userData!!)
         setUpEpoxy()
-        SignalingClient.get()?.init(this, rname)
+        SignalingClient.get()?.init(this, hubViewModel.rname)
 
     }
 
@@ -499,7 +397,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         val mediaProjectionManager = application.getSystemService(
             Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         // Get Permission for screen sharing
-        startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), CAPTURE_PERMISSION_REQUEST_CODE)
+        startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE)
     }
 
     /**
@@ -507,7 +405,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != CAPTURE_PERMISSION_REQUEST_CODE)
+        if (requestCode != hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE)
         {
             Toast.makeText(this,"permission not granted",Toast.LENGTH_SHORT).show()
             return;
@@ -516,12 +414,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             mMediaProjectionPermissionResultData = data
             screenCast()
         }
-        if (data != null && (requestCode == REQUEST_CODE_STREAM && resultCode == RESULT_OK)
+        if (data != null && (requestCode == hubViewModel.REQUEST_CODE_STREAM && resultCode == RESULT_OK)
         ) {
             mMediaProjectionPermissionResultCode = resultCode
             mMediaProjectionPermissionResultData = data
             val displayService: MediaProjectionService? = MediaProjectionService.INSTANCE
-            val endpoint: String = endPointUrlBase+"app/{$rname}"
+            val endpoint: String = endPointUrlBase+"app/{${hubViewModel.rname}"
             displayService?.prepareStreamRtp(endpoint, resultCode, data)
             displayService?.startStreamRtp(endpoint)
         }
@@ -550,19 +448,19 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         videoCapturer.startCapture(480, 640, 30)
         val audioSource = peerConnectionFactory.createAudioSource(MediaConstraints())
-        videoTrackScreen = peerConnectionFactory.createVideoTrack("100", videoSource)
-        videoTrackScreen?.setEnabled(true)
+        hubViewModel.videoTrackScreen = peerConnectionFactory.createVideoTrack("100", videoSource)
+        hubViewModel.videoTrackScreen?.setEnabled(true)
 
-        localAudioTrackScreen = peerConnectionFactory.createAudioTrack("100" + "_audio", audioSource)
+        hubViewModel.localAudioTrackScreen = peerConnectionFactory.createAudioTrack("100" + "_audio", audioSource)
 
-        mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
-        mediaStream.addTrack(videoTrackScreen)
-        mediaStream.addTrack(localAudioTrackScreen)
-        userDataScreen = data("userScreen", 0, videoTrackScreen!!, true, eglBaseContext, null)
+        hubViewModel.mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
+        hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrackScreen)
+        hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrackScreen)
+        userDataScreen = data("userScreen", 0, hubViewModel.videoTrackScreen!!, true, eglBaseContext, null)
         recyclerDataArrayList.add(userDataScreen!!)
         setUpEpoxy()
 
-        SignalingClient.get()?.init(this,rname)
+        SignalingClient.get()?.init(this,hubViewModel.rname)
     }
 
     /**
@@ -576,7 +474,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         }
         return ScreenCapturerAndroid(mMediaProjectionPermissionResultData, object : MediaProjection.Callback() {
             override fun onStop() {
-                videoTrackScreen?.setEnabled(false)
+                hubViewModel.videoTrackScreen?.setEnabled(false)
                 report("Screen Share stopped")
             }
 
@@ -639,12 +537,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      */
     @Synchronized
     private fun getOrCreatePeerConnection(socketId: String): PeerConnection {
-        var peerConnection = peerConnectionMap[socketId]
+        var peerConnection = hubViewModel.peerConnectionMap[socketId]
         if (peerConnection != null) {
             return peerConnection
         }
         peerConnection =
-            peerConnectionFactory.createPeerConnection(iceServers, object : PeerConnectionAdapter(
+            peerConnectionFactory.createPeerConnection(hubViewModel.iceServers, object : PeerConnectionAdapter(
                 "PC:$socketId"
             ) {
                 override fun onIceCandidate(iceCandidate: IceCandidate) {
@@ -658,12 +556,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 override fun onAddStream(mediaStream: MediaStream) {
                     super.onAddStream(mediaStream)
 
-                    fileName = createVideoPath(applicationContext, fileName)
-                    remoteVideoTrack = mediaStream.videoTracks[0]
+                    hubViewModel.fileName = createVideoPath(applicationContext, hubViewModel.fileName)
+                    hubViewModel.remoteVideoTrack = mediaStream.videoTracks[0]
                     recyclerDataArrayList.add(
                         data(
                             "user",
-                            remoteViewsIndex++,
+                            hubViewModel.remoteViewsIndex++,
                             mediaStream.videoTracks[0],
                             false,
                             eglBaseContext,
@@ -672,13 +570,13 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                     )
                     setUpEpoxy()
                     Log.e("stream", "stream added ${mediaStream.videoTracks.size}")
-                    Log.e("path", createVideoPath(applicationContext, fileName).toString())
+                    Log.e("path", createVideoPath(applicationContext, hubViewModel.fileName).toString())
                 }
 
 
             })
-        peerConnection!!.addStream(mediaStream)
-        peerConnectionMap[socketId] = peerConnection
+        peerConnection!!.addStream(hubViewModel.mediaStream)
+        hubViewModel.peerConnectionMap[socketId] = peerConnection
         return peerConnection
     }
 
@@ -690,7 +588,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     override fun onCreateRoom(id: String) {
     }
-
 
     /**
      * Creating the Peer Connection
@@ -802,24 +699,24 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         if(count%2 !=0) {
             it.setImage(R.drawable.ic_addvideo)
             count++
-            videoTrack?.setEnabled(true)
+            hubViewModel.videoTrack?.setEnabled(true)
         }else{
             it.setImage(R.drawable.ic_removevideo)
             count++
-            videoTrack?.setEnabled(false)
+            hubViewModel.videoTrack?.setEnabled(false)
         }
 //        localView.isEnabled = !(localView.isEnabled)
     }
 
     //handling the audio switch
     fun switchAudio(it: ImageView) {
-        if (localAudioTrack != null) {
-            if (localAudioTrack?.enabled() == true) {
-                localAudioTrack?.setEnabled(false)
+        if (hubViewModel.localAudioTrack != null) {
+            if (hubViewModel.localAudioTrack?.enabled() == true) {
+                hubViewModel.localAudioTrack?.setEnabled(false)
                 it.setImage(R.drawable.ic_removeaudio)
             }
             else {
-                localAudioTrack?.setEnabled(true)
+                hubViewModel.localAudioTrack?.setEnabled(true)
                 it.setImage(R.drawable.ic_addaudio)
             }
         }
@@ -828,24 +725,24 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     // handling the camera used either front or back
     fun switchCamera(it: ImageView){
         recyclerDataArrayList.remove(userData)
-        isFront = !isFront
+        hubViewModel.isFront = !hubViewModel.isFront
         showCamera()
     }
 
     // handling the screen share button click function
     private fun onScreenShare() {
 
-        if(!isScreenShare){
+        if(!hubViewModel.isScreenShare){
             startScreenCapture()
             screenShare.let {
                 it.setTextColor(R.color.quantum_black_100)
                 it.background = ContextCompat.getDrawable(this,R.drawable.circular_button_view_without_border)
             }
-            isScreenShare=true
+            hubViewModel.isScreenShare=true
         }else{
-            videoTrackScreen?.setEnabled(false)
-            localAudioTrackScreen?.setEnabled(false)
-            isScreenShare = false
+            hubViewModel.videoTrackScreen?.setEnabled(false)
+            hubViewModel.localAudioTrackScreen?.setEnabled(false)
+            hubViewModel.isScreenShare = false
             setUpEpoxy()
         }
     }
@@ -854,18 +751,18 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     // ending the call
     override fun onBackPressed() {
         super.onBackPressed()
-        endcall()
+        hubViewModel.endcall()
         overridePendingTransition(R.anim.slide_in_animation, R.anim.slide_out_animation)
     }
 
 
-    // on activity destroyed 
+    // on activity destroyed
     override fun onDestroy() {
         super.onDestroy()
         CommonChatSocketHandler.closeConnection()
         CommonChatSocketHandler.mSocket.close()
-        if (isScreenShare){
-            endcall()
+        if (hubViewModel.isScreenShare){
+            hubViewModel.endcall()
             SignalingClient.get()?.destroy()
         }
         val displayService: MediaProjectionService? = MediaProjectionService.INSTANCE
@@ -876,35 +773,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     }
 
 
-    // disabling all the running tracks
-    private fun endcall() {
-        if (peerConnectionMap.isNotEmpty()) {
-            for (i in peerConnectionMap.values) {
-                i.close()
-            }
-        }
-        if (this::remoteVideoTrack.isInitialized){
-            remoteVideoTrack.removeSink(fileRenderer)
-            videoTrack?.setEnabled(false)
-            videoTrackScreen?.setEnabled(false)
-            localAudioTrackScreen?.setEnabled(false)
-            localAudioTrack?.setEnabled(false)
-            fileRenderer.release()
-        }
 
-    }
 
 
     companion object {
-        private val KEY = "AKIASGPFZLBMV25FCLWJ"
-        private val SECRET = "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"
         private val BUCKET="kurento-recorded-files"
-        val clientConfiguration = ClientConfiguration()
+
         val regions = Regions.fromName("ap-south-1")
         private var s3Client: AmazonS3Client? = null
-        private var credentials: BasicAWSCredentials=BasicAWSCredentials(KEY, SECRET)
-
-        //track Choosing Image Intent
         private val CHOOSING_IMAGE_REQUEST = 1234
 
         private var fileUri: Uri? = null
@@ -971,11 +847,11 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     // Creating and sharing the room link on socail media
     private fun createRoomLink() {
         Log.d("Intent","The intent that I am looking at is called")
-        val shareBody="https://www.myworld.com/liveRoom?code=$rname"
+        val shareBody="https://www.myworld.com/liveRoom?code=${hubViewModel.rname}"
         val bottomSheetDialog=BottomSheetDialog(this)
         val link=bottomSheetDialog.findViewById<TextView>(R.id.textView16)
         link?.setText(shareBody)
-       //TODO To be changed
+        //TODO To be changed
         // bottomSheetDialog.setContentView(R.layout.share_myworld)
         val pm: PackageManager = this.packageManager
         val finalLaunchables:MutableList<ResolveInfo> =ArrayList()
@@ -1014,54 +890,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     private fun handleIntent(intent: Intent?) {
         val appLinkAction: String? = intent?.action
         val appLinkData: Uri? = intent?.data
-        showDeepLinkOffer(appLinkAction, appLinkData)
-    }
-
-    private fun showDeepLinkOffer(appLinkAction: String?, appLinkData: Uri?) {
-        // 1
-        if (Intent.ACTION_VIEW == appLinkAction && appLinkData != null) {
-            // 2
-            val rCode = appLinkData.getQueryParameter("code")
-            Log.e("deepLink",rCode.toString())
-            if (rCode.isNullOrBlank().not()) {
-                rname=rCode.toString()
-            }
-        } else {
-        }
+        hubViewModel.showDeepLinkOffer(appLinkAction, appLinkData)
     }
 
 
-    private fun createSDPConstraints(): MediaConstraints? {
 
-        val constraints = MediaConstraints()
-        constraints.mandatory.add(MediaConstraints.KeyValuePair("offerToReceiveAudio", "true"))
-        constraints.mandatory.add(MediaConstraints.KeyValuePair("offerToReceiveVideo", "true"))
-        constraints.mandatory.add(
-            MediaConstraints.KeyValuePair(
-                "maxFrameRate",
-                60.toString()
-            )
-        )
-        constraints.mandatory.add(
-            MediaConstraints.KeyValuePair(
-                "minFrameRate",
-                1.toString()
-            )
-        )
-        return constraints
-    }
-    private fun createFile(context: Context, srcUri: Uri?, dstFile: File) {
-        try {
-            val inputStream = srcUri?.let { context.contentResolver.openInputStream(it) } ?: return
-            val outputStream = FileOutputStream(dstFile)
-            IOUtils.copy(inputStream, outputStream)
-            inputStream.close()
-            outputStream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
 
-    }
     private fun uploadFile(){
         val upload=object:Thread(){
             override fun run() {
@@ -1076,7 +910,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 val transferUtility = TransferUtility.builder()
                     .context(applicationContext)
                     .s3Client(s3Client)
-                    .awsConfiguration(AWSConfiguration(JSONObject(awsconfig)))
+                    .awsConfiguration(AWSConfiguration(JSONObject(HubConstants.awsconfig)))
                     .build()
 
                 val listener = object: TransferListener {
@@ -1117,7 +951,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                     override fun onError(id: Int, ex: Exception?) { /* handle err */ }
                 }
                 val no=(0..10).random()
-                transferUtility.upload(BUCKET,"$rname - {$no}",File(fileName))
+                transferUtility.upload(BUCKET,"${hubViewModel.rname} - {$no}",File(hubViewModel.fileName))
                     .setTransferListener(listener)
             }
         }
@@ -1125,47 +959,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     }
 
-
-
-
-}
-
-internal class RecAdapter(pm : PackageManager?,private val apps: List<ResolveInfo?>,val context: Context?,val link:String):
-    RecyclerView.Adapter<RecAdapter.MyViewHolder>(){
-    internal class MyViewHolder(view: View): RecyclerView.ViewHolder(view){
-        val label = view.findViewById<View>(R.id.mylabel) as TextView
-        var icon: ImageView = view.findViewById<View>(R.id.myicon) as ImageView
-    }
-    private var pm: PackageManager? = null
-    override fun getItemCount(): Int {
-        return apps.size
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val itemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.myrow, parent, false)
-        return MyViewHolder(itemView)
-    }
-    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val label= apps[position]?.loadLabel(pm)
-        holder.label.text = label
-        val icon=apps.get(position)?.loadIcon(pm)
-        holder.icon.setImageDrawable(icon)
-        holder.itemView.setOnClickListener {
-            val launchable=apps.get(position) as ResolveInfo
-            val activity: ActivityInfo = launchable.activityInfo
-            val i = Intent(Intent.ACTION_SEND)
-            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            i.type="text/plain"
-            val packageName=activity.packageName
-            i.putExtra(Intent.EXTRA_TEXT,link)
-            i.setPackage(packageName)
-            context?.startActivity(i)
-        }
-    }
-    init {
-        this.pm=pm
-    }
 
 
 

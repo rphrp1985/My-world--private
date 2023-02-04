@@ -1,6 +1,8 @@
 package cessine.technology.app.di
 
+import android.content.Context
 import cessini.technology.newapi.interceptors.AuthInterceptor
+import cessini.technology.newapi.preferences.AuthPreferences
 import cessini.technology.newapi.services.explore.ExploreConstants
 import cessini.technology.newapi.services.explore.ExploreInfoService
 import cessini.technology.newapi.services.explore.ExploreRecordService
@@ -20,18 +22,24 @@ import cessini.technology.newapi.services.video.VideoService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+//import dagger.hilt.internal.aggregatedroot.codegen._cessine_technology_app_MainApplication
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import javax.inject.Singleton
 import javax.net.ssl.*
 
 @InstallIn(SingletonComponent::class)
 @Module
 object ApiModule {
+
+
     @Provides
     @Singleton
     fun provideGetStoryApi(
@@ -62,17 +70,19 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideExploreApi(
-        retrofit: Retrofit.Builder,
+        retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
     ): ExploreService = retrofit
         .baseUrl(ExploreConstants.BASE_ENDPOINT)
+        .client(okHttpClient)
         .build()
         .create(ExploreService::class.java)
 
     @Provides
     @Singleton
     fun provideExploreInfoApi(
-        retrofit: Retrofit.Builder,
+        retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
     ): ExploreInfoService = retrofit
+        .client(okHttpClient)
         .baseUrl(ExploreConstants.BASE_ENDPOINT_INFO)
         .build()
         .create(ExploreInfoService::class.java)
@@ -80,8 +90,9 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideExploreRecordApi(
-        retrofit: Retrofit.Builder,
+        retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
     ): ExploreRecordService=retrofit
+        .client(okHttpClient)
         .baseUrl(ExploreConstants.BASE_ENDPOINT_RECORDED)
         .build()
         .create(ExploreRecordService::class.java)
@@ -89,22 +100,26 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideMySpaceApi(
-        retrofit: Retrofit.Builder,
+        retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
     ): MySpaceService = retrofit
         .baseUrl(MySpaceConstants.BASE_ENDPOINT)
         .build()
         .create(MySpaceService::class.java)
 
 
+
+
     @Provides
     @Singleton
     fun provideMyWorldApi(
-        retrofit: Retrofit.Builder,
-    ): MyWorldService = retrofit
-        .baseUrl(MyWorldConstants.BASE_ENDPOINT)
-        .build()
-        .create(MyWorldService::class.java)
-
+        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient
+    ): MyWorldService {
+        return retrofit
+            .baseUrl(MyWorldConstants.BASE_ENDPOINT)
+            .client(okHttpClient)
+            .build()
+            .create(MyWorldService::class.java)
+    }
 
     @Provides
     @Singleton
@@ -166,6 +181,8 @@ object ApiModule {
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
+            .readTimeout(5000, TimeUnit.SECONDS)
+            .writeTimeout(5000, TimeUnit.SECONDS)
             .addInterceptor(authInterceptor)
             .hostnameVerifier(hostnameVerifier)
             .sslSocketFactory(sslSocketFactory, trustManager)
