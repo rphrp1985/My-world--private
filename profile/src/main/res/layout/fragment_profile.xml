@@ -285,12 +285,14 @@
                     app:tabGravity="fill"
                     app:tabIndicator="@drawable/tab_indicator"
                     app:tabIndicatorColor="@color/cpTextDark"
+                    app:tabIndicatorAnimationMode="elastic"
                     app:tabIndicatorHeight="3.5dp"
                     app:tabMode="auto"
                     app:tabRippleColor="@null"
                     app:tabSelectedTextColor="@color/cpTextDark"
                     app:tabTextAppearance="@style/TabTextAppearance"
                     app:tabTextColor="@color/cpTextDark"
+                    app:tabPaddingBottom="-16dp"
                     >
 
                     <com.google.android.material.tabs.TabItem

@@ -53,6 +53,8 @@
                     app:tabIndicator="@drawable/tab_indicator"
                     app:tabSelectedTextColor="@color/cpTextDark"
                     app:tabGravity="fill"
+                    app:tabIndicatorAnimationMode="elastic"
+                    app:tabPaddingBottom="3dp"
                     app:tabMode="auto"
                     app:tabMaxWidth="0dp"
                     app:tabRippleColor="@null"
