@@ -47,9 +47,9 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(R.layout.fragment
         binding.progressBar.isVisible = true
         val locale = localeChipMap[binding.chipGroup.checkedChipId]
 
-        if (locale != null) {
+        locale?.let {
             AppCompatDelegate.setApplicationLocales(
-                LocaleListCompat.forLanguageTags(locale)
+                LocaleListCompat.forLanguageTags(it)
             )
         }
 
@@ -69,7 +69,7 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(R.layout.fragment
                 requireContext(),
                 getString(R.string.error_on_boarding_submission),
                 Toast.LENGTH_SHORT
-            )
+            ).show()
         } finally {
             binding.progressBar.isGone = true
         }

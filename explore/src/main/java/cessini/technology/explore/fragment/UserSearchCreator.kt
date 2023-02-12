@@ -8,12 +8,9 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import cessini.technology.cvo.entity.SearchHistoryEntity
-import cessini.technology.cvo.exploremodels.SearchCreatorApiResponse
 import cessini.technology.explore.R
 import cessini.technology.explore.controller.UserSearchCreatorController
 import cessini.technology.explore.controller.UserSearchHistoryController
@@ -48,11 +45,11 @@ class UserSearchCreator : Fragment() {
         viewModel.contextCreator = requireContext()
 
         setCreatorRecycler()
-        viewModel.creatorResponseModels.observe(viewLifecycleOwner, Observer {
+        viewModel.creatorResponseModels.observe(viewLifecycleOwner) {
             if (!it.isNullOrEmpty()) {
                 controller!!.allCreators = it
             }
-        })
+        }
 
         parentFrag = this@UserSearchCreator.parentFragment as ExploreSearchFragment
 
@@ -74,7 +71,7 @@ class UserSearchCreator : Fragment() {
 
         setHistory()
         binding.recyclerViewCreatorHistory.visibility = View.VISIBLE
-        viewModel.creatorHistory.observe(viewLifecycleOwner, Observer {
+        viewModel.creatorHistory.observe(viewLifecycleOwner) {
 
             Log.i("Explore", "Outside: $it")
             if (it != null) {
@@ -94,7 +91,7 @@ class UserSearchCreator : Fragment() {
                 }
             }
 
-        })
+        }
 
         val parentFrag: ExploreSearchFragment =
             this@UserSearchCreator.parentFragment as ExploreSearchFragment
@@ -107,14 +104,13 @@ class UserSearchCreator : Fragment() {
 
                 Log.i("Submit searched query: ", query!!)
                 viewModel.fetchSearchCreatorQueryAPI(query)
-                viewModel.creatorResponseModels.observe(viewLifecycleOwner, Observer {
-
+                viewModel.creatorResponseModels.observe(viewLifecycleOwner) {
 
                     if (it != null) {
                         if (it.size > 0) {
                             binding.layoutCreator.visibility = View.GONE
                             binding.recyclerViewCreator.visibility = View.VISIBLE
-                        } else if (it.size == 0) {
+                        } else {
                             binding.layoutCreator.visibility = View.GONE
                             binding.recyclerViewCreator.visibility = View.GONE
                         }
@@ -123,7 +119,7 @@ class UserSearchCreator : Fragment() {
 
                     binding.recyclerViewCreatorHistory.visibility = View.GONE
 
-                })
+                }
 
                 if (query == "") {
                     binding.layoutCreator.visibility = View.GONE
@@ -154,7 +150,7 @@ class UserSearchCreator : Fragment() {
                             binding.layoutCreator.visibility = View.GONE
                             binding.recyclerViewCreator.visibility = View.VISIBLE
                             binding.layoutNoResultCreator.visibility = View.GONE
-                        } else if (it.size == 0) {
+                        } else {
                             binding.layoutCreator.visibility = View.GONE
                             binding.recyclerViewCreator.visibility = View.GONE
                             binding.layoutNoResultCreator.visibility = View.VISIBLE
@@ -168,7 +164,7 @@ class UserSearchCreator : Fragment() {
                     binding.layoutNoResultCreator.visibility = View.GONE
                 }
 
-                if (newText.length == 2 || newText.length > 2) {
+                if (newText.length >= 2) {
                     viewModel.fetchSearchCreatorQueryAPI(newText)
                     binding.recyclerViewCreatorHistory.visibility = View.GONE
                     binding.recyclerViewCreator.visibility = View.VISIBLE
