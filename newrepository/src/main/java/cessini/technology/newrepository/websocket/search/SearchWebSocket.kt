@@ -42,7 +42,7 @@ class SearchWebSocket(private val block: (SearchResult) -> Unit) {
 
     companion object {
         // TODO: Replace with wss://others-api.joinmyworld.live/ws/search
-        private const val SEARCH_SOCKET_URL = "ws://15.207.114.134/ws/search"
+        private const val SEARCH_SOCKET_URL = "https://others.joinmyworld.in/ws/search"
     }
 }
 

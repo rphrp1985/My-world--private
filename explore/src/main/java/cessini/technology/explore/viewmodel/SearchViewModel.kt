@@ -63,14 +63,14 @@ class SearchViewModel @Inject constructor(
 
     init {
         if (isNetworkAvailable()) {
-            fetchCategoriesAPI()
-            fetchAllComponent()
-            fetchAllInfo()
-            fetchSuggestedRooms()
-            fetchAllTrendingRooms()
-            fetchAllRecordedVideos()
-            fetchAllCommonRecordedVideos()
-            getFollowing()
+//            fetchCategoriesAPI()
+//            fetchAllComponent()
+//            fetchAllInfo()
+//            fetchSuggestedRooms()
+//            fetchAllTrendingRooms()
+//            fetchAllRecordedVideos()
+//            fetchAllCommonRecordedVideos()
+//            getFollowing()
         }
     }
 
