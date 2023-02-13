@@ -22,7 +22,6 @@ import cessini.technology.commonui.R
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlin.math.ceil
 import kotlin.math.floor
 
 
@@ -109,16 +108,10 @@ abstract class BaseBottomSheet<T : ViewDataBinding>(
         val bottomSheet = dialog.findViewById<FrameLayout>(R.id.design_bottom_sheet)
         val behaviour = BottomSheetBehavior.from(bottomSheet!!)
         val layoutParams = bottomSheet.layoutParams
-        val windowHeight = getWindowHeight()
-        if(layoutParams != null) {
-////            val height = ((windowHeight * 75) / 2340) + (dp - 75)
-////            layoutParams.height =
-////                windowHeight - height.toPx().toInt() - 15
-//            val margin = 80
+        val screenHeight = getWindowHeight()
 
-            layoutParams.height = (windowHeight*85)/100
+        layoutParams?.height = (screenHeight * 0.85).toInt() // Set bottom sheet height to 85% of screen height
 
-        }
         bottomSheet.layoutParams = layoutParams
         behaviour.state = BottomSheetBehavior.STATE_EXPANDED
     }
