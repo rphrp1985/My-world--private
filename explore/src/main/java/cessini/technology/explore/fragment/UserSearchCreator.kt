@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import cessini.technology.cvo.entity.SearchHistoryEntity
@@ -144,7 +145,7 @@ class UserSearchCreator : Fragment() {
 
                 Log.i("Creator text pattern: ", newText!!)
 
-                viewModel.creatorResponseModels.observe(viewLifecycleOwner, Observer {
+                viewModel.creatorResponseModels.observe(viewLifecycleOwner) {
                     if (it != null) {
                         if (it.size > 0) {
                             binding.layoutCreator.visibility = View.GONE
@@ -156,7 +157,7 @@ class UserSearchCreator : Fragment() {
                             binding.layoutNoResultCreator.visibility = View.VISIBLE
                         }
                     }
-                })
+                }
 
                 if (newText.isEmpty()) {
                     binding.recyclerViewCreatorHistory.visibility = View.VISIBLE
