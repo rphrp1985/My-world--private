@@ -8,5 +8,5 @@ fun ApiTopProfile.toModel() = TopProfile(
     name = name,
     channelName = channelName,
     profilePicture = profilePicture,
-    is_following = is_following
+//    is_following = is_following
 )

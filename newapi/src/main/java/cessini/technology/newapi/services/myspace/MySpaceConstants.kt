@@ -2,7 +2,7 @@ package cessini.technology.newapi.services.myspace
 
 object MySpaceConstants {
     // TODO: Replace with https://rooms-api.joinmyworld.live/
-    const val BASE_ENDPOINT = "http://65.1.147.5/"
+    const val BASE_ENDPOINT = "http://rooms.joinmyworld.in/"
     const val CREATE_ROOM_ENDPOINT = "create_room/"
     const val GET_ROOM_ENDPOINT = "get_room/"
     //const val JOIN_ROOM_ENDPOINT = "add/"

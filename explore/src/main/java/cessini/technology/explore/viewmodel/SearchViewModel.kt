@@ -64,13 +64,13 @@ class SearchViewModel @Inject constructor(
     init {
         if (isNetworkAvailable()) {
             fetchCategoriesAPI()
-            fetchAllComponent()
-            fetchAllInfo()
-            fetchSuggestedRooms()
-            fetchAllTrendingRooms()
-            fetchAllRecordedVideos()
-            fetchAllCommonRecordedVideos()
-            getFollowing()
+//            fetchAllComponent()
+//            fetchAllInfo()
+//            fetchSuggestedRooms()
+//            fetchAllTrendingRooms()
+//            fetchAllRecordedVideos()
+//            fetchAllCommonRecordedVideos()
+//            getFollowing()
         }
     }
 
@@ -412,12 +412,14 @@ class SearchViewModel @Inject constructor(
             response.collectLatest { result ->
                 when (result) {
                     is Resource.Success -> {
+                        Log.d(TAG,"fetchCategoriesAPI() succcess")
                         allCategory.value = result.data
                         liveRooms.postValue(result.data?.liveRooms)
                     }
 
                     is Resource.Error -> {
 
+                        Log.d(TAG,"fetchCategoriesAPI() failed")
                     }
                 }
             }

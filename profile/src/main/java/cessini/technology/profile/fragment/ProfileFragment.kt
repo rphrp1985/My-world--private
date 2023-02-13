@@ -54,8 +54,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         private const val TAG = "ProfileFragment"
     }
 
-    private val profileViewModel: ProfileViewModel by activityViewModels()
-    private val editUserProfileViewModel: EditUserProfileViewModel by activityViewModels()
+    private val profileViewModel : ProfileViewModel by activityViewModels()
+    private val editUserProfileViewModel : EditUserProfileViewModel by activityViewModels()
 
     private var tabLayout: TabLayout? = null
     private var shareMenuItem: MenuItem? = null
@@ -93,6 +93,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
                         return@collectLatest
                     }
                     binding.profile = it
+
+                    Log.d("Profile-id","profile id = ${it.id}")
                     val bio=SpannableString(it.bio+" ")
                     val expert=SpannableString(modifyFont(it.expertise))
                     expert.setSpan(ForegroundColorSpan(Color.rgb(35,153,234)),0,expert.length,Spannable.SPAN_INCLUSIVE_EXCLUSIVE)

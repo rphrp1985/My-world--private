@@ -55,9 +55,11 @@ dependencies {
     implementation project(":model")
     kapt hilt_lib.kap
     implementation project(":navigation")
-//    implementation ('io.socket:socket.io-client:2.0.0') {
+
+//    implementation ('io.socket:socket.io-client:4.5.0') {
 //        exclude group: 'org.json', module: 'json'
 //    }
+
     implementation('io.socket:socket.io-client:0.8.3') {
         // excluding org.json which is provided by Android
         exclude group: 'org.json', module: 'json'

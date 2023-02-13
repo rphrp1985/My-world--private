@@ -144,18 +144,16 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
             }
             else {
                 if (binding.button2.isSelected) {
+                    roomSharedViewModel.roomTitle.value= editTextSearch.text.toString()
+                    roomSharedViewModel.time.value= System.nanoTime()
+
                     if (editTextSearch.text.isNullOrEmpty() || editTextSearch.text.isNullOrBlank() || editTextSearch.text.length == 0) {
                         toast(message = "Enter name of Live Room")
                     } else {
-                        val intent: Intent = Intent()
 
-                        intent.setClassName(
-                            requireContext(),
-                            "cessini.technology.commonui.activity.GridActivity"
-                        )
-//            intent.setClassName(requireContext(),"cessini.technology.myspace.live.LiveMyspaceActivity")
-                        intent.putExtra("Room Name", "${editTextSearch.text.toString().trim()}_room")
-                        startActivity(intent)
+                        roomSharedViewModel.createInstantRoom()
+
+
                     }
                 } else {
                     roomSharedViewModel.createRoom()
@@ -270,6 +268,28 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
 //            binding.imageView8.visibility = View.GONE
 //        }
     }
+    private fun handleInstantRoom(roomID: String) {
+        Log.d("Live Room","roomID= $roomID")
+        val intent: Intent = Intent()
+
+        intent.setClassName(
+            requireContext(),
+            "cessini.technology.commonui.activity.GridActivity"
+        )
+//            intent.setClassName(requireContext(),"cessini.technology.myspace.live.LiveMyspaceActivity")
+
+        val putExtra = intent.putExtra("Room Name",
+            "${roomID}")
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            profileRepository.profile.collectLatest {
+                intent.putExtra("user_id", it.id)
+
+                startActivity(intent)
+            }
+        }
+
+    }
 
     private fun listenEvents() {
         roomSharedViewModel!!.events.onEach {
@@ -277,6 +297,7 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
                 is Failed -> toast(it.reason)
                 is RoomCreated -> handleRoomCreatedEvent(it.name)
                 is ShowToast -> toast(it.message)
+                is InstantRoomCreated-> handleInstantRoom(it.roomID)
             }
         }.launchIn(viewLifecycleOwner.lifecycleScope)
     }

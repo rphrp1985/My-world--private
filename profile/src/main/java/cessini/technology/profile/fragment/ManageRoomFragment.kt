@@ -89,12 +89,12 @@ internal class ManageRoomFragment :
         }
 
         //socket
-        SocketHandler.setSocket()
-        val mSocket = SocketHandler.getSocket()
+//        SocketHandler.setSocket()
+//        val mSocket = SocketHandler.getSocket()
         val chatUser1 = ChatUserOther("subhrapriyadarshinee").getJSONuser()
 
 
-        mSocket.connect()
+//        mSocket.connect()
 
 
         observeMySpaceFragment()
@@ -111,21 +111,21 @@ internal class ManageRoomFragment :
 //            Log.d(TAG,"get-messages-response ${it[0]}")
 //
 //        }
-        mSocket.on("get-messages-list-response") {
-            Log.d(TAG, "get-messages-list-response ${it[0]}")
-        }
+//        mSocket.on("get-messages-list-response") {
+//            Log.d(TAG, "get-messages-list-response ${it[0]}")
+//        }
 
 
-        mSocket.on("connect") {
-            Log.d(TAG, "connected")
-            mSocket.emit("get-messages-list", chatUser1)
-//            mSocket.emit("get-messages",getMessage(userOne,"subhrapriyadarshinee").getMessages())
-//            runBlocking {
-//                launch {
-//                    mSocket.emit("get-messages",getMessage(userOne,"subhrapriyadarshinee").getMessages())
-//                }
-//            }
-        }
+//        mSocket.on("connect") {
+//            Log.d(TAG, "connected")
+//            mSocket.emit("get-messages-list", chatUser1)
+////            mSocket.emit("get-messages",getMessage(userOne,"subhrapriyadarshinee").getMessages())
+////            runBlocking {
+////                launch {
+////                    mSocket.emit("get-messages",getMessage(userOne,"subhrapriyadarshinee").getMessages())
+////                }
+////            }
+//        }
     }
 
 
@@ -167,32 +167,32 @@ internal class ManageRoomFragment :
 
 
     private fun fetchRooms() {
-        Log.e(TAG, "Inside fetchRooms()")
-        val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
-            Log.e(
-                TAG,
-                "fetchRooms: ${profileRepository.getProfileRooms(userIdentifierPreferences.id)}"
-            )
-            runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
-                .onFailure {
-//                    toast(it.message.orEmpty())
-                }
-                .getOrDefault(emptyList())
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            val rooms = roomsDeffered.await()
-
-            val roomWithRequests =
-                rooms?.map {
-                    async { Pair(it, roomRepository.roomRequests(it.name)) }
-                }?.awaitAll()
-
-            if (roomWithRequests != null) {
-                Log.e("build model room", roomWithRequests.toString())
-                buildModels(roomWithRequests)
-            }
-        }
+//        Log.e(TAG, "Inside fetchRooms()")
+//        val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
+//            Log.e(
+//                TAG,
+//                "fetchRooms: ${profileRepository.getProfileRooms(userIdentifierPreferences.id)}"
+//            )
+//            runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
+//                .onFailure {
+////                    toast(it.message.orEmpty())
+//                }
+//                .getOrDefault(emptyList())
+//        }
+//
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            val rooms = roomsDeffered.await()
+//
+//            val roomWithRequests =
+//                rooms?.map {
+//                    async { Pair(it, roomRepository.roomRequests(it.name)) }
+//                }?.awaitAll()
+//
+//            if (roomWithRequests != null) {
+//                Log.e("build model room", roomWithRequests.toString())
+//                buildModels(roomWithRequests)
+//            }
+//        }
     }
 
     private fun fetchRoomMessages() {

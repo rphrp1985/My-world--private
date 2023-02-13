@@ -15,6 +15,7 @@ import cessini.technology.profile.R2;
         R2.layout.item_chat_me,
         R2.layout.item_chat_other,
         R2.layout.item_chat_header,
+        R2.layout.item_chat_shimmer,
         R2.layout.user_hub})
 interface EpoxyDataBindingConfig {
 }

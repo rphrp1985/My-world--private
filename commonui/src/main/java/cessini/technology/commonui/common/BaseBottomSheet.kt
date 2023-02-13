@@ -111,9 +111,13 @@ abstract class BaseBottomSheet<T : ViewDataBinding>(
         val layoutParams = bottomSheet.layoutParams
         val windowHeight = getWindowHeight()
         if(layoutParams != null) {
-            val height = ((windowHeight * 75) / 2340) + (dp - 75)
-            layoutParams.height =
-                windowHeight - height.toPx().toInt() - 15
+////            val height = ((windowHeight * 75) / 2340) + (dp - 75)
+////            layoutParams.height =
+////                windowHeight - height.toPx().toInt() - 15
+//            val margin = 80
+
+            layoutParams.height = (windowHeight*85)/100
+
         }
         bottomSheet.layoutParams = layoutParams
         behaviour.state = BottomSheetBehavior.STATE_EXPANDED

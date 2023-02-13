@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="sent"
+            type="String" />
+
+
+    </data>
+
+<com.facebook.shimmer.ShimmerFrameLayout
+    android:background="@color/cpWhite"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:shimmer_auto_start="true"
+    app:shimmer_highlight_alpha="1"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/image_gchat_profile_other"
+            android:layout_width="@dimen/dimen_30"
+            android:layout_height="@dimen/dimen_30"
+            android:contentDescription="User Icon"
+            app:srcCompat="@drawable/ic_user_defolt_avator"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_gchat_message_other"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:backgroundTint="@color/cpTransparent"
+            app:cardElevation="@dimen/dimen_0"
+            app:cardPreventCornerOverlap="false"
+            app:cardUseCompatPadding="true"
+            android:elevation="@dimen/dimen_0"
+            android:layout_marginLeft="@dimen/dimen_5"
+            app:layout_constraintBottom_toBottomOf="@+id/image_gchat_profile_other"
+            app:layout_constraintStart_toEndOf="@+id/image_gchat_profile_other"
+            app:layout_constraintTop_toTopOf="@+id/image_gchat_profile_other">
+
+            <TextView
+                android:id="@+id/text_gchat_message_other"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:maxWidth="260dp"
+                android:foreground="@drawable/background_received_message_round"
+                android:paddingHorizontal="@dimen/dimen_15"
+                android:paddingVertical="@dimen/dimen_10"
+                android:textColor="@color/cpTextDark"
+                android:textSize="@dimen/font_size_16" />
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_gchat_message_me"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            app:cardPreventCornerOverlap="false"
+            android:backgroundTint="@color/cpTransparent"
+            app:cardElevation="@dimen/dimen_0"
+            app:cardUseCompatPadding="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/text_gchat_message_me"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:maxWidth="260dp"
+                android:background="@drawable/background_send_message_round"
+                android:paddingHorizontal="@dimen/dimen_15"
+                android:paddingVertical="@dimen/dimen_10"
+                android:textColor="@color/cpTextDark"
+                android:textSize="16sp"
+               />
+
+        </androidx.cardview.widget.CardView>
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.facebook.shimmer.ShimmerFrameLayout>
+</layout>

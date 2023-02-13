@@ -61,6 +61,7 @@ class HubViewModel @Inject constructor(
      var localAudioTrackScreen : AudioTrack? = null
      var mediaStream: MediaStream?= null
     var rname="RoomLive"
+    var user_id="user"
 
 
 

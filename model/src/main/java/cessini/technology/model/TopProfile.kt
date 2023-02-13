@@ -5,5 +5,5 @@ data class TopProfile(
     val name: String,
     val channelName: String,
     val profilePicture: String,
-    val is_following: Boolean?
+//    val is_following: Boolean?
 )

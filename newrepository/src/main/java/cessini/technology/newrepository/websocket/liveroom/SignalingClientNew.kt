@@ -15,6 +15,7 @@ import java.security.NoSuchAlgorithmException
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import java.util.*
+import javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManager

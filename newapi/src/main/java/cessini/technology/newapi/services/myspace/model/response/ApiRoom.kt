@@ -16,17 +16,18 @@ data class ApiRoom(
     val title: String = "",
     val schedule: Long = 0L,
     val private: Boolean = false,
+    val category: List<String> = emptyList(),
     val live: Boolean = false,
     @SerializedName(value = "room_code") val code: String = "",
     val listeners: List<ApiListeners> = emptyList(),
-    val category: List<String> = emptyList()
+
 )
 
 data class ApiListeners(
     @SerializedName(value = "_id") val profileId: String = "",
-    @SerializedName(value = "name") val profileName: String = "",
     @SerializedName(value = "profile_picture") val profilePicture: String = "",
     @SerializedName(value = "channel_name") val profileChannelName: String = "",
+    @SerializedName(value = "name") val profileName: String = ""
 )
 
 data class ApiCreator(

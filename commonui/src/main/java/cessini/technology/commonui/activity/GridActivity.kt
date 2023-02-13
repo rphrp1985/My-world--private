@@ -80,6 +80,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     private lateinit var snackbar: Snackbar
     private lateinit var customSnackView: CommonChatSnackviewBinding
 
+
     @Inject
     lateinit var credentials: BasicAWSCredentials
 
@@ -191,7 +192,18 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         if(hubViewModel.rname=="RoomLive") {
             try {
                 hubViewModel.rname = intent.getStringExtra("Room Name").toString()
+
                 Log.e("room name", hubViewModel.rname)
+
+            } catch (e: Exception) {
+
+            }
+        }
+        if(hubViewModel.user_id=="user"){
+            try {
+                hubViewModel.user_id = intent.getStringExtra("user_id").toString()
+
+                Log.e("user_id", hubViewModel.user_id)
 
             } catch (e: Exception) {
 
@@ -199,6 +211,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         }
 
         chatViewModel.setSocket(hubViewModel.rname)
+        chatViewModel.roomID= hubViewModel.rname
+        chatViewModel.user_id = hubViewModel.user_id
         chatViewModel.listenTo(hubViewModel.rname)
         chatViewModel.messages.observe(this){
             //TODO

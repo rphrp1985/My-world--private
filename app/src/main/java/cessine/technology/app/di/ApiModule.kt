@@ -103,6 +103,7 @@ object ApiModule {
         retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
     ): MySpaceService = retrofit
         .baseUrl(MySpaceConstants.BASE_ENDPOINT)
+        .client(okHttpClient)
         .build()
         .create(MySpaceService::class.java)
 

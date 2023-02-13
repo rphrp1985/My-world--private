@@ -124,6 +124,7 @@
             android:overScrollMode="never"
             android:paddingTop="@dimen/dimen_35"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:reverseLayout="true"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             app:layout_constrainedHeight="true"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout4"
@@ -153,6 +154,9 @@
             tools:text="Hello"
             tools:visibility="visible" />
 
+
+
+
         <TextView
             android:id="@+id/text_gchat_indicator"
             android:layout_width="wrap_content"
@@ -168,6 +172,7 @@
             android:layout_height="wrap_content"
             android:background="@color/cpWhite"
             android:paddingVertical="@dimen/dimen_7"
+            android:fitsSystemWindows="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
