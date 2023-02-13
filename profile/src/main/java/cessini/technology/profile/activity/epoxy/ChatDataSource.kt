@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.paging.DataSource
 import androidx.paging.PageKeyedDataSource
 import cessini.technology.profile.`class`.ResponseJson
+import cessini.technology.profile.`class`.deliveredMessage
 import cessini.technology.profile.`class`.getMessage
 import cessini.technology.profile.fragment.publicProfile.ResponseMessageJson
 import com.google.gson.GsonBuilder
@@ -67,6 +68,10 @@ class ChatDataSource(
 
             callback.onResult(responseJson.messages,responseJson.meta.page+1)
 
+            for(message in responseJson.messages){
+                emitDelivered(message)
+            }
+
             canLoadMore.canLoadMore= responseJson.meta.can_load_more
 
             service.off("previous_messages");
@@ -104,6 +109,11 @@ class ChatDataSource(
     override fun removeInvalidatedCallback(onInvalidatedCallback: InvalidatedCallback) {
 
         super.removeInvalidatedCallback(onInvalidatedCallback)
+    }
+    fun emitDelivered(item:ResponseMessageJson){
+        if(!item.is_delivered){
+            service.emit("delivered", deliveredMessage(listOf(item._id)).getMessages())
+        }
     }
 
 }

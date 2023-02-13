@@ -209,7 +209,7 @@ class PublicProfileRoomMessage : Fragment() {
         }
 
         //Epoxy - Paging
-        val pagedListController = ChatEpoxyController(messageViewModel.idMe,messageViewModel.idOther,messageViewModel.chatMessageState())
+        val pagedListController = ChatEpoxyController(messageViewModel.mSocket,messageViewModel.idMe,messageViewModel.idOther,messageViewModel.chatMessageState())
 //        binding.recyclerGchat.adapter = pagedListController.adapter
 
 
@@ -233,7 +233,7 @@ class PublicProfileRoomMessage : Fragment() {
             val responseJson =
                 gson.fromJson(it[0].toString(), ResponseMessageJson::class.java)
 
-            messageViewModel.datasourceFactory.invalidiate()
+//            messageViewModel.datasourceFactory.invalidiate()
             messageViewModel.compositeDisposable.clear()
 
             messageViewModel.fetchPages({ list ->
@@ -242,16 +242,15 @@ class PublicProfileRoomMessage : Fragment() {
                 Log.d(TAG,"list= $list")
                 pagedListController.submitList(list)
 
-                Handler().postDelayed({
-                    binding.recyclerGchat.scrollToPosition(0)
+                Looper.myLooper()?.let {
+                    Handler().postDelayed({
+                        binding.recyclerGchat.scrollToPosition(0)
 
-                },500)
-
-                if(list.size==0){
-                    showHeader()
-                }else{
-                    binding.recyclerGchat.adapter= pagedListController.adapter
+                    }, 500)
                 }
+                if(binding.recyclerGchat.adapter!= pagedListController.adapter)
+                binding.recyclerGchat.adapter= pagedListController.adapter
+
 
 
         }, { error ->
