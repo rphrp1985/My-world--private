@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 
 @AndroidEntryPoint
 class LanguageFragment : BaseFragment<FragmentLanguageBinding>(R.layout.fragment_language) {
@@ -46,8 +47,9 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(R.layout.fragment
     private fun onClickNext() {
         binding.progressBar.isVisible = true
         val locale = localeChipMap[binding.chipGroup.checkedChipId]
+        val defaultAppLanguage = Locale.getDefault().language
 
-        if (locale != null) {
+        if (locale != null && defaultAppLanguage != locale /*check if user selected language is not the default language*/) {
             AppCompatDelegate.setApplicationLocales(
                 LocaleListCompat.forLanguageTags(locale)
             )
@@ -69,7 +71,7 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(R.layout.fragment
                 requireContext(),
                 getString(R.string.error_on_boarding_submission),
                 Toast.LENGTH_SHORT
-            )
+            ).show()
         } finally {
             binding.progressBar.isGone = true
         }

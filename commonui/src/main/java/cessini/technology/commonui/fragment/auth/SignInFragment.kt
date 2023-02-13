@@ -1,10 +1,6 @@
 package cessini.technology.commonui.fragment.auth
 
 import android.app.Dialog
-import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.util.Log
@@ -46,7 +42,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SignInFragment : BottomSheetDialogFragment() {
     companion object {
-        private const val TAG = "SignInActivity"
+        private const val TAG = "SignInBottomSheet"
         private const val EMAIL = "email"
     }
 
@@ -65,10 +61,7 @@ class SignInFragment : BottomSheetDialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState)
         //setLightNavigationBar(dialog)
         return dialog
-
     }
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -264,9 +257,10 @@ class SignInFragment : BottomSheetDialogFragment() {
 
     override fun onStop() {
         super.onStop()
-        if ((activity as HomeActivity).baseViewModel.googleAuthFlag.value == false &&
-            findNavController().currentDestination?.label.toString().lowercase() != "homefragment"
+        if (/*(activity as HomeActivity).baseViewModel.googleAuthFlag.value == false && */
+            findNavController().currentDestination?.label == "ProfileFragment"
         ) {
+            // if user closes bottom sheet from profile fragment, then go to previous fragment
             findNavController().navigateUp()
         }
     }

@@ -37,7 +37,7 @@
 
                 <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tabLayout"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_marginTop="@dimen/dimen_20"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0"
@@ -49,6 +49,7 @@
                     android:layout_height="@dimen/dimen_30"
                     app:tabIndicatorColor="@color/cpTextDark"
                     app:tabIndicatorHeight="3.6dp"
+                    app:tabIndicatorAnimationMode="elastic"
                     app:tabIndicator="@drawable/tab_indicator"
                     app:tabSelectedTextColor="@color/cpTextDark"
                     app:tabGravity="fill"

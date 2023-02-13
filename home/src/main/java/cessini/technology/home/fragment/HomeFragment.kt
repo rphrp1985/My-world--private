@@ -15,13 +15,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagingData
-import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.PagerSnapHelper
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.common.BaseFragment
-import cessini.technology.commonui.common.BaseViewModel
 import cessini.technology.commonui.common.isInDarkTheme
 import cessini.technology.commonui.utils.ProfileConstants
 import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
@@ -61,33 +57,28 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
     lateinit var fragmentStories: StoriesFragment
 
-    @Inject
-    lateinit var viewsUpdater: VideoViewUpdaterWebSocket
+    @Inject lateinit var viewsUpdater: VideoViewUpdaterWebSocket
 
-    @Inject
-    lateinit var profileRepository: ProfileRepository
+    @Inject lateinit var profileRepository: ProfileRepository
 
 //    lateinit var blurLayout: BlurLayout
 
     private val galleryViewModel by activityViewModels<GalleryViewModel>()
 
-//    lateinit var blurLayout: BlurLayout
-
     companion object {
         private const val TAG = "HomeFragment"
-
     }
 
-    @Inject
-    lateinit var videoRepository: VideoRepository
-    @Inject
-    lateinit var userIdentifierPreferences: UserIdentifierPreferences
-    @Inject
-    lateinit var authPreferences: AuthPreferences
+    @Inject lateinit var videoRepository: VideoRepository
+
+    @Inject lateinit var userIdentifierPreferences: UserIdentifierPreferences
+
+    @Inject lateinit var authPreferences: AuthPreferences
+
+    private var isUserSignedIn = false
 
     private val homeFeedViewModel: HomeFeedViewModel by viewModels()
     private val socketFeedViewModel: SocketFeedViewModel by viewModels()
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -103,11 +94,8 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
         homeFeedViewModel.isUserSignedIn()
         homeFeedViewModel.authFlag.observe(viewLifecycleOwner, Observer { isSignedIn->
-            if (!isSignedIn) {
-                (requireActivity() as ToFlowNavigable).navigateToFlow(
-                    NavigationFlow.AuthFlow
-                )
-            } else {
+            if (isSignedIn) {
+                isUserSignedIn = true
                 homeFeedViewModel.loadUserInfo()
             }
         })
@@ -163,9 +151,23 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
 
-        val controller = HomeEpoxyController(requireContext()) { joinRoomSocketEventPayload ->
-            joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload))
-        }
+        val controller = HomeEpoxyController(
+            context = requireContext(),
+            onJoinClicked = { joinRoomSocketEventPayload ->
+                if (!isUserSignedIn)
+                    showSignInBottomSheet()
+                else {
+                    joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload))
+                }
+            },
+            checkSignInStatus = {
+                if (!isUserSignedIn) {
+                    showSignInBottomSheet()
+                    false
+                }
+                else true
+            },
+        )
         val snapHelper = PagerSnapHelper()
         /*TODO:
            lifecycleScope.launch {
@@ -259,6 +261,12 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
                 Toast.makeText(context, "Join Request Denied: $msg", Toast.LENGTH_LONG).show()
             }
         }, data)
+    }
+
+    private fun showSignInBottomSheet() {
+        (requireActivity() as ToFlowNavigable).navigateToFlow(
+            NavigationFlow.AuthFlow
+        )
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
