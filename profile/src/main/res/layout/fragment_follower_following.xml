@@ -43,6 +43,7 @@
                     android:layout_width="match_parent"
                     android:backgroundTint="@color/cpTransparent"
                     android:singleLine="true"
+                    app:tabGravity="center"
                     app:layout_constraintBottom_toBottomOf="@+id/back_navigation_button_follow_following_profile"
                     app:layout_constraintTop_toTopOf="@+id/back_navigation_button_follow_following_profile"
                     android:layout_height="@dimen/dimen_30"
