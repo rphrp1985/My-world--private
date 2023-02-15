@@ -63,8 +63,7 @@ class HomeActivity : AppCompatActivity(), ToFlowNavigable,
     }
 
     val navController by lazy {
-        supportFragmentManager.findFragmentById(R.id.fragment_container_view)
-            .run { this as NavHostFragment }.navController
+        (supportFragmentManager.findFragmentById(R.id.fragment_container_view) as NavHostFragment).navController
     }
 
     private var _binding: ActivityHomeBinding? = null
@@ -149,12 +148,18 @@ class HomeActivity : AppCompatActivity(), ToFlowNavigable,
             ).toInt()
         }
 
-        /**Getting the Device ID.*/
+        /* Setting custom listener on this icon,
+         since on clicking it, the original navGraph is reset */
+        createIconView.setOnClickListener {
+            navigateToFlow(NavigationFlow.CameraFlow)
+        }
+
+        /*Getting Device ID.*/
         val deviceId =
             Settings.Secure.getString(application.contentResolver, Settings.Secure.ANDROID_ID)
                 .toString()
         baseViewModel.setDeviceId(deviceId)
-        Log.d(TAG, "Device Id: ${deviceId}")
+        Log.d(TAG, "Device Id: $deviceId")
 
         baseViewModel.id.observe(this) {
             Log.d(TAG, "user id: ${baseViewModel.id}")
@@ -355,6 +360,8 @@ class HomeActivity : AppCompatActivity(), ToFlowNavigable,
         // These updates rely on current nav destination
         updateBottomNavBarVisibility()
         updateStatusBarAppearance()
+
+        Log.d(TAG, "Destination change: ${destination.label}")
     }
 
     /**
