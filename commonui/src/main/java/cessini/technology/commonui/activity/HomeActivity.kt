@@ -91,9 +91,9 @@ class HomeActivity : AppCompatActivity(), ToFlowNavigable,
         .build()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        installSplashScreen()
 
         _binding = DataBindingUtil.setContentView(this, R.layout.activity_home)
 

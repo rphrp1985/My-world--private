@@ -16,6 +16,7 @@ import cessini.technology.commonui.common.BaseFragment
 import cessini.technology.commonui.databinding.FragmentLanguageBinding
 import cessini.technology.commonui.viewmodel.suggestionViewModel.LanguageSelectionFragmentViewModel
 import cessini.technology.navigation.MainNavGraphDirections
+import com.google.android.material.transition.MaterialSharedAxis
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -37,6 +38,15 @@ class LanguageFragment : BaseFragment<FragmentLanguageBinding>(R.layout.fragment
         R.id.english_language to "en",
         R.id.hindi_language to "hi",
     )
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+        exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
