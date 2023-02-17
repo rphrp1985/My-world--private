@@ -45,7 +45,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
                         credentialsProvider = AmazonModule
                         region = "ap-south-1"
                     }.createPlatformEndpoint {
-                        platformApplicationArn = "arn:aws:sns:ap-south-1:212833881096:app/GCM/Myworld"
+                        platformApplicationArn = "arn:aws:sns:ap-south-1:523652883143:app/GCM/MyWorld"
                         token = devtoken
                     }.endpointArn.toString()
 
