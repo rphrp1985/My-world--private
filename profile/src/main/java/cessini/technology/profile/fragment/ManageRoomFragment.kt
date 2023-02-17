@@ -95,7 +95,7 @@ internal class ManageRoomFragment :
 //socket
 //        SocketHandler.setSocket()
 //        val mSocket = SocketHandler.getSocket()
-        val chatUser1 = ChatUserOther("subhrapriyadarshinee").getJSONuser()
+//        val chatUser1 = ChatUserOther("subhrapriyadarshinee").getJSONuser()
 
 
 //        mSocket.connect()
@@ -106,8 +106,8 @@ internal class ManageRoomFragment :
 
 
 
-        runCatching { fetchRooms() }
-        runCatching { fetchRoomMessages() }
+//        runCatching { fetchRooms() }
+//        runCatching { fetchRoomMessages() }
 
 
 // mSocket.on("get-messages-response"){
@@ -161,20 +161,20 @@ internal class ManageRoomFragment :
     private fun manageRoomDetails(){
         binding.viewPager2.visibility = View.VISIBLE
         binding.viewPager2.isSaveEnabled = false
-        binding.viewPager2.adapter = ManageRoomAdapter(this.childFragmentManager, lifecycle)
-        TabLayoutMediator(tabLayout!!, binding.viewPager2) { tab, position ->
-            when (position) {
-                0 -> {
-                    tab.text = "Rooms"
-                }
-                1 -> {
-                    tab.text = "Requests"
-                }
-                2 -> {
-                    tab.text = "Create Room Request"
-                }
-            }
-        }.attach()
+//        binding.viewPager2.adapter = ManageRoomAdapter(this.childFragmentManager, lifecycle)
+//        TabLayoutMediator(tabLayout!!, binding.viewPager2) { tab, position ->
+//            when (position) {
+//                0 -> {
+//                    tab.text = "Rooms"
+//                }
+//                1 -> {
+//                    tab.text = "Requests"
+//                }
+//                2 -> {
+//                    tab.text = "Create Room Request"
+//                }
+//            }
+//        }.attach()
     }
 
     private fun observeMySpaceFragment() {
@@ -190,32 +190,32 @@ internal class ManageRoomFragment :
 
 
     private fun fetchRooms() {
-        Log.e(TAG, "Inside fetchRooms()")
-        val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
-            Log.e(
-                TAG,
-                "fetchRooms: ${profileRepository.getProfileRooms(userIdentifierPreferences.id)}"
-            )
-            runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
-                .onFailure {
-// toast(it.message.orEmpty())
-                }
-                .getOrDefault(emptyList())
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            val rooms = roomsDeffered.await()
-
-            val roomWithRequests =
-                rooms?.map {
-                    async { Pair(it, roomRepository.roomRequests(it.name)) }
-                }?.awaitAll()
-
-            if (roomWithRequests != null) {
-                Log.e("build model room", roomWithRequests.toString())
-                buildModels(roomWithRequests)
-            }
-        }
+//        Log.e(TAG, "Inside fetchRooms()")
+//        val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
+//            Log.e(
+//                TAG,
+//                "fetchRooms: ${profileRepository.getProfileRooms(userIdentifierPreferences.id)}"
+//            )
+//            runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
+//                .onFailure {
+//// toast(it.message.orEmpty())
+//                }
+//                .getOrDefault(emptyList())
+//        }
+//
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            val rooms = roomsDeffered.await()
+//
+//            val roomWithRequests =
+//                rooms?.map {
+//                    async { Pair(it, roomRepository.roomRequests(it.name)) }
+//                }?.awaitAll()
+//
+//            if (roomWithRequests != null) {
+//                Log.e("build model room", roomWithRequests.toString())
+//                buildModels(roomWithRequests)
+//            }
+//        }
     }
 
     private fun fetchRoomMessages() {
@@ -322,12 +322,12 @@ internal class ManageRoomFragment :
 // }
 
     private fun addOrRemoveUser(roomName: String, id: String) {
-        val acceptedUsers = acceptedRequets[roomName].orEmpty().toMutableList()
-            .apply { if (contains(id)) remove(id) else add(id) }
+//        val acceptedUsers = acceptedRequets[roomName].orEmpty().toMutableList()
+//            .apply { if (contains(id)) remove(id) else add(id) }
 
-        acceptedRequets[roomName] = acceptedUsers
+//        acceptedRequets[roomName] = acceptedUsers
 
-        runCatching { fetchRooms() }
+//        runCatching { fetchRooms() }
     }
 
     private fun buildRequestModels(roomWithRequests: List<Pair<Room, List<RequestProfile>>>) {
@@ -372,12 +372,12 @@ internal class ManageRoomFragment :
 
                 viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
-                        roomRepository.acceptRoomRequests(
-                            roomCode,
-                            acceptedRequets[roomName].orEmpty()
-                        )
+//                        roomRepository.acceptRoomRequests(
+//                            roomCode,
+//                            acceptedRequets[roomName].orEmpty()
+//                        )
                     }.onSuccess {
-                        acceptedRequets[roomName] = mutableListOf()
+//                        acceptedRequets[roomName] = mutableListOf()
 
                         runCatching { fetchRooms() }
 

@@ -79,7 +79,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         (activity as HomeActivity).setUpNavProfileIcon(null, (activity as HomeActivity).profileDrawable, true)
 
         //setting up the viewPager and the TabLayout
-        binding.viewPager2.isSaveEnabled = false
+//        binding.viewPager2.isSaveEnabled = false
         tabLayout = binding.profileTab
 
         setUpToolbar()
@@ -154,11 +154,40 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         }
 
         binding.motionLayout.setTransitionListener(this)
+
+        binding.viewPager2.adapter = PrivateProfileTabAdapter(this.childFragmentManager, lifecycle)
+        binding.viewPager2.isSaveEnabled = true
+//        Log.d(TAG,"value = ${profileViewModel.profileLoadProgress.value}")
+        profileViewModel.profileLoadProgress.observe(viewLifecycleOwner) {
+
+            when (it) {
+                0 -> {
+                    binding.viewPager2.visibility = View.GONE
+                    Log.d(TAG, it.toString())
+                }
+                100 -> {
+                    hideShimmer()
+                    binding.viewPager2.visibility = View.VISIBLE
+                    Log.d(TAG, it.toString())
+                    profileDetails()
+                }
+                else -> {
+                    hideShimmer()
+                    binding.viewPager2.visibility = View.VISIBLE
+//                    Toast.makeText(activity, "Profile Load Failed", Toast.LENGTH_SHORT).show()
+                    Log.d(TAG, it.toString())
+                }
+            }
+        }
+
+
+
     }
 
     private fun fetchHasMessages() {
         if(!profileViewModel.isHasMessagesCalled) {
             profileViewModel.isHasMessagesCalled= true
+
             lifecycleScope.launch {
                 kotlin.runCatching { profileViewModel.getMessageForRoom() }
                     .onSuccess {
@@ -199,30 +228,9 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
             findNavController().navigate(ProfileFragmentDirections.toManageRoom(homeActivity.baseViewModel.id.value.orEmpty()))
         }
 
-        profileViewModel.profileLoadProgress.observe(viewLifecycleOwner) {
-
-            when (it) {
-                0 -> {
-                    binding.viewPager2.visibility = View.GONE
-                    Log.d(TAG, it.toString())
-                }
-                100 -> {
-                    hideShimmer()
-                    binding.viewPager2.visibility = View.VISIBLE
-                    Log.d(TAG, it.toString())
-                    profileDetails()
-                }
-                else -> {
-                    hideShimmer()
-                    binding.viewPager2.visibility = View.VISIBLE
-//                    Toast.makeText(activity, "Profile Load Failed", Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, it.toString())
-                }
-            }
-        }
 
         /** resetting view model values in edit profile */
-        editUserProfileViewModel.resetEditProfileData()
+//        editUserProfileViewModel.resetEditProfileData()
 
         if(binding.motionLayout.currentState == R.id.end) {
             binding.swipeRefreshLayout.isEnabled = false
@@ -231,8 +239,6 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
     private fun profileDetails() {
         //Setting up the ViewPager Adapter and The TabLayout
-        binding.viewPager2.isSaveEnabled = false
-        binding.viewPager2.adapter = PrivateProfileTabAdapter(this.childFragmentManager, lifecycle)
         TabLayoutMediator(tabLayout!!, binding.viewPager2) { tab, position ->
             when (position) {
                 0 -> {

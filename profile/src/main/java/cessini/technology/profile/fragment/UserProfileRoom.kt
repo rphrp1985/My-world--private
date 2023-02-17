@@ -172,7 +172,7 @@ class UserProfileRoom() : Fragment() {
 
     private fun hideShimmer() {
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(2000)
+//            delay(2000)
             binding.profileRoomShimmer.visibility = View.GONE
             binding.storyProfileFragmentRecyclerView.visibility = View.VISIBLE
             binding.profileStoryText.visibility = View.GONE
@@ -183,7 +183,7 @@ class UserProfileRoom() : Fragment() {
 
     private fun noData() {
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(2000)
+//            delay(2000)
             binding.profileRoomShimmer.visibility = View.GONE
             binding.storyProfileFragmentRecyclerView.visibility=View.GONE
             binding.noStoryLabel.visibility = View.VISIBLE

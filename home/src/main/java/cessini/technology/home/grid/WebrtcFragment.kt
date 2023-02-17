@@ -154,7 +154,7 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
         mediaStream.addTrack(videoTrack)
 //        recyclerDataArrayList.add(data("user",0,videoTrack,false,eglBaseContext,null))
 //        setupepoxy()
-        cessini.technology.commonui.activity.live.SignalingClient.get()?.init(this, rname)
+//        cessini.technology.commonui.activity.live.SignalingClient.get()?.init(this, rname)
 
 //        if(recyclerDataArrayList.size==0)
 //        {

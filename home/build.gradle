@@ -116,10 +116,21 @@ dependencies {
     implementation "com.airbnb.android:epoxy:$epoxyVersion"
     implementation "com.airbnb.android:epoxy-paging:$epoxyVersion"
     implementation "com.airbnb.android:epoxy-paging3:$epoxyVersion"
+    implementation "androidx.paging:paging-rxjava2:2.1.0"
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.0'
+//    implementation 'com.airbnb.android:epoxy-paging:3.6.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+
+
+
+//    implementation "com.android.support:cardview-v7:27.1.1"
 
     // Paging
     def paging_version = "3.0.0"
     implementation "androidx.paging:paging-runtime-ktx:$paging_version"
+
+
+
 
 }
 repositories {

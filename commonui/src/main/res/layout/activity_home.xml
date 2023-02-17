@@ -10,6 +10,15 @@
         android:orientation="vertical"
         tools:context=".activity.HomeActivity">
 
+<!--        <FrameLayout-->
+<!--            android:id="@+id/frameLayout_top_slide_down"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="80dp"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:layout_constraintRight_toRightOf="parent"-->
+
+<!--            />-->
+
         <FrameLayout
             android:id="@+id/noInternetView"
             android:layout_width="match_parent"

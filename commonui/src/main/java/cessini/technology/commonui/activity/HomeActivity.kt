@@ -405,6 +405,15 @@ class HomeActivity : AppCompatActivity(), ToFlowNavigable,
         }
     }
 
+//    fun showRoomSlideDownNotification(){
+//        val dialogFragment = SlideDownDialogFragment2()
+//        supportFragmentManager.beginTransaction()
+//            .replace(R.id.frameLayout_top_slide_down,
+//            dialogFragment, "Home_Fragment")
+//            .commit()
+//
+//    }
+
     /**
      * Sets visibility of bottom navigation bar based on the value of [R.string.nav_arg_hide_bottom_nav]
      * argument in the current destination

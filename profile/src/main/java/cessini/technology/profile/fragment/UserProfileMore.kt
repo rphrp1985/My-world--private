@@ -109,7 +109,7 @@ class UserProfileMore : Fragment() {
 
     private fun hideShimmer() {
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(2000)
+//            delay(2000)
             binding.profileSaveShimmer.visibility = View.GONE
             binding.saveProfileFragmentRecyclerView.visibility = View.VISIBLE
             binding.profileSaveText.visibility = View.GONE
@@ -120,7 +120,7 @@ class UserProfileMore : Fragment() {
 
     private fun noData() {
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(2000)
+//            delay(2000)
             binding.profileSaveShimmer.visibility = View.GONE
             binding.noSaveLabel.visibility = View.VISIBLE
             binding.profileSaveText.visibility = View.VISIBLE
