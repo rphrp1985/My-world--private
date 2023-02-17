@@ -75,6 +75,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         super.onViewCreated(view, savedInstanceState)
 
         Log.d(TAG, "onViewCreated: ")
+        ProfileConstants.public = false
+
 
         (activity as HomeActivity).setUpNavProfileIcon(null, (activity as HomeActivity).profileDrawable, true)
 
@@ -154,32 +156,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         }
 
         binding.motionLayout.setTransitionListener(this)
-
         binding.viewPager2.adapter = PrivateProfileTabAdapter(this.childFragmentManager, lifecycle)
-        binding.viewPager2.isSaveEnabled = true
-//        Log.d(TAG,"value = ${profileViewModel.profileLoadProgress.value}")
-        profileViewModel.profileLoadProgress.observe(viewLifecycleOwner) {
-
-            when (it) {
-                0 -> {
-                    binding.viewPager2.visibility = View.GONE
-                    Log.d(TAG, it.toString())
-                }
-                100 -> {
-                    hideShimmer()
-                    binding.viewPager2.visibility = View.VISIBLE
-                    Log.d(TAG, it.toString())
-                    profileDetails()
-                }
-                else -> {
-                    hideShimmer()
-                    binding.viewPager2.visibility = View.VISIBLE
-//                    Toast.makeText(activity, "Profile Load Failed", Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, it.toString())
-                }
-            }
-        }
-
 
 
     }
@@ -216,6 +193,31 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
             requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(binding.root.windowToken, 0)
 
+
+//        Log.d(TAG,"value = ${profileViewModel.profileLoadProgress.value}")
+        profileViewModel.profileLoadProgress.observe(viewLifecycleOwner) {
+
+            when (it) {
+                0 -> {
+                    binding.viewPager2.visibility = View.GONE
+                    Log.d(TAG, it.toString())
+                }
+                100 -> {
+                    hideShimmer()
+                    binding.viewPager2.visibility = View.VISIBLE
+                    Log.d(TAG, it.toString())
+                    profileDetails()
+                }
+                else -> {
+                    hideShimmer()
+                    binding.viewPager2.visibility = View.VISIBLE
+//                    Toast.makeText(activity, "Profile Load Failed", Toast.LENGTH_SHORT).show()
+                    Log.d(TAG, it.toString())
+                }
+            }
+        }
+
+
         binding.addStoryProfileFragment.setOnClickListener {
             val homeActivity = run { requireActivity() as HomeActivity }
 
@@ -230,7 +232,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
 
         /** resetting view model values in edit profile */
-//        editUserProfileViewModel.resetEditProfileData()
+        editUserProfileViewModel.resetEditProfileData()
 
         if(binding.motionLayout.currentState == R.id.end) {
             binding.swipeRefreshLayout.isEnabled = false
@@ -239,6 +241,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
     private fun profileDetails() {
         //Setting up the ViewPager Adapter and The TabLayout
+        binding.viewPager2.isSaveEnabled =false
         TabLayoutMediator(tabLayout!!, binding.viewPager2) { tab, position ->
             when (position) {
                 0 -> {

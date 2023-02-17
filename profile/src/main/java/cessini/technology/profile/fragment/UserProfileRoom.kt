@@ -79,18 +79,22 @@ class UserProfileRoom() : Fragment() {
 
         viewModel.rooms.observe(viewLifecycleOwner) {
             Log.e(TAG, "${viewModel.rooms.value}")
-            if (!it.isNullOrEmpty()) {
-                Log.e(TAG, "${it}")
-                controller!!.allRoom = mutableListOf()
-                controller!!.allRoom = it.toMutableList()
-                controller!!.roomFilterList = mutableListOf<Room>() as ArrayList<Room>
-                controller!!.roomFilterList = it as ArrayList<Room>
-                hideShimmer()
 
-            } else {
-                Log.e(TAG, "No Stories Found. None Are available")
-                noData()
 
+            if(it!=null){
+                if (!it.isNullOrEmpty()) {
+                    Log.e(TAG, "${it}")
+                    controller!!.allRoom = mutableListOf()
+                    controller!!.allRoom = it.toMutableList()
+                    controller!!.roomFilterList = mutableListOf<Room>() as ArrayList<Room>
+                    controller!!.roomFilterList = it as ArrayList<Room>
+                    hideShimmer()
+
+                } else {
+                    Log.e(TAG, "No Stories Found. None Are available")
+                    noData()
+
+                }
             }
             //hideShimmer()
         }
