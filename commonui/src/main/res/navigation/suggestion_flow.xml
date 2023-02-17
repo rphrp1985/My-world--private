@@ -22,11 +22,7 @@
 
         <action
             android:id="@+id/action_introduction_to_category_selection"
-            app:destination="@id/category_selection"
-            app:enterAnim="@anim/slide_in_from_right"
-            app:exitAnim="@anim/slide_out_to_left"
-            app:popEnterAnim="@anim/slide_in_from_left"
-            app:popExitAnim="@anim/slide_out_to_right" />
+            app:destination="@id/category_selection"/>
     </fragment>
 
     <fragment
@@ -40,11 +36,7 @@
 
         <action
             android:id="@+id/action_category_selection_to_language_selection"
-            app:destination="@id/language_selection"
-            app:enterAnim="@anim/slide_in_from_right"
-            app:exitAnim="@anim/slide_out_to_left"
-            app:popEnterAnim="@anim/slide_in_from_left"
-            app:popExitAnim="@anim/slide_out_to_right"/>
+            app:destination="@id/language_selection" />
     </fragment>
 
     <fragment

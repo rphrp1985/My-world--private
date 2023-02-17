@@ -17,12 +17,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
 
-class CameraOptionBottomSheetFragment
-    :
+class CameraOptionBottomSheetFragment :
     BaseBottomSheet<FragmentCameraOptionBottomSheetBinding>(R.layout.fragment_camera_option_bottom_sheet),
     BottomSheetLevelInterface {
-    var count = 0
 
+    var count = 0
 
     private val viewModel: GalleryViewModel by activityViewModels()
     private val createRoomViewModel : CreateRoomSharedViewModel by activityViewModels()
@@ -55,7 +54,7 @@ class CameraOptionBottomSheetFragment
         binding.constraintLayout3.progress = 0f
 
         createRoomViewModel.bottomSheetDraggedState.observe(viewLifecycleOwner) { state->
-            val shiftedState = (1+state)/2f;
+            val shiftedState = (1+state)/2f
             setMotionLevel(-shiftedState)
 
         }

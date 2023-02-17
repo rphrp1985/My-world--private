@@ -1,18 +1,12 @@
 package cessini.technology.home.fragment
 
-import android.animation.AnimatorInflater
-import android.animation.AnimatorSet
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.*
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -30,9 +24,6 @@ import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
 import cessini.technology.home.R
 import cessini.technology.home.controller.HomeEpoxyController
 import cessini.technology.home.databinding.NewHomeFragmentBinding
-import cessini.technology.home.fragment.dialogs.RoomJoinRequestFragment
-import cessini.technology.home.fragment.dialogs.RoomWaitingFragment
-//import cessini.technology.home.fragment.dialogs.SlideDownDialogFragment
 import cessini.technology.home.model.HomeEpoxyStreamsModel
 import cessini.technology.home.model.JoinRoomSocketEventPayload
 import cessini.technology.home.model.User
@@ -54,6 +45,11 @@ import org.json.JSONObject
 import javax.inject.Inject
 
 
+/**
+ * A simple [Fragment] subclass.
+ * Use the [HomeFragment.newInstance] factory method to
+ * create an instance of this fragment.
+ */
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_fragment),
     LifecycleObserver,
@@ -61,36 +57,28 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
     lateinit var fragmentStories: StoriesFragment
 
-    @Inject
-    lateinit var viewsUpdater: VideoViewUpdaterWebSocket
+    @Inject lateinit var viewsUpdater: VideoViewUpdaterWebSocket
 
-    @Inject
-    lateinit var profileRepository: ProfileRepository
+    @Inject lateinit var profileRepository: ProfileRepository
 
 //    lateinit var blurLayout: BlurLayout
 
     private val galleryViewModel by activityViewModels<GalleryViewModel>()
 
-//    lateinit var blurLayout: BlurLayout
-
     companion object {
         private const val TAG = "HomeFragment"
-
     }
 
-    @Inject
-    lateinit var videoRepository: VideoRepository
-    @Inject
-    lateinit var userIdentifierPreferences: UserIdentifierPreferences
-    @Inject
-    lateinit var authPreferences: AuthPreferences
+    @Inject lateinit var videoRepository: VideoRepository
 
-    val dialogFragment = RoomWaitingFragment()
-    val roomJoinRequest= RoomJoinRequestFragment()
+    @Inject lateinit var userIdentifierPreferences: UserIdentifierPreferences
+
+    @Inject lateinit var authPreferences: AuthPreferences
+
+    private var isUserSignedIn = false
 
     private val homeFeedViewModel: HomeFeedViewModel by viewModels()
     private val socketFeedViewModel: SocketFeedViewModel by viewModels()
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -106,19 +94,12 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
         homeFeedViewModel.isUserSignedIn()
         homeFeedViewModel.authFlag.observe(viewLifecycleOwner, Observer { isSignedIn->
-            if (!isSignedIn) {
-                (requireActivity() as ToFlowNavigable).navigateToFlow(
-                    NavigationFlow.AuthFlow
-                )
-            } else {
+            if (isSignedIn) {
+                isUserSignedIn = true
                 homeFeedViewModel.loadUserInfo()
             }
         })
 
-        // slude down popup
-
-//        roomJoinRequest.show(childFragmentManager, "SlideDownDialogFragment");
-//        (activity as HomeActivity).showRoomSlideDownNotification()
 
         //blurview
         // blurLayout = binding.blurLayout
@@ -170,9 +151,23 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
 
-        val controller = HomeEpoxyController(requireContext()) { joinRoomSocketEventPayload ->
-            joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload))
-        }
+        val controller = HomeEpoxyController(
+            context = requireContext(),
+            onJoinClicked = { joinRoomSocketEventPayload ->
+                if (!isUserSignedIn)
+                    showSignInBottomSheet()
+                else {
+                    joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload))
+                }
+            },
+            checkSignInStatus = {
+                if (!isUserSignedIn) {
+                    showSignInBottomSheet()
+                    false
+                }
+                else true
+            },
+        )
         val snapHelper = PagerSnapHelper()
         /*TODO:
            lifecycleScope.launch {
@@ -230,21 +225,6 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         }
 
         systemBarInsetsEnabled = false
-        setSlideDownNotification()
-
-        Looper.myLooper()?.let {
-            Handler().postDelayed({
-                setJoinRequestWaiting("room -1")
-            },5000)
-            Handler().postDelayed({
-                setJoinRequestApproved("room -1")
-            },7000)
-            Handler().postDelayed({
-                setJoinRequestDenied("room -1")
-            },9000)
-        }
-
-
 
 //        setUpNavIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_homeactive))
     }
@@ -281,6 +261,12 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
                 Toast.makeText(context, "Join Request Denied: $msg", Toast.LENGTH_LONG).show()
             }
         }, data)
+    }
+
+    private fun showSignInBottomSheet() {
+        (requireActivity() as ToFlowNavigable).navigateToFlow(
+            NavigationFlow.AuthFlow
+        )
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -431,39 +417,4 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         super.onStop()
 //        blurLayout.pauseBlur()
     }
-
-    fun setSlideDownNotification(){
-//        childFragmentManager.beginTransaction().replace(R.id.frame_layout,dialogFragment, "Slide down").commit()
-//        childFragmentManager.beginTransaction().replace(R.id.frame_layout2,roomJoinRequest, "join request").commit()
-
-    }
-
-    fun setJoinRequestWaiting(roomName:String){
-
-//        binding.frameLayout.visibility= View.VISIBLE
-
-//        val animation: Animation =
-//            AnimationUtils.loadAnimation(requireContext(), R.anim.slide_down_animation)
-//        animation.duration=1000
-//        binding.frameLayout.startAnimation(animation)
-
-//        dialogFragment.setshowanimation()
-//        dialogFragment.setWaiting(roomName)
-    }
-
-    fun setJoinRequestApproved(roomName: String){
-//      dialogFragment.setApproved(roomName)
-    }
-
-    fun setJoinRequestDenied(roomName: String){
-//        dialogFragment.setDenied(roomName)
-    }
-
-    fun hideJoinRequest(){
-//        val animatorSet = AnimatorInflater.loadAnimator(requireContext(), R.anim.slide_out_animation) as AnimatorSet
-//        animatorSet.setTarget(binding.frameLayout)
-//        animatorSet.start()
-    }
-
-
 }
