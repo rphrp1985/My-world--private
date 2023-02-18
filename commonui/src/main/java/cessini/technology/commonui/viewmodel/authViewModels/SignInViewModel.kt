@@ -1,7 +1,6 @@
 package cessini.technology.commonui.viewmodel.authViewModels
 
 
-import android.content.ContentValues
 import android.util.Log
 import androidx.lifecycle.*
 import cessini.technology.cvo.entity.AuthEntity
@@ -11,9 +10,7 @@ import cessini.technology.newrepository.explore.RegistrationRepository
 import com.facebook.AccessToken
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
@@ -35,20 +32,19 @@ class SignInViewModel @Inject constructor(
 
     private val _signInProgress = MutableLiveData(0)
     val signInProgress: LiveData<Int> get() = _signInProgress
-    var tokenS=""
-    fun token(){
+    private var getToken=""
+    fun getToken(): String {
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
-                Log.w(ContentValues.TAG, "Fetching FCM registration token failed", task.exception)
+                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
                 return@OnCompleteListener
             }
 
             // Get new FCM registration token
             val token = task.result
-            tokenS=token
-            Log.e("DNYAN",tokenS)
-            // Log and toast
+            getToken=token
         })
+        return getToken
     }
 
     fun signIn(
@@ -81,7 +77,7 @@ class SignInViewModel @Inject constructor(
                 )
 
                 onSuccess(authEntity, profile)
-                token()
+                getToken()
 
             } catch (e: Exception) {
                 Log.d(TAG, "Sign in failure, clearing half baked data")
@@ -135,7 +131,8 @@ class SignInViewModel @Inject constructor(
                 Log.d("DB", "Auth Inserted in DB $it")
                 _signInProgress.value = 100
                 callback(it.channelName)
-                fireB(tokenS,it.id)
+                val userId=it.id
+                updateFirebaseData(getToken,userId)
             }
 
             result.onFailure {
@@ -144,35 +141,48 @@ class SignInViewModel @Inject constructor(
             }
         }
     }
-    fun fireB(token: String,userId:String){
+    fun updateFirebaseData(token: String,userId:String){
         val collectionRef = Firebase.firestore.collection("deviceArn")
-        val docRef = collectionRef.document(token)
-        val data = hashMapOf("userId" to userId)
+        val oldDocRef = collectionRef.document(token)
 
-        docRef.update(data as Map<String, Any>)
+        // Check whether document id exits or not. If not exits then return null
+        oldDocRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful){
+                val document=task.result
+                if (document.exists()){
+                    Log.e(TAG,"Document id token exits")
+                }
+                else{
+                    Log.e(TAG,"Document id token exits")
+                    return@addOnCompleteListener
+                }
+            }
+            else{
+                Log.e(TAG,"Failed to retrieve document")
+            }
+        }
+
+        // Updating userId field value
+        val data = hashMapOf("userId" to userId)
+        oldDocRef.update(data as Map<String, Any>)
             .addOnSuccessListener {
-                Log.d(TAG, "Document name updated successfully")
+                Log.d(TAG, "userId attribute updated successfully")
             }
             .addOnFailureListener { e ->
-                Log.w(TAG, "Error updating document name", e)
+                Log.w(TAG, "Error updating userId", e)
             }
 
         val newDocRef=Firebase.firestore.collection("deviceArn").document(userId)
+        createNewDocument(oldDocRef,newDocRef)
 
-
-        move(docRef,newDocRef)
-
-
-
-        Log.e("FIRE_SANJAY","SAIIII")
     }
-    fun move(oldDoc:DocumentReference,newDoc:DocumentReference){
-        oldDoc.get().addOnSuccessListener { documentSnapshot ->
+    fun createNewDocument(oldDocRef:DocumentReference,newDocRef:DocumentReference){
+        oldDocRef.get().addOnSuccessListener { documentSnapshot ->
             if (documentSnapshot!=null){
                 val data=documentSnapshot.data
                 if (data != null) {
-                    newDoc.set(data).addOnSuccessListener {
-                        oldDoc.delete()
+                    newDocRef.set(data).addOnSuccessListener {
+                        oldDocRef.delete()
                     }
                 }
             }
