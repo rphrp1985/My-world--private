@@ -63,7 +63,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
     }
 
     fun addToFirebase(userArn: UserArn) {
-        Firebase.firestore.collection("deviceArn").document("${userArn.userId}").set(userArn)
+        Firebase.firestore.collection("deviceArn").document("${userArn.devtoken}").set(userArn)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     Log.d(TAG, "Device added to Firestore ${it.result}")

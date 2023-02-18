@@ -1,17 +1,22 @@
 package cessini.technology.commonui.viewmodel.authViewModels
 
 
+import android.content.ContentValues
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import cessini.technology.cvo.entity.AuthEntity
 import cessini.technology.newapi.services.myworld.model.response.ApiProfile
 import cessini.technology.newrepository.authRepository.AuthRepository
 import cessini.technology.newrepository.explore.RegistrationRepository
 import com.facebook.AccessToken
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,7 +35,21 @@ class SignInViewModel @Inject constructor(
 
     private val _signInProgress = MutableLiveData(0)
     val signInProgress: LiveData<Int> get() = _signInProgress
+    var tokenS=""
+    fun token(){
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(ContentValues.TAG, "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
 
+            // Get new FCM registration token
+            val token = task.result
+            tokenS=token
+            Log.e("DNYAN",tokenS)
+            // Log and toast
+        })
+    }
 
     fun signIn(
         account: GoogleSignInAccount,
@@ -62,6 +81,7 @@ class SignInViewModel @Inject constructor(
                 )
 
                 onSuccess(authEntity, profile)
+                token()
 
             } catch (e: Exception) {
                 Log.d(TAG, "Sign in failure, clearing half baked data")
@@ -115,6 +135,7 @@ class SignInViewModel @Inject constructor(
                 Log.d("DB", "Auth Inserted in DB $it")
                 _signInProgress.value = 100
                 callback(it.channelName)
+                fireB(tokenS,it.id)
             }
 
             result.onFailure {
@@ -123,6 +144,43 @@ class SignInViewModel @Inject constructor(
             }
         }
     }
+    fun fireB(token: String,userId:String){
+        val collectionRef = Firebase.firestore.collection("deviceArn")
+        val docRef = collectionRef.document(token)
+        val data = hashMapOf("userId" to userId)
+
+        docRef.update(data as Map<String, Any>)
+            .addOnSuccessListener {
+                Log.d(TAG, "Document name updated successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error updating document name", e)
+            }
+
+        val newDocRef=Firebase.firestore.collection("deviceArn").document(userId)
+
+
+        move(docRef,newDocRef)
+
+
+
+        Log.e("FIRE_SANJAY","SAIIII")
+    }
+    fun move(oldDoc:DocumentReference,newDoc:DocumentReference){
+        oldDoc.get().addOnSuccessListener { documentSnapshot ->
+            if (documentSnapshot!=null){
+                val data=documentSnapshot.data
+                if (data != null) {
+                    newDoc.set(data).addOnSuccessListener {
+                        oldDoc.delete()
+                    }
+                }
+            }
+        }
+    }
+
+
+
 
 
 }
