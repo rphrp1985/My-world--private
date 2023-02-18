@@ -13,6 +13,7 @@ import cessini.technology.newrepository.myspace.RoomRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import org.webrtc.EglBase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,15 +56,38 @@ class CreateRoomSharedViewModel @Inject constructor(
                     title = roomTitle.value!!,
                     time = time.value!!,
                     private = false,
-                    users = emptyList(),
+
 //                    categories = selectedRoomCategories.toList()
-                    categories = categorySet.toList(),
+
                 )
             },
             onSuccess = { RoomCreated(name = it).send() },
             onFailure = { Failed(it.message.orEmpty()).send() },
         )
     }
+    fun createInstantRoom() {
+        validate(reason = "Enter Title!", { return }) { roomTitle.value != null && roomTitle.value!!.isNotBlank() && roomTitle.value!!.isNotEmpty()}
+        validate(reason = "Choose Time!", { return }) { time.value != null }
+        validate(reason = "Choose Topic of Hub!", { return }) { !categorySet.isNullOrEmpty() }
+        validate(reason = "Log in to Create Hub", { return }) { userIdentifierPreferences.loggedIn }
+
+        return request(
+            _requestInProgress,
+            block = {
+                roomRepository.createRoom(
+                    title = roomTitle.value!!,
+                    time = time.value!!,
+                    private = false,
+
+//                    categories = selectedRoomCategories.toList()
+
+                )
+            },
+            onSuccess = { Event.InstantRoomCreated(roomID = it).send() },
+            onFailure = { Failed(it.message.orEmpty()).send() },
+        )
+    }
+
 
     private inline fun validate(
         reason: String,
@@ -88,6 +112,7 @@ class CreateRoomSharedViewModel @Inject constructor(
 
     sealed class Event {
         class RoomCreated(val name: String) : Event()
+        class InstantRoomCreated(val roomID:String):Event()
         class Failed(val reason: String) : Event()
         class ShowToast(val message: String) : Event()
     }

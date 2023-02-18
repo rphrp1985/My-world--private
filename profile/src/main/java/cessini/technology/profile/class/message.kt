@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 
-class message(@SerializedName("sender_id") val sender_id:String,
+class message(@SerializedName("user_id") val sender_id:String,
               @SerializedName("receiver_id")  val receiver_id:String,
               @SerializedName("message")  val message:String) {
 

@@ -4,10 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.graphics.Bitmap
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.utils.ProfileConstants
 import cessini.technology.commonui.utils.networkutil.NetworkUtils
@@ -46,8 +43,9 @@ class ProfileViewModel @Inject constructor(
     }
 
     val profile = newProfileRepository.profile
-
     val rooms = MutableLiveData<List<Room>>(null)
+
+
     val allRecordedVideo = MutableLiveData<RecordedVideo>(null)
     val messages = MutableLiveData<List<CreateRoomRequest>>()
 //    private var profileRepository: ProfileRepository = ProfileRepository(application)
@@ -222,6 +220,7 @@ class ProfileViewModel @Inject constructor(
 
     suspend fun getProfileMedia(profile_id: String) {
 
+        rooms.value=null
         val resultRecordedVideo = exploreRepository.getRecordedVideosProfile(profile_id)
         resultRecordedVideo.collectLatest { result ->
             when (result) {
@@ -259,14 +258,14 @@ class ProfileViewModel @Inject constructor(
 
         }
         result.onFailure {
+            rooms.value= listOf()
             Log.i(TAG, "Video and viewers not fetched in private media: ${it.message}")
         }
 
     }
 
     suspend fun getPublicProfileMedia(profile_id: String) {
-
-
+             rooms.value=null
         val resultRecordedVideo = exploreRepository.getRecordedVideosProfile(profile_id)
         resultRecordedVideo.collectLatest { result ->
             when (result) {
@@ -300,6 +299,7 @@ class ProfileViewModel @Inject constructor(
 //            rooms.value = listOf(r1,r2)
         }
         result.onFailure {
+            rooms.value= listOf()
             Log.i(TAG, "Video and viewers not fetched Public: ${it.message}")
         }
 

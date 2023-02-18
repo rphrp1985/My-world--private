@@ -1,11 +1,16 @@
 package cessini.technology.profile.`class`
 
+import cessini.technology.profile.fragment.publicProfile.ResponseMessageJson
+
 data class ResponseJson (
 
-    val _id:Any,
-    val with:String,
-    val message:String,
-    val time: Long,
-    val read: Boolean,
-    val sender: Boolean
+    val  messages: List<ResponseMessageJson>,
+    val meta: Meta
+
+)
+
+data class Meta(
+    val messages_count:Int,
+    val page:Int ,
+    val can_load_more:Boolean
 )

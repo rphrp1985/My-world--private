@@ -27,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -40,7 +41,9 @@ import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
 import cessini.technology.commonui.fragment.commonChat.CommonChatFragment
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatPayload
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatViewModel
+import cessini.technology.model.Profile
 import cessini.technology.newapi.services.commonChat.CommonChatSocketHandler
+import cessini.technology.newrepository.myworld.ProfileRepository
 import com.airbnb.epoxy.EpoxyRecyclerView
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.BasicAWSCredentials
@@ -60,6 +63,10 @@ import com.google.android.gms.common.internal.service.Common
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.scopes.ViewModelScoped
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.kurento.client.Hub
@@ -80,11 +87,16 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     private lateinit var snackbar: Snackbar
     private lateinit var customSnackView: CommonChatSnackviewBinding
 
+
     @Inject
     lateinit var credentials: BasicAWSCredentials
 
     @Inject
     lateinit var clientConfiguration:ClientConfiguration
+
+    @Inject
+    lateinit var profileRepository: ProfileRepository
+
 
     private var mMediaProjectionPermissionResultData: Intent? = null
     private var mMediaProjectionPermissionResultCode = 0
@@ -129,6 +141,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     private val chatViewModel : CommonChatViewModel by viewModels()
 
     val recyclerDataArrayList:ArrayList<data> = ArrayList()
+    lateinit var profile: Profile
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -146,6 +159,13 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             navigationBarColor = ContextCompat.getColor(this@GridActivity,R.color.Dark)
 
         }
+
+        lifecycleScope.launch {
+            profileRepository.profile.collectLatest {
+                profile= it
+            }
+        }
+
 
         // Streaming video
         val mediaProjectionService: MediaProjectionService? = MediaProjectionService.INSTANCE
@@ -191,7 +211,18 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         if(hubViewModel.rname=="RoomLive") {
             try {
                 hubViewModel.rname = intent.getStringExtra("Room Name").toString()
+
                 Log.e("room name", hubViewModel.rname)
+
+            } catch (e: Exception) {
+
+            }
+        }
+        if(hubViewModel.user_id=="user"){
+            try {
+                hubViewModel.user_id = intent.getStringExtra("user_id").toString()
+
+                Log.e("user_id", hubViewModel.user_id)
 
             } catch (e: Exception) {
 
@@ -199,6 +230,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         }
 
         chatViewModel.setSocket(hubViewModel.rname)
+        chatViewModel.roomID= hubViewModel.rname
+        chatViewModel.user_id = hubViewModel.user_id
         chatViewModel.listenTo(hubViewModel.rname)
         chatViewModel.messages.observe(this){
             //TODO
@@ -357,7 +390,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         userData = data("userLocal", 0, hubViewModel.videoTrack!!, true, eglBaseContext, null)
         recyclerDataArrayList.add(userData!!)
         setUpEpoxy()
-        SignalingClient.get()?.init(this, hubViewModel.rname)
+        SignalingClient.get()?.init(this, hubViewModel.rname,profile)
 
     }
 
@@ -460,7 +493,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         recyclerDataArrayList.add(userDataScreen!!)
         setUpEpoxy()
 
-        SignalingClient.get()?.init(this,hubViewModel.rname)
+        SignalingClient.get()?.init(this,hubViewModel.rname,profile)
     }
 
     /**

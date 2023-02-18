@@ -45,9 +45,10 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Myworld"
+        android:theme="@style/Theme.Myworld.Splash"
         android:usesCleartextTraffic="true"
-        android:localeConfig="@xml/locale_config">
+        android:localeConfig="@xml/locale_config"
+        tools:targetApi="tiramisu">
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -70,8 +71,8 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Myworld.Splash"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

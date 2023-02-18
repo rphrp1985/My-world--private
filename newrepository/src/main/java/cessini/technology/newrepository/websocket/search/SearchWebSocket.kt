@@ -1,6 +1,5 @@
 package cessini.technology.newrepository.websocket.search
 
-import android.util.Log
 import cessini.technology.model.search.*
 import cessini.technology.newapi.services.myspace.model.response.ApiRoom
 import cessini.technology.newapi.services.video.model.response.ApiVideo
@@ -32,7 +31,7 @@ class SearchWebSocket(private val block: (SearchResult) -> Unit) {
 
     fun send(query: String, searchType: SearchType) {
         currentSearchType = searchType
-        //Log.e("SearchSend","SearchWebSocket search called")
+//        Log.d("SearchSend","$query:- ${searchType.name}")
         searchSocket.send(Gson().toJson(SearchBody(searchType, query)))
     }
 

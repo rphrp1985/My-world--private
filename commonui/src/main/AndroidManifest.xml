@@ -24,6 +24,7 @@
     </queries>
 
     <application>
+
         <activity android:name=".activity.GridActivity"
             android:launchMode="singleTask"
             android:exported="true"

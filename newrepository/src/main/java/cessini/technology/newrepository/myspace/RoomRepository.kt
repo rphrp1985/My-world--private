@@ -31,9 +31,9 @@ class RoomRepository @Inject constructor(
         title: String,
         time: Long,
         private: Boolean = false,
-        users: List<String>,
-        categories: List<String> = emptyList()
-    ) = roomApi.createRoom(RoomBody(title, time, private, users, categories))
+
+        categories: String="2"
+    ) = roomApi.createRoom(RoomBody(title=title, schedule = time, private = private, category = categories))
         .getOrThrow().data.name
 
     suspend fun getRoom(name: String): Room =

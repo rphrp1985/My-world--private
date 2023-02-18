@@ -106,6 +106,21 @@ dependencies {
     implementation("aws.sdk.kotlin:sns:0.9.4-beta"){
         exclude module: 'xpp3'
     }
+
+//    def paging_version = "3.0.0-alpha12"
+//
+//    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
+
+    // alternatively - without Android dependencies for tests
+//    testImplementation "androidx.paging:paging-common-ktx:$paging_version"
+
+//    implementation "android.arch.paging:runtime:2.1.0"
+    implementation "androidx.paging:paging-rxjava2:2.1.0"
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.0'
+    implementation 'com.airbnb.android:epoxy-paging:3.6.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+
+
 }
 repositories {
     mavenCentral()

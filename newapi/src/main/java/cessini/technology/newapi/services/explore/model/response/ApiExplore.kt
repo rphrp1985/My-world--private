@@ -12,23 +12,25 @@ data class ApiExplore(
 
 data class ApiExploreData(
     @SerializedName(value = "public_events") val publicEvents: List<ApiPublicEvent> = emptyList(),
+//    @SerializedName(value = "rooms")val rooms: List<ApiRoom> = emptyList(),
     @SerializedName(value = "top_profiles") val topProfiles: List<ApiTopProfile> = emptyList(),
-    val live_rooms: List<LiveRoom> = emptyList(),
-    val rooms: List<ApiRoom> = emptyList()
+//    val live_rooms: List<LiveRoom> = emptyList(),
+
 //    val videos: Map<String, List<ApiVideo>> = emptyMap(),
 ////val videos : List<String> = emptyList(),
 )
 
 data class ApiPublicEvent(
-    val id: String,
-    val title: String="",
-    val description: String="",
+    @SerializedName(value = "id")val id: String,
     @SerializedName(value = "image_url") val image: String,
+    @SerializedName(value = "title")val title: String="",
+    @SerializedName(value = "description") val description: String="",
+
 )
 data class ApiTopProfile(
     @SerializedName(value = "_id") val id: String,
-    val name: String,
     @SerializedName(value = "channel_name") val channelName: String,
+    val name: String,
     @SerializedName(value = "profile_picture") val profilePicture: String,
-    @SerializedName(value = "is_following") val is_following:Boolean?,
+//    @SerializedName(value = "is_following") val is_following:Boolean?,
 )

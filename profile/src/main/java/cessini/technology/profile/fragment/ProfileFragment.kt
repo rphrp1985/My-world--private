@@ -54,8 +54,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         private const val TAG = "ProfileFragment"
     }
 
-    private val profileViewModel: ProfileViewModel by activityViewModels()
-    private val editUserProfileViewModel: EditUserProfileViewModel by activityViewModels()
+    private val profileViewModel : ProfileViewModel by activityViewModels()
+    private val editUserProfileViewModel : EditUserProfileViewModel by activityViewModels()
 
     private var tabLayout: TabLayout? = null
     private var shareMenuItem: MenuItem? = null
@@ -75,11 +75,13 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         super.onViewCreated(view, savedInstanceState)
 
         Log.d(TAG, "onViewCreated: ")
+        ProfileConstants.public = false
+
 
         (activity as HomeActivity).setUpNavProfileIcon(null, (activity as HomeActivity).profileDrawable, true)
 
         //setting up the viewPager and the TabLayout
-        binding.viewPager2.isSaveEnabled = false
+//        binding.viewPager2.isSaveEnabled = false
         tabLayout = binding.profileTab
 
         setUpToolbar()
@@ -93,6 +95,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
                         return@collectLatest
                     }
                     binding.profile = it
+
+                    Log.d("Profile-id","profile id = ${it.id}")
                     val bio=SpannableString(it.bio+" ")
                     val expert=SpannableString(modifyFont(it.expertise))
                     expert.setSpan(ForegroundColorSpan(Color.rgb(35,153,234)),0,expert.length,Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
@@ -152,11 +156,15 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         }
 
         binding.motionLayout.setTransitionListener(this)
+        binding.viewPager2.adapter = PrivateProfileTabAdapter(this.childFragmentManager, lifecycle)
+
+
     }
 
     private fun fetchHasMessages() {
         if(!profileViewModel.isHasMessagesCalled) {
             profileViewModel.isHasMessagesCalled= true
+
             lifecycleScope.launch {
                 kotlin.runCatching { profileViewModel.getMessageForRoom() }
                     .onSuccess {
@@ -185,18 +193,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
             requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(binding.root.windowToken, 0)
 
-        binding.addStoryProfileFragment.setOnClickListener {
-            val homeActivity = run { requireActivity() as HomeActivity }
 
-            if (!profileViewModel.rooms.value.isNullOrEmpty() && !profileViewModel.hasMessages) {
-                val createRoomFragment = CreateRoomFragment(null)
-                createRoomFragment.show(parentFragmentManager, createRoomFragment.tag)
-                return@setOnClickListener
-            }
-
-            findNavController().navigate(ProfileFragmentDirections.toManageRoom(homeActivity.baseViewModel.id.value.orEmpty()))
-        }
-
+//        Log.d(TAG,"value = ${profileViewModel.profileLoadProgress.value}")
         profileViewModel.profileLoadProgress.observe(viewLifecycleOwner) {
 
             when (it) {
@@ -219,6 +217,20 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
             }
         }
 
+
+        binding.addStoryProfileFragment.setOnClickListener {
+            val homeActivity = run { requireActivity() as HomeActivity }
+
+            if (!profileViewModel.rooms.value.isNullOrEmpty() && !profileViewModel.hasMessages) {
+                val createRoomFragment = CreateRoomFragment(null)
+                createRoomFragment.show(parentFragmentManager, createRoomFragment.tag)
+                return@setOnClickListener
+            }
+
+            findNavController().navigate(ProfileFragmentDirections.toManageRoom(homeActivity.baseViewModel.id.value.orEmpty()))
+        }
+
+
         /** resetting view model values in edit profile */
         editUserProfileViewModel.resetEditProfileData()
 
@@ -229,8 +241,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
     private fun profileDetails() {
         //Setting up the ViewPager Adapter and The TabLayout
-        binding.viewPager2.isSaveEnabled = false
-        binding.viewPager2.adapter = PrivateProfileTabAdapter(this.childFragmentManager, lifecycle)
+        binding.viewPager2.isSaveEnabled =false
         TabLayoutMediator(tabLayout!!, binding.viewPager2) { tab, position ->
             when (position) {
                 0 -> {

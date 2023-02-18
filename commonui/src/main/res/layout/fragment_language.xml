@@ -73,7 +73,8 @@
                 app:chipSpacing="@dimen/dimen_0"
                 app:chipSpacingVertical="@dimen/dimen_9"
                 app:chipSpacingHorizontal="@dimen/dimen_9"
-                app:singleSelection="true">
+                app:singleSelection="true"
+                app:selectionRequired="true">
 
                 <com.google.android.material.chip.Chip
                     style="@style/MyworldChipStyle"

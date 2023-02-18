@@ -1,6 +1,9 @@
 package cessini.technology.commonui.activity.live
 
 import android.util.Log
+import cessini.technology.commonui.activity.live.signallingserverData.JoinRoom
+import cessini.technology.commonui.activity.live.signallingserverData.SGCUser
+import cessini.technology.model.Profile
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
@@ -24,7 +27,7 @@ class SignalingClient() {
     var lastConnection = ""
 
     // TODO: REPLACE WITH "https://rooms-api.joinmyworld.live"
-    private val socketUrl = "http://65.1.147.5/"
+    private val socketUrl = "https://socket.joinmyworld.in/"
 
     private val hostnameVerifier: HostnameVerifier = HostnameVerifier { hostname, session -> true }
     private val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
@@ -36,28 +39,37 @@ class SignalingClient() {
     })
 
     val trustManager = trustAllCerts[0] as X509TrustManager
-    fun init(callback: Callback, rname: String) {
+    fun init(callback: Callback, rname: String,profile:Profile) {
         this.callback = callback
         try {
 
-            val sslContext = SSLContext.getInstance("TLS")
-            sslContext.init(null, trustAllCerts, null)
+//            val sslContext = SSLContext.getInstance("TLS")
+//            sslContext.init(null, trustAllCerts, null)
 
-            val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
-            val okHttpClient: OkHttpClient = OkHttpClient.Builder()
-                .hostnameVerifier(hostnameVerifier)
-                .sslSocketFactory(sslSocketFactory, trustManager)
-                .build()
+//            val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
+//            val okHttpClient: OkHttpClient = OkHttpClient.Builder()
+//                .hostnameVerifier(hostnameVerifier)
+//                .sslSocketFactory(sslSocketFactory, trustManager)
+//                .build()
 // default settings for all sockets
 //            IO.setDefaultOkHttpWebSocketFactory(okHttpClient);
 //            IO.setDefaultOkHttpCallFactory(okHttpClient);
 
             // set as an option
             val opts = IO.Options()
-            socket = IO.socket(socketUrl, opts)
-//            Log.d("json",roomJson)
-            val data = JSONObject("""{"room":"$rname"}""")
-            socket.emit("create or join", data)
+            socket = IO.socket(socketUrl, opts).connect()
+
+
+             socket.on("connect"){
+
+              Log.d(TAG,"signalling client socket connected room = $rname")
+              val data = JSONObject("""{"room":"$rname"}""")
+//              val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
+
+//              val data = JoinRoom(rname,sgcUser,profile.email).getJson()
+              Log.d(TAG,"join room = ${data}")
+              socket.emit("join room", data )
+          }
             socket.on("created", Emitter.Listener { args: Array<Any?>? ->
                 Log.e("chao", "room created:" + args.toString() + " sid- ${socket.id()}")
                 callback.onCreateRoom(socket.id())
@@ -134,7 +146,7 @@ class SignalingClient() {
             }
 
             //Other Methods
-            socket.connect()
+//            socket.connect()
         } catch (e: URISyntaxException) {
             throw RuntimeException(e)
         } catch (e: NoSuchAlgorithmException) {
@@ -195,6 +207,8 @@ class SignalingClient() {
     }
 
     companion object {
+       const val TAG= "SignallingClient"
+
         private var instance: SignalingClient? = null
         fun get(): SignalingClient? {
             if (instance == null) {
@@ -207,6 +221,9 @@ class SignalingClient() {
             return instance
         }
     }
+
+
+
 }
 
 

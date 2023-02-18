@@ -19,6 +19,7 @@ import cessini.technology.model.Subcategory
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipDrawable
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.transition.MaterialSharedAxis
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -34,6 +35,15 @@ class SuggestionFragment : BaseFragment<FragmentSuggestionBinding>(R.layout.frag
     }
 
     private val viewModel: SuggestionViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+        exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -67,7 +77,7 @@ class SuggestionFragment : BaseFragment<FragmentSuggestionBinding>(R.layout.frag
                             subcategories.forEachIndexed { i, subcategory ->
                                 val destination = when {
                                     i < chunkSize -> groupOne
-                                    i >= chunkSize && i < chunkSize * 2 -> groupTwo
+                                    i < chunkSize * 2 -> groupTwo
                                     else -> groupThree
                                 }
 

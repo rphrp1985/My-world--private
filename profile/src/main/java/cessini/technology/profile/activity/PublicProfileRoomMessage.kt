@@ -1,6 +1,5 @@
 package cessini.technology.profile.activity
 
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,32 +12,31 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import cessini.technology.commonui.item
 import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.Navigator
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.profile.*
 import cessini.technology.profile.`class`.*
-import cessini.technology.profile.chatSocket.SocketHandler
+import cessini.technology.profile.activity.epoxy.ChatEpoxyController
 import cessini.technology.profile.databinding.FragmentPublicprofileroommessageBinding
-import cessini.technology.profile.fragment.publicProfile.SimpleModel
+import cessini.technology.profile.fragment.publicProfile.ResponseMessageJson
 import cessini.technology.profile.viewmodel.ProfileViewModel
+import cessini.technology.profile.viewmodel.PublicProfileRoomMessageViewModel
 import cessini.technology.profile.viewmodel.PublicProfileViewModel
 import com.google.gson.GsonBuilder
-import com.vanniktech.emoji.EmojiButton
-import com.vanniktech.emoji.EmojiEditText
-import com.vanniktech.emoji.EmojiManager
 import com.vanniktech.emoji.EmojiPopup
-import com.vanniktech.emoji.google.GoogleEmojiProvider
 import dagger.hilt.android.AndroidEntryPoint
-import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.fragment_publicprofileroommessage.*
 import kotlinx.coroutines.launch
@@ -47,6 +45,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
+import kotlin.collections.List
 
 
 @AndroidEntryPoint
@@ -56,22 +55,18 @@ class PublicProfileRoomMessage : Fragment() {
     }
 
     private val pArgs: PublicProfileRoomMessageArgs by navArgs()
-    private val allMessages = ArrayList<SimpleModel>()
     private lateinit var binding: FragmentPublicprofileroommessageBinding
-
+    private val messageViewModel: PublicProfileRoomMessageViewModel by activityViewModels()
     private lateinit var viewModel: PublicProfileViewModel
     private lateinit var profileViewModel: ProfileViewModel
+    var messageList: PagedList<ResponseMessageJson>?=null
 
-    var count = 0
-
-    lateinit var mSocket: Socket
+//    val allMessages = ArrayList<ResponseMessageJson>()
+    var currentPage=0
+    var currentRequests=0;
 
     lateinit var chatUserMe: JSONObject
     lateinit var chatUserId: JSONObject
-
-    var userMe = ""
-    var idMe = ""
-    var idOther = ""
 
     private lateinit var baseViewModel: BaseViewModel
 
@@ -102,24 +97,24 @@ class PublicProfileRoomMessage : Fragment() {
             false
         )
         binding.lifecycleOwner = this
-//        verifyLogin()
+        verifyLogin()
         viewModel.loadProfile(false)
-        binding.recyclerGchat.withModels {
-            itemChatHeader {
-                id("chatHeader")
-                Log.d(TAG,"This function is called and the username is ${viewModel.displayName.value}")
-                userName("Welcome")
-            }
-        }
+
         binding.recyclerGchat.addOnScrollListener(object: RecyclerView.OnScrollListener(){
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
+                val position: Int = getCurrentItem()
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     Log.d("DERE", "onScrollStateChanged: "+getCurrentItem())
-                    val position: Int = getCurrentItem()
-                    setDateLabel(allMessages[position])
+                    messageList?.let {
+                        if(it.size>position)
+                            setDateLabel(it[position]!!)
+                    }
+
+
                 }
             }
+
         })
         val rootView = binding.root
         val emojiPopup= EmojiPopup( rootView,binding.editGchatMessage)
@@ -166,27 +161,19 @@ class PublicProfileRoomMessage : Fragment() {
             binding.profileImage = viewModel.photoUrl.value
 //            binding.headText.setText(binding.userName)
         })
-        SocketHandler.setSocket()
-        SocketHandler.establishConnection()
-        mSocket = SocketHandler.getSocket()
-        Log.d(TAG,"The status of the socket is ${mSocket.isActive}")
-
-
 
         //other user
-        idOther = pArgs.profileId
-
-
-
+        messageViewModel.idOther = pArgs.profileId
 
         // me user
-        idMe = userIdentifierPreferences.id
-        userMe = baseViewModel.authEntity.channelName
+        messageViewModel.idMe = userIdentifierPreferences.id
+        messageViewModel.userMe = baseViewModel.authEntity.channelName
 
+        showLoader()
+        messageViewModel.setSocket(messageViewModel.idMe)
+        messageViewModel.setPaging()
 
-        chatUserMe = ChatUser(idMe, userMe, userMe).getJSONuser()
-
-
+        Log.d(TAG,"The status of the socket is ${messageViewModel.mSocket.isActive}")
 
         back_navigation_button_discovery_profile.setOnClickListener {
 //            findNavController().navigate(PublicProfileRoomMessageDirections.actionPublicProfileRoomMessageToPublicProfileFragment())
@@ -196,16 +183,13 @@ class PublicProfileRoomMessage : Fragment() {
         binding.editGchatMessage.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-                verifyLogin()
-
+//                verifyLogin()
                 if (s.toString().trim().isNotEmpty()) {
                     binding.sendMessage.visibility = View.VISIBLE
                 } else {
                     binding.sendMessage.visibility = View.INVISIBLE
                 }
             }
-
 
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -219,114 +203,76 @@ class PublicProfileRoomMessage : Fragment() {
         }
 
 
-        mSocket.on("connect") {
+        messageViewModel.mSocket.on("connect") {
             Log.d(TAG, "connected")
-            mSocket.emit("send-info", chatUserMe)
-
-            mSocket.emit("get-messages", getMessage(idMe, idOther).getMessages())
+            Log.d(TAG,"idme = ${messageViewModel.idMe}  idother= ${messageViewModel.idOther}")
         }
 
-
-        mSocket.on("get-messages-list-response") {
-            Log.d(TAG, "get-messages-list-response ${it[0]}")
-        }
-        mSocket.on("send-info-status") { it ->
-            Log.d(TAG, "send info status ${it[0]}")
-        }
-
-        try {
-            val onUpdateChat = Emitter.Listener {
-//                Log.d(TAG,"inside emitter : ${it[0]}")
-//                Log.d(TAG, "get-messages-response ${it[0]}")
-//
-                val gson = GsonBuilder().create()
-                val responseJson =
-                    gson.fromJson(it[0].toString(), Array<ResponseJson>::class.java).toList()
-//                Log.d(TAG, "response json: $responseJson")
-
-                if (responseJson.size > 0) {
-                    Log.d(TAG, "last element: ${responseJson[responseJson.size - 1].message}")
-                    if (count == 0) {
-                        responseJson.forEach {
-//                        Log.d(TAG, "Inside responseJSon: ${it}")
-                            if (it.sender == true) {
-//                            simpleModels.add(SimpleModel(idMe, it.message))
-                                allMessages.add(SimpleModel(idMe, it.message))
-                            } else if (it.sender == false) {
-//                            simpleModels.add(SimpleModel(idOther, it.message))
-                                allMessages.add(SimpleModel(idOther, it.message))
-                            }
-                        }
-                        activity?.runOnUiThread {
-                            populateList(allMessages, idMe, idOther)
-                            binding.recyclerGchat.smoothScrollToPosition(allMessages.size - 1)
-//                            allMessages.removeAll(allMessages)
-                        }
-                        count = 1
-                    } else {
-                        if (responseJson[responseJson.size - 1].with == idOther) {
-                            allMessages.add(
-                                SimpleModel(
-                                    idMe,
-                                    responseJson[responseJson.size - 1].message
-                                )
-                            )
-                            Log.d(TAG, "true== ${responseJson[responseJson.size - 1]}")
-                        } else {
-                            allMessages.add(
-                                SimpleModel(
-                                    idOther,
-                                    responseJson[responseJson.size - 1].message
-                                )
-                            )
-                            Log.d(TAG, "false== ${responseJson[responseJson.size - 1]}")
-
-                        }
-                        activity?.runOnUiThread {
-                            populateList(allMessages, idMe, idOther)
-//                            allMessages.removeAll(allMessages)
-                        }
-                    }
+        //Epoxy - Paging
+        val pagedListController = ChatEpoxyController(messageViewModel.mSocket,messageViewModel.idMe,messageViewModel.idOther,messageViewModel.chatMessageState())
+//        binding.recyclerGchat.adapter = pagedListController.adapter
 
 
-                }
-//                simpleModels.removeAll(simpleModels)
+        messageViewModel.fetchPages({ list ->
+            messageList= list
+
+            pagedListController.submitList(list)
+            if(list.size==0){
+                showHeader()
+            }else{
+                binding.recyclerGchat.adapter= pagedListController.adapter
             }
-            mSocket.on("get-messages-response", onUpdateChat)
-//            mSocket.on("get-messages-response",onUpdateChat) { it ->
-//
-//
-//            }
+
+        }, { error ->
+            Log.e(TAG, "error: ${error}")
+        })
+
+        val onnewmessage = Emitter.Listener {
+            Log.d(TAG,"new message recieved   ${it[0]}")
+            val gson = GsonBuilder().create()
+            val responseJson =
+                gson.fromJson(it[0].toString(), ResponseMessageJson::class.java)
+
+//            messageViewModel.datasourceFactory.invalidiate()
+            messageViewModel.compositeDisposable.clear()
+
+            messageViewModel.fetchPages({ list ->
+
+                messageList= list
+                Log.d(TAG,"list= $list")
+                pagedListController.submitList(list)
+
+                Looper.myLooper()?.let {
+                    Handler().postDelayed({
+                        binding.recyclerGchat.scrollToPosition(0)
+
+                    }, 500)
+                }
+                if(binding.recyclerGchat.adapter!= pagedListController.adapter)
+                binding.recyclerGchat.adapter= pagedListController.adapter
 
 
-        } catch (e: Exception) {
-            Log.d(TAG, "can't reach get-messages-response $e")
+
+        }, { error ->
+                Log.e(TAG, "error: ${error}")
+            })
+
+
         }
-
-        var onSendMsg = Emitter.Listener {
-            Log.d(TAG, "private-message ${it[0]}")
-
-            val res: JSONObject = JSONObject(it[0].toString())
-            res.optString("message")
-
-            Log.d(TAG, "message received: ${res.optString("message")}")
+        messageViewModel.mSocket.on("message",onnewmessage)
 
 
-            allMessages.add(SimpleModel(idOther, res.optString("message")))
-            populateList(allMessages,idMe,idOther)
-        }
-        mSocket.on("private-message-response", onSendMsg)
-
-
-//            mSocket.on("private-message-response",onSendMsg)
     }
 
     private fun getCurrentItem(): Int {
         return (binding.recyclerGchat.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
     }
-    private fun setDateLabel(item: SimpleModel) {
-        //TODO: change value to item.timestamp when timestamp field is added to simplemodel
-        val dd = convertDateFormat("yyyy-MM-dd HH:mm:ss", "yyyy MMM dd", "10:23")
+    private fun setDateLabel(item: ResponseMessageJson) {
+        var time= item.created_at
+        if(time=="")
+            return
+        time= time.substring(0,10)
+        val dd = convertDateFormat("yyyy-MM-dd", "yyyy MMM dd", time)
         binding.dateLabel.text = dd
         binding.dateLabel.visibility = View.VISIBLE
 
@@ -338,6 +284,7 @@ class PublicProfileRoomMessage : Fragment() {
         }
 
     }
+
     fun convertDateFormat(FormFormat: String, ToFormat: String, value: String): String {
         var returnValue = value
         val formFormat = SimpleDateFormat(FormFormat, Locale.getDefault())
@@ -346,30 +293,17 @@ class PublicProfileRoomMessage : Fragment() {
         return returnValue
     }
     fun sendMessage(){
-        var firstClick = true
-        if (firstClick) {
-            firstClick = false
-        }
-
-
-        if (mSocket.connected()) {
+    if (messageViewModel.mSocket.connected()) {
             Log.d("socket", "already connected ")
 
             lifecycleScope.launch {
                 var sendMsgText = binding.editGchatMessage.text.toString().trim()
                 binding.editGchatMessage.setText("")
 
+                      Log.d(TAG,"send json = ${message(messageViewModel.idMe, messageViewModel.idOther, sendMsgText).getMessage()}")
+                messageViewModel.mSocket.emit("message", message(messageViewModel.idMe, messageViewModel.idOther, sendMsgText).getMessage())
 
-                mSocket.emit("private-message", message(idMe, idOther, sendMsgText).getMessage())
-                count++
-                mSocket.emit("get-messages", getMessage(idMe, idOther).getMessages())
-
-                allMessages.add(SimpleModel(idMe, sendMsgText))
-            }
-            activity?.runOnUiThread {
-                populateList(allMessages, idMe, idOther)
-            }
-            allMessages.removeLast()
+          }
 
         } else {
             Toast.makeText(activity, "Error sending message", Toast.LENGTH_LONG).show()
@@ -377,43 +311,25 @@ class PublicProfileRoomMessage : Fragment() {
         }
     }
 
-    private fun populateList(simpleModels: MutableList<SimpleModel>, me: String, other: String) {
-        Log.d(TAG, "populateList called")
-        Log.d(TAG,"simple models: $simpleModels")
-        binding.recyclerGchat.withModels {
-
-            itemChatHeader {
-                id("chatHeader")
-//                TODO("Add chat header username here")
-                userName("Welcome")
-            }
-
-            if (simpleModels != null) {
-
-                simpleModels.forEachIndexed { position, model ->
-                    when (model.type) {
-                        me -> itemChatMe {
-                            id(position)
-                            sent(model.content)
-                        }
-                        other -> itemChatOther {
-                            id(position)
-                            recieved(model)
-                            sentPhoto(viewModel.photoUrl.value)
-                        }
-
-
-                    }
-                }
-            }
-        }
-        recycler_gchat.smoothScrollToPosition(simpleModels.size)
-    }
-
     private fun verifyLogin() {
         if (!userIdentifierPreferences.loggedIn) {
             navigator.navigateToFlow(NavigationFlow.AuthFlow)
-            return
         }
     }
+
+    fun showHeader(){
+        binding.recyclerGchat.withModels {
+            itemChatHeader {
+                id("Header")
+            }
+        }
+    }
+    fun showLoader(){
+        binding.recyclerGchat.withModels {
+            itemChatShimmer {
+                id("Loading- Shimmer")
+            }
+        }
+    }
+
 }

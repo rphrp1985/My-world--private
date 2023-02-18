@@ -63,7 +63,7 @@ class SearchViewModel @Inject constructor(
 
     init {
         if (isNetworkAvailable()) {
-//            fetchCategoriesAPI()
+            fetchCategoriesAPI()
 //            fetchAllComponent()
 //            fetchAllInfo()
 //            fetchSuggestedRooms()
@@ -493,5 +493,3 @@ class SearchViewModel @Inject constructor(
 
     }
 }
-
-

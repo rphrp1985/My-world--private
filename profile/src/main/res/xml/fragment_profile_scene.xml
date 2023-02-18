@@ -36,10 +36,8 @@
 
         <Constraint
             android:id="@+id/profileTab"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            motion:layout_constraintEnd_toEndOf="parent"
-            motion:layout_constraintStart_toStartOf="parent"
             motion:layout_constraintTop_toBottomOf="@id/header_profile" />
 
         <Constraint
@@ -61,10 +59,8 @@
 
         <Constraint
             android:id="@+id/profileTab"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            motion:layout_constraintEnd_toEndOf="parent"
-            motion:layout_constraintStart_toStartOf="parent"
             motion:layout_constraintTop_toTopOf="@+id/search_toolbar" />
 
         <Constraint

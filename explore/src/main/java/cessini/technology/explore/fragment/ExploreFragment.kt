@@ -110,14 +110,14 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
             setRefreshListener {
                 showShimmer()
                 viewModel.fetchCategoriesAPI()
-                viewModel.fetchLiveRoomsTest()
-                viewModel.fetchAllComponent()
-                viewModel.fetchAllInfo()
-                viewModel.fetchSuggestedRooms()
-                viewModel.fetchAllTrendingRooms()
-                viewModel.fetchAllRecordedVideos()
-                viewModel.fetchAllCommonRecordedVideos()
-                viewModel.getFollowing()
+//                viewModel.fetchLiveRoomsTest()
+//                viewModel.fetchAllComponent()
+//                viewModel.fetchAllInfo()
+//                viewModel.fetchSuggestedRooms()
+//                viewModel.fetchAllTrendingRooms()
+//                viewModel.fetchAllRecordedVideos()
+//                viewModel.fetchAllCommonRecordedVideos()
+//                viewModel.getFollowing()
                 Handler(Looper.getMainLooper()).postDelayed({
 
                     try {
@@ -329,7 +329,7 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
             allCategory.categoryRooms = suggestedRooms
             allCategory.itemsInfo = infoItems
             allCategory.visibleItemIndex = 0
-            allCategory.trendingRooms = mutableListOf(trendingRooms.message.toMutableList())
+//            allCategory.trendingRooms = mutableListOf(trendingRooms.message.toMutableList())
             recyclerViewParent.setController(controller!!.also { mainRecyclerViewController->
                 mainRecyclerViewController.setData(allCategory)
             })

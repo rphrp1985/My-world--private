@@ -1,17 +1,13 @@
 package cessini.technology.profile.viewmodel
 
 import android.app.Activity
-import android.app.Application
-import android.graphics.Bitmap
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import aws.sdk.kotlin.services.sns.SnsClient
-import cessini.technology.commonui.AmazonSNSImpl
-import cessini.technology.commonui.UserArn
+import androidx.paging.PagedList
+import androidx.paging.RxPagedListBuilder
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.utils.ProfileConstants
 import cessini.technology.cvo.cameraModels.VideoModel
@@ -21,24 +17,18 @@ import cessini.technology.cvo.profileModels.ProfileStoryModel
 import cessini.technology.cvo.profileModels.ProfileVideoModel
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.ToFlowNavigable
-import cessini.technology.newrepository.datastores.ProfileStoreKeys.bio
-import cessini.technology.newrepository.datastores.ProfileStoreKeys.channelName
-import cessini.technology.newrepository.datastores.ProfileStoreKeys.followingCount
-import cessini.technology.newrepository.datastores.ProfileStoreKeys.verified
 import cessini.technology.newrepository.myworld.FollowRepository
 import cessini.technology.newrepository.profileRepository.ProfileRepository
-import cessini.technology.profile.R
-import cessini.technology.profile.fragment.profileVideo.ProfileVideoFragment
-import com.bumptech.glide.Glide
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.toObject
-import com.google.firebase.installations.FirebaseInstallations
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.FirebaseMessaging
+import cessini.technology.profile.activity.epoxy.ChatDatasourceFactory
+import cessini.technology.profile.chatSocket.SocketHandler
+import cessini.technology.profile.fragment.publicProfile.ResponseMessageJson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.observers.DisposableObserver
+import io.socket.client.IO
 import kotlinx.coroutines.launch
+import java.net.Socket
 import javax.inject.Inject
 import cessini.technology.newrepository.myworld.ProfileRepository as NewProfileRepository
 
@@ -51,6 +41,7 @@ class PublicProfileRoomMessageViewModel @Inject constructor(
     companion object {
         private const val TAG = "RoomMessageViewModel"
     }
+
 
     lateinit var currentId: String
 
@@ -69,14 +60,79 @@ class PublicProfileRoomMessageViewModel @Inject constructor(
     /**For the Video Adapter.*/
     var storiesList = MutableLiveData<ArrayList<VideoModel>>()
     var storyPosition = MutableLiveData(0)
-
     var profileLoadProgress = MutableLiveData<Int>(0)
-
     var messageProgress = MutableLiveData(-3)
-
     private lateinit var profileEntity: AuthEntity
-
     lateinit var activity: Activity
+
+
+    var userMe = ""
+    var idMe = ""
+    var idOther = ""
+
+
+    //Epoxy Paging
+    lateinit var rxPageList: Observable<PagedList<ResponseMessageJson>>
+
+     lateinit var compositeDisposable :CompositeDisposable
+
+    private val config = PagedList.Config.Builder()
+        .setPageSize(2)
+        .setInitialLoadSizeHint(15)
+        .setEnablePlaceholders(true)
+        .build()
+    lateinit var mSocket: io.socket.client.Socket
+
+    lateinit var  datasourceFactory:ChatDatasourceFactory
+
+
+    fun setPaging(){
+        compositeDisposable = CompositeDisposable()
+        datasourceFactory = ChatDatasourceFactory(mSocket, compositeDisposable,idMe,idOther)
+        rxPageList = RxPagedListBuilder(datasourceFactory, config).buildObservable()
+
+
+    }
+
+    fun chatMessageState()= datasourceFactory.getMessageState()
+
+    fun setSocket(idme:String){
+        SocketHandler.setSocket(idme)
+        SocketHandler.establishConnection()
+        mSocket = SocketHandler.getSocket()
+    }
+
+
+
+    fun fetchPages(
+        onPageReady: (PagedList<ResponseMessageJson>) -> Unit,
+        onPageLoadFailed: (Throwable) -> Unit
+    ) {
+        compositeDisposable.add(
+            rxPageList
+                .subscribeWith(object : DisposableObserver<PagedList<ResponseMessageJson>>() {
+                    override fun onComplete() {
+
+                    }
+                    override fun onNext(pagedList: PagedList<ResponseMessageJson>) {
+                        onPageReady(pagedList)
+                    }
+                    override fun onError(e: Throwable) {
+                        Log.e(TAG, "error: ${e}")
+                        onPageLoadFailed(e)
+                    }
+
+                })
+        )
+    }
+
+    fun reload(){
+    }
+
+    override fun onCleared() {
+        compositeDisposable.clear()
+    }
+
 
     fun loadProfile(choice: Boolean) {
         viewModelScope.launch {

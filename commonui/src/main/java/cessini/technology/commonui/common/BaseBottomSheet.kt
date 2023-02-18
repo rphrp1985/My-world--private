@@ -1,11 +1,13 @@
 package cessini.technology.commonui.common
 
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.util.Log
 import android.util.TypedValue
 import android.view.*
 import android.widget.FrameLayout
@@ -18,11 +20,13 @@ import androidx.core.view.updateMargins
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.DialogFragment
+import aws.smithy.kotlin.runtime.smithy.Document
 import cessini.technology.commonui.R
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlin.math.floor
+import kotlin.math.roundToInt
 
 
 abstract class BaseBottomSheet<T : ViewDataBinding>(
@@ -38,7 +42,7 @@ abstract class BaseBottomSheet<T : ViewDataBinding>(
     final override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ) : View {
         _binding = DataBindingUtil.inflate<T>(
             inflater,
@@ -108,13 +112,19 @@ abstract class BaseBottomSheet<T : ViewDataBinding>(
         val bottomSheet = dialog.findViewById<FrameLayout>(R.id.design_bottom_sheet)
         val behaviour = BottomSheetBehavior.from(bottomSheet!!)
         val layoutParams = bottomSheet.layoutParams
-        val screenHeight = getWindowHeight()
-
-        layoutParams?.height = (screenHeight * 0.85).toInt() // Set bottom sheet height to 85% of screen height
-
+        val activityHeight = requireActivity().display?.height!!
+        layoutParams.height = activityHeight*95/100
+        Log.d("BaseBottomSheet","final height= ${layoutParams.height}")
         bottomSheet.layoutParams = layoutParams
         behaviour.state = BottomSheetBehavior.STATE_EXPANDED
     }
+
+//    fun NumbertoPx(dp:Int) = TypedValue.applyDimension(
+//        TypedValue.COMPLEX_UNIT_DIP,
+//        dp.toFloat(),
+//        Resources.getSystem().displayMetrics
+//    )
+
 
     private fun getWindowHeight(): Int {
         val displayMatrix = DisplayMetrics()
