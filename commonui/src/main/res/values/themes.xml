@@ -75,4 +75,12 @@
     <style name="CustomCardViewStyle" parent="@style/Widget.MaterialComponents.CardView">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay_card_custom_corners</item>
     </style>
+
+    <style name="bottom_nav_text_active">
+        <item name="android:textSize">@dimen/font_size_11</item>
+    </style>
+
+    <style name="bottom_nav_text_inactive">
+        <item name="android:textSize">@dimen/font_size_11</item>
+    </style>
 </resources>

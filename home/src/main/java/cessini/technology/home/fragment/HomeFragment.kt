@@ -1,7 +1,5 @@
 package cessini.technology.home.fragment
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -354,12 +352,12 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         )
     }*/
 
-    private fun setUpNavViewColor(color: String) {
-        if (!isInDarkTheme()) {
-            (activity as HomeActivity).binding.navBarView.background =
-                ColorDrawable(Color.parseColor(color))
-        }
-    }
+//    private fun setUpNavViewColor(color: String) {
+//        if (!isInDarkTheme()) {
+//            (activity as HomeActivity).binding.navBarView.background =
+//                ColorDrawable(Color.parseColor(color))
+//        }
+//    }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         v?.onTouchEvent(event)
@@ -388,8 +386,8 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         binding.homeFeedShimmer.visibility = View.VISIBLE
     }*/
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+//    override fun onDestroyView() {
+//        super.onDestroyView()
         /*if (!isInDarkTheme()) {
             (activity as HomeActivity).binding.bottomNavigation.menu.findItem(R.id.camera_flow)
                 .setIcon(R.drawable.ic_camera)
@@ -404,17 +402,16 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
         /*setUpNavIcon(null)*/
         /*setUpNavViewColor("#4D000000")*/
-    }
+//    }
 
 
-    override fun onStart() {
-        super.onStart()
+//    override fun onStart() {
+//        super.onStart()
 //        blurLayout.startBlur()
+//    }
 
-    }
-
-    override fun onStop() {
-        super.onStop()
+//    override fun onStop() {
+//        super.onStop()
 //        blurLayout.pauseBlur()
-    }
+//    }
 }
