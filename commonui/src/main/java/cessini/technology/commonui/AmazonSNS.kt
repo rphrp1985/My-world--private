@@ -4,6 +4,7 @@ import android.util.Log
 import aws.sdk.kotlin.services.sns.SnsClient
 import aws.sdk.kotlin.services.sns.createPlatformEndpoint
 import aws.sdk.kotlin.services.sns.model.PublishRequest
+import aws.sdk.kotlin.services.sns.model.SubscribeRequest
 import aws.smithy.kotlin.runtime.util.asyncLazy
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.google.firebase.firestore.ktx.firestore
@@ -171,6 +172,21 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
 //        else{
 //            Log.d(TAG, "User endpoint not found")
 //        }
+
+    }
+    suspend fun subscribe(snsTopicArn:String,endpointArn:String){
+        val snsClient=SnsClient {
+            credentialsProvider = AmazonModule
+            region = "ap-south-1"
+        }
+
+        val subscribe=SubscribeRequest{
+            this.topicArn=snsTopicArn
+            this.protocol="application"
+            this.endpoint=endpointArn
+        }
+
+        snsClient.subscribe(subscribe)
 
     }
 }

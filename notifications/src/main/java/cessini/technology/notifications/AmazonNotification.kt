@@ -37,7 +37,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         coroutineScope.launch {
             launch {
                 try {
-                    amazonSNSImpl.createNewEndpoint(token)
+                    val endpoint=amazonSNSImpl.createNewEndpoint(token)
+                    amazonSNSImpl.subscribe("arn:aws:sns:ap-south-1:523652883143:All",endpoint)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
