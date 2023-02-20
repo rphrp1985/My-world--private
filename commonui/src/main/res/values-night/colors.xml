@@ -26,5 +26,5 @@
     <color name="shadow3">#33222222</color>
     <color name="shadow4">#4d222222</color>
     <color name="shadow5">#66222222</color>
-    <color name="translucent_bottom_nav_background">#DF000000</color>
+    <color name="translucent_bottom_nav_background">#C9000000</color>
 </resources>
