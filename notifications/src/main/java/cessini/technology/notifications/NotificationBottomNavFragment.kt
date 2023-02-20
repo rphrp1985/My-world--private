@@ -8,24 +8,22 @@ import cessini.technology.notifications.databinding.FragmentNotificationBottomNa
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
-class NotificationBottomNavFragment:
-    BaseFragment<FragmentNotificationBottomNavBinding>(
-        R.layout.fragment_notification_bottom_nav
-    ) {
+class NotificationBottomNavFragment : BaseFragment<FragmentNotificationBottomNavBinding>(
+    R.layout.fragment_notification_bottom_nav
+) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding.lifecycleOwner = this
+
         (requireActivity() as HomeActivity).setUpNavProfileIcon(
             null,
             (requireActivity() as HomeActivity).profileDrawable,
             false
         )
-        binding.vpNotificationMessage.currentItem = 0
 
-    }
-    override fun onResume() {
-        super.onResume()
+        binding.vpNotificationMessage.currentItem = 0
 
         binding.vpNotificationMessage.adapter =
             NotificationMessageAdapter(childFragmentManager, lifecycle)
@@ -34,17 +32,7 @@ class NotificationBottomNavFragment:
             binding.tabNotificationMessage, binding.vpNotificationMessage
         ) { tab: TabLayout.Tab, position: Int ->
 
-            if (position == 0) {
-                tab.text = "Messages"
-            } else {
-                tab.text = "Notification"
-            }
-
+            tab.text = if (position == 0) "Messages" else "Notification"
         }.attach()
-
-
-//        binding.backNavigationButtonNotificationMessageProfile.setOnClickListener {
-//            findNavController().navigateUp()
-//        }
     }
 }
