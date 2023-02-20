@@ -17,7 +17,7 @@ class NotificationMessageAdapter(
             MessageTabFragment()
         }
         else -> {
-            NotficationTabFragment()
+            NotificationTabFragment()
         }
     }
 }

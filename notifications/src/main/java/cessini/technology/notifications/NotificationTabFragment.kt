@@ -23,10 +23,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class NotficationTabFragment : Fragment() {
+class NotificationTabFragment : Fragment() {
 
     companion object {
-        private const val TAG = "NotficationTab"
+        private const val TAG = "NotificationTab"
     }
 
     @Inject
@@ -110,7 +110,7 @@ class NotficationTabFragment : Fragment() {
                     image(notification.profile_image)
                     time(5L)
                     title(notification.username)
-                    onClick { _ -> Unit }
+                    onClick { _ -> }
                 }
             }
         }
@@ -126,10 +126,5 @@ class NotficationTabFragment : Fragment() {
             )
             else -> Unit
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.e(TAG, "onPauseCalled")
     }
 }

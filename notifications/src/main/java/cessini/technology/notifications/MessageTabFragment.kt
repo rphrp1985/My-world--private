@@ -10,7 +10,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
 import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.explore.viewmodel.ExploreSearchViewModel
 import cessini.technology.navigation.NavigationFlow
@@ -74,19 +73,13 @@ class MessageTabFragment : Fragment(), UserSearchController.AdapterCallbacks {
         return binding.root
     }
 
-    private fun setCreatorRecycler() {
-        binding.recyclerMessageSearch.apply {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-            controller = UserSearchController(this@MessageTabFragment)
-            binding.recyclerMessageSearch.setController(controller)
-        }
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         show(true)
-        setCreatorRecycler()
+
+        controller = UserSearchController(this@MessageTabFragment)
+        binding.recyclerMessageSearch.setController(controller)
 
         viewModel.creatorResponseModels.observe(viewLifecycleOwner) { list ->
             if (list.isNullOrEmpty()) {
@@ -211,8 +204,7 @@ class MessageTabFragment : Fragment(), UserSearchController.AdapterCallbacks {
 
                 Log.i("Submit searched query: ", query!!)
                 viewModel.fetchSearchCreatorQueryAPI(query)
-                viewModel.creatorResponseModels.observe(viewLifecycleOwner, Observer {
-
+                viewModel.creatorResponseModels.observe(viewLifecycleOwner) {
 
                     if (it != null) {
                         if (it.size > 0) {
@@ -227,7 +219,7 @@ class MessageTabFragment : Fragment(), UserSearchController.AdapterCallbacks {
 
                     //binding.recyclerViewCreatorHistory.visibility = View.GONE
 
-                })
+                }
 
                 if (query == "") {
                     show(true)
@@ -251,12 +243,12 @@ class MessageTabFragment : Fragment(), UserSearchController.AdapterCallbacks {
 
                 Log.e("Creator text pattern: ", newText!!)
 
-                viewModel.creatorResponseModels.observe(viewLifecycleOwner, Observer {
+                viewModel.creatorResponseModels.observe(viewLifecycleOwner) {
                     if (it != null) {
                         if (it.size > 0) {
                             show(false)
                             binding.recyclerMessageSearch.visibility = View.VISIBLE
-                        } else if (it.size == 0) {
+                        } else {
                             binding.recyclerMessageSearch.visibility = View.GONE
                             show(true)
                             //Log.e("Creator text pattern: ", "Hide called")
@@ -265,9 +257,9 @@ class MessageTabFragment : Fragment(), UserSearchController.AdapterCallbacks {
                         show(true)
                         binding.recyclerMessageSearch.visibility = View.GONE
                     }
-                })
+                }
 
-                if (newText.isEmpty() || newText.length == 0) {
+                if (newText.isEmpty()) {
                     show(true)
                     binding.recyclerMessageSearch.visibility = View.GONE
                 }
@@ -293,7 +285,6 @@ class MessageTabFragment : Fragment(), UserSearchController.AdapterCallbacks {
         }
     }
 
-    var flag = true
     private fun populateMessage(list: MutableList<MessagesList>) {
         Log.d(TAG, "list: $list")
         binding.messageTabEpoxy.withModels {
@@ -325,17 +316,18 @@ class MessageTabFragment : Fragment(), UserSearchController.AdapterCallbacks {
     }
 
     private fun show(flag: Boolean) {
-        if (flag) {
-            if (listResponseJson.size > 0) {
-                binding.messageTabEpoxy.visibility = View.VISIBLE
-                binding.emptyMessage.visibility = View.GONE
-            } else {
-                binding.messageTabEpoxy.visibility = View.GONE
-                binding.emptyMessage.visibility = View.VISIBLE
-            }
-        } else {
+        if (!flag) {
             binding.messageTabEpoxy.visibility = View.GONE
             binding.emptyMessage.visibility = View.GONE
+            return
+        }
+
+        if (listResponseJson.size > 0) {
+            binding.messageTabEpoxy.visibility = View.VISIBLE
+            binding.emptyMessage.visibility = View.GONE
+        } else {
+            binding.messageTabEpoxy.visibility = View.GONE
+            binding.emptyMessage.visibility = View.VISIBLE
         }
     }
 
@@ -346,6 +338,4 @@ class MessageTabFragment : Fragment(), UserSearchController.AdapterCallbacks {
             )
         )
     }
-
-
 }
