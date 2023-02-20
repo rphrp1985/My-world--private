@@ -55,7 +55,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, remoteMessage.data.toString())
-        showNotification(remoteMessage.toString())
+        showNotification(remoteMessage.data.toString())
     }
 
     override fun onDestroy() {
