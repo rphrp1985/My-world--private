@@ -145,6 +145,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(R.style.AppTheme_ActionBar)
         setContentView(R.layout.activity_grid)
 
         setupCustomSnackBar()
@@ -608,8 +609,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
 
             })
-        peerConnection!!.addStream(hubViewModel.mediaStream)
-        hubViewModel.peerConnectionMap[socketId] = peerConnection
+//        peerConnection!!.addStream(hubViewModel.mediaStream)
+        hubViewModel.peerConnectionMap[socketId] = peerConnection!!
         return peerConnection
     }
 
