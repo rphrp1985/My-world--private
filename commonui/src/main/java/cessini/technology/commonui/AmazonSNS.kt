@@ -4,12 +4,12 @@ import android.util.Log
 import aws.sdk.kotlin.services.sns.SnsClient
 import aws.sdk.kotlin.services.sns.createPlatformEndpoint
 import aws.sdk.kotlin.services.sns.model.PublishRequest
+import aws.smithy.kotlin.runtime.util.asyncLazy
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
-import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,7 +21,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
     private val userId = userIdentifierPreferences.id
     private var endpoint = ""
     private var displayName=""
-    init {
+    init {qq
         getEndpoint(userId)
     }
 
@@ -109,21 +109,12 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
                         Log.d(TAG, "Device present in Firestore ${doc.data}")
 
                     if (endpoint.isNotEmpty() && endpoint!="null") {
-                        val message = JSONObject()
-                        message.put(
-                            "notification", JSONObject()
-                                .put("title", "New Follower")
-                                .put("body", "$displayName followed you")
-                        )
-                        message.put(
-                            "data", JSONObject()
-                                .put("message", "$displayName followed you")
-                        )
 
                         val request = PublishRequest {
                             this.messageStructure
                             this.messageAttributes //= Map<String, MessageAttributeValue>("", )
-                            this.message = message.toString()
+                            this.subject = ""
+                            this.message = "$displayName followed you"
                             this.targetArn = endpoint
                         }
                         Log.e(TAG, "endpoint: $endpoint")

@@ -55,8 +55,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, remoteMessage.data.toString())
-        Log.d(TAG, remoteMessage.data["data"].toString())
-        showNotification(remoteMessage.data["data"].toString(),remoteMessage.data["title"].toString())
+        showNotification(remoteMessage.data.toString())
     }
 
     override fun onDestroy() {
@@ -64,13 +63,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         job.cancel()
     }
 
-    private fun showNotification(body: String,title:String) {
+    private fun showNotification(body: String) {
 
         val mBuilder: NotificationCompat.Builder = NotificationCompat
             .Builder(this, "Channel_Id")
             .setSmallIcon(R.drawable.notifications_icon)
             .setContentText(body)
-            .setContentTitle(title)
+            .setContentTitle("Notifcations")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
