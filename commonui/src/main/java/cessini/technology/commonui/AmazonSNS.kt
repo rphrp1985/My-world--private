@@ -116,6 +116,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
                             this.subject = ""
                             this.message = "$displayName followed you"
                             this.targetArn = endpoint
+                            this.subject = "New follower"
                         }
                         Log.e(TAG, "endpoint: $endpoint")
 //            var cred = BasicAWSCredentials("AKIAWTUT4SYXBNPNSG4S", "xmtzf8lVqiz+/tH95VCuD3zKf/KOUWszbCg5z6yK")
