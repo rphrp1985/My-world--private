@@ -69,7 +69,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .Builder(this, "Channel_Id")
             .setSmallIcon(R.drawable.notifications_icon)
             .setContentText(body)
-            .setContentTitle("Notifcations")
+            .setContentTitle("New Follower")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)

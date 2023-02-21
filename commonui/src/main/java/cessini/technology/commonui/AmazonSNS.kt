@@ -20,6 +20,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
     }
     private val userId = userIdentifierPreferences.id
     private var endpoint = ""
+    private var displayName=""
     init {
         getEndpoint(userId)
     }
@@ -51,7 +52,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
 
                 Log.d(TAG, "Endpoint arn $endPointArn")
 
-                addToFirebase(UserArn(userId, devtoken, endPointArn))
+                addToFirebase(UserArn(userId, devtoken, endPointArn,displayName))
                 return endPointArn
             } catch (e: Exception) {
                 Log.d(TAG, "Error ${e.stackTrace}")
@@ -81,6 +82,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
         Firebase.firestore.collection("deviceArn").document("$userId").get()
             .addOnSuccessListener { doc ->
                 endpoint = doc.toObject<UserArn>()?.arn.toString()
+                displayName=doc.toObject<UserArn>()?.name.toString()
                 if (endpoint.isNotEmpty())
                     Log.d(TAG, "Device present in Firestore ${doc.data}")
             }
@@ -112,7 +114,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
                             this.messageStructure
                             this.messageAttributes //= Map<String, MessageAttributeValue>("", )
                             this.subject = ""
-                            this.message = "You were followed."
+                            this.message = "$displayName followed you"
                             this.targetArn = endpoint
                             this.subject = "New follower"
                         }
@@ -175,4 +177,4 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
     }
 }
 
-data class UserArn(val userId: String = "", val devtoken: String = "", val arn: String = "")
+data class UserArn(val userId: String = "", val devtoken: String = "", val arn: String = "",val name:String= "")

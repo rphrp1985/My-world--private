@@ -132,7 +132,8 @@ class SignInViewModel @Inject constructor(
                 _signInProgress.value = 100
                 callback(it.channelName)
                 val userId=it.id
-                updateFirebaseData(getToken,userId)
+                val name=it.displayName
+                updateFirebaseData(getToken,userId,name)
             }
 
             result.onFailure {
@@ -141,7 +142,7 @@ class SignInViewModel @Inject constructor(
             }
         }
     }
-    fun updateFirebaseData(token: String,userId:String){
+    fun updateFirebaseData(token: String,userId:String,name:String){
         val collectionRef = Firebase.firestore.collection("deviceArn")
         val oldDocRef = collectionRef.document(token)
 
@@ -153,7 +154,7 @@ class SignInViewModel @Inject constructor(
                     Log.e(TAG,"Document id token exits")
                 }
                 else{
-                    Log.e(TAG,"Document id token exits")
+                    Log.e(TAG,"Document id token does not exits")
                     return@addOnCompleteListener
                 }
             }
@@ -170,6 +171,16 @@ class SignInViewModel @Inject constructor(
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error updating userId", e)
+            }
+
+        // Inserting name field value
+        val displayName= hashMapOf("name" to name)
+        oldDocRef.update(displayName as Map<String,Any>)
+            .addOnSuccessListener {
+                Log.e(TAG,"name attribute added successfully")
+            }
+            .addOnFailureListener{ e ->
+                Log.w(TAG,"Error inserting name",e)
             }
 
         val newDocRef=Firebase.firestore.collection("deviceArn").document(userId)
