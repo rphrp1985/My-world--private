@@ -21,7 +21,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
     private val userId = userIdentifierPreferences.id
     private var endpoint = ""
     private var displayName=""
-    init {qq
+    init {
         getEndpoint(userId)
     }
 
