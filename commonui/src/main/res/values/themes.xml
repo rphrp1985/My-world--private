@@ -10,7 +10,7 @@
         <item name="colorAccent">@color/cpTextDark</item> // Set text cursor color
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/cpWhite</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
         <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
     </style>
@@ -74,5 +74,13 @@
 
     <style name="CustomCardViewStyle" parent="@style/Widget.MaterialComponents.CardView">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay_card_custom_corners</item>
+    </style>
+
+    <style name="bottom_nav_text_active">
+        <item name="android:textSize">@dimen/font_size_11</item>
+    </style>
+
+    <style name="bottom_nav_text_inactive">
+        <item name="android:textSize">@dimen/font_size_11</item>
     </style>
 </resources>

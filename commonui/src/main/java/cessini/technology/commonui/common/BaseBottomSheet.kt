@@ -93,7 +93,7 @@ abstract class BaseBottomSheet<T : ViewDataBinding>(
 
         val displayRectangle = Rect()
         this.requireDialog().window!!
-            .setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.cpTransparent)))
+            .setBackgroundDrawable(ColorDrawable(resources.getColor(android.R.color.transparent)))
         val window: Window = requireActivity().window
         window.decorView.getWindowVisibleDisplayFrame(displayRectangle)
         this.requireDialog().window!!.setLayout(
