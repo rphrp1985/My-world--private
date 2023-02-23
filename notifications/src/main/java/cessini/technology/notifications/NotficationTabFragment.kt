@@ -18,6 +18,8 @@ import cessini.technology.newapi.preferences.AuthPreferences
 import cessini.technology.newrepository.explore.ExploreRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.notifications.databinding.FragmentNotficationTabBinding
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -69,31 +71,29 @@ class NotficationTabFragment : Fragment() {
 
     private fun buildNotificationModelsOrDismiss() {
         val notification = ArrayList<MyWorldNotification>()
-        viewLifecycleOwner.lifecycleScope.launch {
-
-            Log.d(TAG, "firebase: ${userIdentifierPreferences.firebaseToken}")
-            if (userIdentifierPreferences.loggedIn) {
-                val res = exploreRepository.getNotifications().data.myWorldNotifications
-                res.forEach {
-                    notification.add(it)
+        getData(notification)
+    }
+    private fun getData(notification: ArrayList<MyWorldNotification>){
+        Firebase.firestore.collection("GlobalNotifications")
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents){
+                    Log.d(TAG, "${document.id} => ${document.data}")
+                    val id=document.getString("id").toString()
+                    val message=document.getString("message").toString()
+                    val profile_image=document.getString("profile_image").toString()
+                    val username=document.getString("username").toString()
+                    Log.e(TAG,id)
+                    Log.e(TAG,message)
+                    Log.e(TAG,profile_image)
+                    Log.e(TAG,username)
+                    notification.add(MyWorldNotification(id,message,username,profile_image))
                 }
-            } else {
-                exploreRepository.getNotificationPlease()
-                    .body()?.data?.myWorldNotifications?.forEach {
-                        notification.add(it)
-                    }
+                buildNotificationsModel(notification)
             }
-
-//            if (notification.isEmpty()) {
-//                binding.tvMsgNoNotification2.isVisible = true
-//            }
-
-//            if(notification.isNotEmpty()){
-//                binding.noNotificationHelpText2.visibility = View.GONE
-//            }
-//
-            buildNotificationsModel(notification)
-        }
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Error getting documents.", exception)
+            }
     }
 
 //    private suspend fun getNotifications(token: String): ApiNotification {
