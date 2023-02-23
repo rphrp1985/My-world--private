@@ -132,7 +132,10 @@ class SignInViewModel @Inject constructor(
                 _signInProgress.value = 100
                 callback(it.channelName)
                 val userId=it.id
+                val displayName=it.displayName
+                val profileImage=it.photoUrl
                 updateFirebaseData(getToken,userId)
+                addGlobalNotification(userId,profileImage,displayName)
             }
 
             result.onFailure {
@@ -188,9 +191,20 @@ class SignInViewModel @Inject constructor(
             }
         }
     }
+    fun addGlobalNotification(id:String,profile_image:String,username:String){
+        Firebase.firestore.collection("GlobalNotifications").document("${id}").set(User(id,profile_image,username))
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.d(TAG, "Data added to Firestore ${it.result}")
+                } else {
+                    Log.d(TAG, "Data added to Firestore ${it.exception}")
+                }
+            }
+    }
 
 
 
 
 
 }
+data class User(val id: String,val profile_image: String,val username: String)

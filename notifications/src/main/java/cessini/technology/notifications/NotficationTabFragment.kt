@@ -75,6 +75,8 @@ class NotficationTabFragment : Fragment() {
     }
     private fun getData(notification: ArrayList<MyWorldNotification>){
         Firebase.firestore.collection("GlobalNotifications")
+            .document("${userIdentifierPreferences.id}")
+            .collection("NotificationData")
             .get()
             .addOnSuccessListener { documents ->
                 for (document in documents){

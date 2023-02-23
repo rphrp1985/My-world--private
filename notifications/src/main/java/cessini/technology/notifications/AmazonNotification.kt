@@ -61,7 +61,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         Log.d(TAG, remoteMessage.data.toString())
         val body=remoteMessage.notification?.body.toString()
         val title=remoteMessage.notification?.title.toString()
-        addData(MyWorldNotification("3",body,"Myworld","https://my-world-bucket-alpha.s3.ap-south-1.amazonaws.com/notification/72.png"))
+        amazonSNSImpl.addGlobalData(body)
         showNotification(body,title)
     }
 

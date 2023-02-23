@@ -6,6 +6,7 @@ import aws.sdk.kotlin.services.sns.createPlatformEndpoint
 import aws.sdk.kotlin.services.sns.model.PublishRequest
 import aws.sdk.kotlin.services.sns.model.SubscribeRequest
 import aws.smithy.kotlin.runtime.util.asyncLazy
+import cessini.technology.newapi.model.MyWorldNotification
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
@@ -187,6 +188,34 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
         }
 
         snsClient.subscribe(subscribe)
+
+    }
+    fun addGlobalData(message:String){
+        var profile_image=""
+        var username=""
+        val colRef=Firebase.firestore.collection("GlobalNotifications")
+        val docRef=colRef.document("${userId}")
+        docRef.get()
+            .addOnSuccessListener { doc ->
+                profile_image=doc.toObject<MyWorldNotification>()?.profile_image.toString()
+                username=doc.toObject<MyWorldNotification>()?.username.toString()
+            }
+            .addOnFailureListener {
+                Log.d(TAG, "Data not present in Firestore ${it.message}")
+            }
+
+        docRef.collection("NotificationData")
+            .document()
+            .set(MyWorldNotification(userId,message,username,profile_image))
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.d(TAG, "Data added to Firestore ${it.result}")
+                } else {
+                    Log.d(TAG, "Data added to Firestore ${it.exception}")
+                }
+            }
+
+
 
     }
 }
