@@ -351,7 +351,7 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
 //                    mediaStream.videoTracks[0].addSink(
 //                        remoteViews[remoteViewsIndex++]
 //                    )
-                    recyclerDataArrayList.add(data("user", remoteViewsIndex++, mediaStream.videoTracks[0], false, eglBaseContext, null))
+//                    recyclerDataArrayList.add(data("user", remoteViewsIndex++, mediaStream.videoTracks[0], false, eglBaseContext, null))
                     setupepoxy()
                     Log.e("stream","stream added ${mediaStream.videoTracks.size}")
                 }
@@ -444,6 +444,22 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
 
             )
         )
+    }
+
+    override fun onCallerMicrophoneSwitch(data: JSONObject) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onCallerVideoSwitch(data: JSONObject) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onCallerScreenShare(data: JSONObject) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onCallerHandSwitch(data: JSONObject) {
+        TODO("Not yet implemented")
     }
 
     override fun onDestroyView() {

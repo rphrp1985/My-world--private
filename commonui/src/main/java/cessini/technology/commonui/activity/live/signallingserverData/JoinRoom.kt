@@ -31,8 +31,8 @@ class SGCUser(
     }
 }
 
-class Mic(
-    room: String,
+class MicEvent(
+    room_code: String,
     value: Boolean,
     url: String
 ){
@@ -42,8 +42,8 @@ class Mic(
     }
 }
 
-class Camera(
-    room: String,
+class CameraEvent(
+    room_code : String,
     value: Boolean,
     url: String
 )
@@ -54,7 +54,21 @@ class Camera(
     }
 }
 
+class HandEvent(
+    room_code: String,
+    value: Boolean
+){
+    fun getJson() : JSONObject {
+        val jsonString = Gson().toJson(this)  // json string
+        return JSONObject(jsonString)
+    }
+}
 
+class ScreenEvent(
+    room: String,
+    value: Boolean,
+    url: String
+)
 
 
 

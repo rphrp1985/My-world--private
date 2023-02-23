@@ -3,6 +3,8 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+
+
     <androidx.cardview.widget.CardView
         android:id="@+id/card_view"
         android:layout_width="300dp"
@@ -26,6 +28,9 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="15dp"
                 android:layout_gravity="center"
+                android:cropToPadding="true"
+                android:foreground="@drawable/stroke_drawable"
+                android:background="@drawable/story_active_inside_view"
                 android:src="@drawable/ic_profileactive"
                 android:scaleType="centerCrop"/>
 
@@ -36,7 +41,7 @@
                 android:text="Prianshu Prasad"
                 android:layout_marginTop="15dp"
                 android:layout_gravity="center"
-                android:textColor="@color/black"
+
                 android:textSize="18sp"
 
                 />
@@ -66,7 +71,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Allow"
-                android:textColor="@color/black"
+
                 android:textSize="14sp"
                 android:background="@color/cpTransparent"
                 android:layout_alignParentBottom="true"/>
@@ -77,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:text="Decline"
                 android:textSize="14sp"
-                android:textColor="@color/black"
+
                 android:background="@color/cpTransparent"
                 android:layout_alignParentBottom="true"
                 android:layout_toStartOf="@id/answer_button"/>

@@ -1,12 +1,13 @@
 package cessini.technology.commonui.activity.live
 
 import android.util.Log
-import cessini.technology.commonui.activity.live.signallingserverData.JoinRoom
-import cessini.technology.commonui.activity.live.signallingserverData.SGCUser
+import cessini.technology.commonui.activity.live.signallingserverData.*
 import cessini.technology.model.Profile
+import com.google.gson.GsonBuilder
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.webrtc.IceCandidate
@@ -17,7 +18,6 @@ import java.security.NoSuchAlgorithmException
 import java.security.cert.X509Certificate
 import java.util.*
 import javax.net.ssl.*
-import kotlin.collections.ArrayList
 
 class SignalingClient() {
     var rname = "LiveMySpaceActivity"
@@ -25,9 +25,14 @@ class SignalingClient() {
 
     private lateinit var callback: Callback
     var lastConnection = ""
+    var room_code=""
 
     // TODO: REPLACE WITH "https://rooms-api.joinmyworld.live"
     private val socketUrl = "https://socket.joinmyworld.in/"
+//    "https://socket.joinmyworld.in/"
+//        "http://172.17.0.156:8000/"
+    val socketUserMap = mutableMapOf<String,JSONObject>()
+
 
     private val hostnameVerifier: HostnameVerifier = HostnameVerifier { hostname, session -> true }
     private val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
@@ -40,6 +45,7 @@ class SignalingClient() {
 
     val trustManager = trustAllCerts[0] as X509TrustManager
     fun init(callback: Callback, rname: String,profile:Profile) {
+        room_code= rname
         this.callback = callback
         try {
 
@@ -72,54 +78,37 @@ class SignalingClient() {
                  Log.d(TAG,"join room = ${data}")
               socket.emit("join room", data )
           }
-
-//            socket.on("created", Emitter.Listener { args: Array<Any?>? ->
-//                Log.e("chao", "room created:" + args.toString() + " sid- ${socket.id()}")
-//                callback.onCreateRoom(socket.id())
-//            })
-//            Log.d("Working", "one")
-
-//            socket.on("full",
-//                Emitter.Listener { args: Array<Any?>? ->
-//                    Log.e(
-//                        "chao",
-//                        "room full"
-//                    )
-//                })
-
-//            try {
-//                Log.d("id", socket.id().toString())
-//            } catch (e: Exception) {
-//                Log.d("id", e.toString())
-//            }
-
             socket.on("all users", Emitter.Listener { args: Array<Any>? ->
 
                 Log.d(TAG, "data= ${Arrays.toString(args)} socket id= ${socket.id()}")
+                var x= args!![0].toString()
+                val array = JSONArray(x)
+
+                for( i in 0 until array.length()){
+                    val user = array.getJSONObject(i)
+                    val socketid = user.optString("socket")
+                    socketUserMap.put(socketid,user)
+                    callback.onPeerJoined(socketid)
+                }
 
 
-                    var x= args!![0].toString()
-
-                    x=x.replace('[',' ')
-                    x=x.replace(']',' ')
-                    x= x.trim()
-                    val arr= x.split(',')
-                    for(ids in arr){
-                     var z=  ids.replace('"',' ')
-                     z= z.trim()
-                        Log.d(TAG,"id = $z")
-                        callback.onPeerJoined(z)
-                    }
-
-//                    for (element in jsonArray) {
-//                        callback.onPeerJoined(element)
+//
+//                    x=x.replace('[',' ')
+//                    x=x.replace(']',' ')
+//                    x= x.trim()
+//                    val arr= x.split(',')
+//                    for(ids in arr){
+//                     var z=  ids.replace('"',' ')
+//                     z= z.trim()
+//                        Log.d(TAG,"id = $z")
+//                        callback.onPeerJoined(z)
 //                    }
 
             })
 
             socket.on("new-ice-candidate"){
 
-//                Log.d(TAG,"ice candidate recived = $")
+                Log.d(TAG,"ice candidate recived")
                 val json= JSONObject(it!![0].toString())
 
                 Log.d(TAG,"ice candidate recived = $json")
@@ -130,57 +119,41 @@ class SignalingClient() {
             socket.on("offer"){
                 val json= JSONObject(it!![0].toString())
 
+                if( json.get("type").toString()== "ans"){
+                    Log.d(TAG,"ans recived = $json")
+                    callback.onAnswerReceived(json)
+                }else{
                 Log.d(TAG,"offer recived = $json")
-                callback.onIceCandidateReceived(json)
+                callback.onOfferReceived(json)
+                }
             }
 
-//            Log.d("Working", "second")
-//            socket.on("joined", Emitter.Listener { args: Array<Any?>? ->
-//                Log.e("chao", "self joined:" + socket.id())
-//
-//                callback.onSelfJoined()
-//            })
-//            socket.on("log",
-//                Emitter.Listener { args: Array<Any?>? ->
-//                    Log.e(
-//                        "chao",
-//                        "log call " + Arrays.toString(args)
-//                    )
-//                })
+            socket.on("mic"){
+                val json= JSONObject(it!![0].toString())
+                callback.onCallerMicrophoneSwitch(json)
+            }
 
-//            Log.d("SHIVAM3", "ASJ")
-//            socket.on("bye", Emitter.Listener { args: Array<Any> ->
-//                Log.e("chao", "bye " + args[0])
-//                callback.onPeerLeave(args[0] as String)
-//            })
+            socket.on("camera"){
+                val json= JSONObject(it!![0].toString())
+                callback.onCallerVideoSwitch(json)
+            }
 
-//            Log.d("Working", "third")
-//            socket.on("message response") { args ->
-//                Log.e("chao arg", "message " + Arrays.toString(args))
-//
-//                val arg = args[0]
-//                Log.d("arg", arg.toString())
-//                if (arg is String) {
-//                } else if (arg is JSONObject) {
-//                    var data = arg
-//                    Log.e("data", data.javaClass.name)
-//                    try {
-//                        val type = data.optString("type")
-//                        if ("offer" == type) {
-//                            callback.onOfferReceived(data)
-//                        } else if ("answer" == type) {
-//                            callback.onAnswerReceived(data)
-//                        } else
-//                            callback.onIceCandidateReceived(data)
-//                    } catch (e: Exception) {
-//                        Log.e("exception", "$e ")
-//                    }
-//                }
-//
-//            }
+            socket.on("hand"){
+                val json= JSONObject(it!![0].toString())
+                callback.onCallerHandSwitch(json)
+            }
 
-            //Other Methods
-//            socket.connect()
+            socket.on("screen"){
+                val json= JSONObject(it!![0].toString())
+                callback.onCallerScreenShare(json)
+            }
+            socket.on("permission"){
+                val json= JSONObject(it!![0].toString())
+                callback.onJoinPermission(json,socket)
+            }
+
+
+
         } catch (e: URISyntaxException) {
             throw RuntimeException(e)
         } catch (e: NoSuchAlgorithmException) {
@@ -200,19 +173,12 @@ class SignalingClient() {
         val jo = JSONObject()
         try {
 
-
-            jo.put("type","new-ice-candidate")
-            jo.put("candidate",iceCandidate.sdp)
+            val jsonString = GsonBuilder().create().toJson(iceCandidate)
+            jo.put("type",socket.id())
+            jo.put("candidate",jsonString)
             jo.put("target",to)
-
-//            jo.put("type", "candidate")
-//            jo.put("label", iceCandidate.sdpMLineIndex)
-//            jo.put("id", iceCandidate.sdpMid)
-//            jo.put("candidate", iceCandidate.sdp)
-//            jo.put("from", socket.id())
-//            jo.put("to", to)
+            Log.d(TAG,"ice send $jo")
             socket.emit("new-ice-candidate", jo)
-//
 
         } catch (e: JSONException) {
             e.printStackTrace()
@@ -220,24 +186,37 @@ class SignalingClient() {
     }
 
 
-    fun sendSessionDescription(sdp: SessionDescription, to: String?, p: String?) {
+    fun sendSessionDescription(sdp: SessionDescription, to: String?, p: String) {
         Log.e("in session desc", "in session desc")
         val jo = JSONObject()
         try {
-            jo.put("name",socket.id())
-            jo.put("target",to)
-            jo.put("type","offer")
-            jo.put("sdp",sdp.description)
 
-//            jo.put("type", sdp.type.canonicalForm())
-//            jo.put("sdp", sdp.description)
-//            jo.put("from", socket.id())
-//            jo.put("part", p)
-//            jo.put("to", to)
+            val jsonString = GsonBuilder().create().toJson(sdp)
+            jo.put("name",p)
+            jo.put("target",to)
+            jo.put("type",socket.id())
+            jo.put("sdp",jsonString)
+            Log.d(TAG,"sdp send $jo")
             socket.emit("offer", jo)
         } catch (e: JSONException) {
             e.printStackTrace()
         }
+    }
+
+    fun sendMicrophone(it:Boolean){
+        socket.emit("mic", MicEvent(room_code,it,"").getJson() )
+    }
+
+    fun sendCamera(it: Boolean){
+        socket.emit("camera",CameraEvent(room_code,it,"").getJson())
+    }
+
+    fun sendHand(it:Boolean){
+        socket.emit("hand",HandEvent(room_code,it).getJson())
+    }
+
+    fun sendScreen(it:Boolean){
+        socket.emit("screen",ScreenEvent(room_code,it,""))
     }
 
 
@@ -249,6 +228,11 @@ class SignalingClient() {
         fun onOfferReceived(data: JSONObject)
         fun onAnswerReceived(data: JSONObject)
         fun onIceCandidateReceived(data: JSONObject)
+        fun onCallerMicrophoneSwitch(data: JSONObject)
+        fun onCallerVideoSwitch(data: JSONObject)
+        fun onCallerScreenShare(data: JSONObject)
+        fun onCallerHandSwitch(data: JSONObject)
+        fun onJoinPermission(data: JSONObject, socket: Socket)
     }
 
     companion object {

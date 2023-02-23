@@ -5,7 +5,6 @@ import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.content.res.Resources
@@ -17,27 +16,27 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cessini.technology.commonui.R
+//import cessini.technology.commonui.R2.id.cameraSwitch
 import cessini.technology.commonui.activity.live.PeerConnectionAdapter
 import cessini.technology.commonui.activity.live.SdpAdapter
 import cessini.technology.commonui.activity.live.SignalingClient
+import cessini.technology.commonui.activity.live.signallingserverData.SGCUser
 import cessini.technology.commonui.activity.services.screen_share.MediaProjectionService
 import cessini.technology.commonui.adapter.RecAdapter
 import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
+import cessini.technology.commonui.fragment.RoomJoinRequestFragment
 import cessini.technology.commonui.fragment.commonChat.CommonChatFragment
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatPayload
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatViewModel
@@ -58,24 +57,20 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.util.IOUtils
-import com.google.android.gms.common.internal.service.Common
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.scopes.ViewModelScoped
-import kotlinx.coroutines.GlobalScope
+import io.socket.client.Socket
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-import org.kurento.client.Hub
 import org.slf4j.helpers.Util.report
 import org.webrtc.*
 import org.webrtc.PeerConnectionFactory.InitializationOptions
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 
@@ -100,8 +95,10 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     private var mMediaProjectionPermissionResultData: Intent? = null
     private var mMediaProjectionPermissionResultCode = 0
+    private var requestjoinfrag= RoomJoinRequestFragment()
 
     val KEY = true
+    var epoxyset=false;
 
     val hubViewModel:HubViewModel by viewModels()
 
@@ -141,6 +138,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     private val chatViewModel : CommonChatViewModel by viewModels()
 
     val recyclerDataArrayList:ArrayList<data> = ArrayList()
+
     lateinit var profile: Profile
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -234,6 +232,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         chatViewModel.roomID= hubViewModel.rname
         chatViewModel.user_id = hubViewModel.user_id
         chatViewModel.listenTo(hubViewModel.rname)
+
+        SignalingClient.get()?.init(this, hubViewModel.rname,profile)
+
         chatViewModel.messages.observe(this){
             //TODO
             val lastMessage = it.last()
@@ -294,6 +295,18 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     }
 
+
+
+    override fun onJoinPermission(data: JSONObject, socket: Socket) {
+        val useralias= data.getJSONObject("userAlias")
+        requestjoinfrag.showRequest(
+            useralias.optString("name"),
+            useralias.optString("profilePicture"), socket)
+        supportFragmentManager.beginTransaction().
+        replace(R.id.room_join_framelayout, requestjoinfrag)
+            .commit()
+    }
+
     /**
      * SnackBar Code
      */
@@ -341,7 +354,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE) {
@@ -388,10 +401,23 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrack)
         hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrack)
 
-        userData = data("userLocal", 0, hubViewModel.videoTrack!!, true, eglBaseContext, null)
-        recyclerDataArrayList.add(userData!!)
-        setUpEpoxy()
-        SignalingClient.get()?.init(this, hubViewModel.rname,profile)
+//        if(!recyclerDataArrayList.contains(userData)){
+            userData = data("userLocal", 0, hubViewModel.videoTrack!!, true, true,true,profile.profilePicture,false,profile.id,"socket",eglBaseContext, null)
+            recyclerDataArrayList.add(userData!!)
+            setUpEpoxy()
+//        }else
+//        {
+//            val temp= data("userLocal", 0, hubViewModel.videoTrack!!, true, eglBaseContext, null)
+//            val index= recyclerDataArrayList.indexOf(userData)
+//            recyclerDataArrayList[index]= temp
+//            userData= temp
+//            updateEpoxyAtPosition(index)
+//
+//        }
+
+
+
+
 
     }
 
@@ -490,7 +516,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         hubViewModel.mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
         hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrackScreen)
         hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrackScreen)
-        userDataScreen = data("userScreen", 0, hubViewModel.videoTrackScreen!!, true, eglBaseContext, null)
+        userDataScreen = data("userScreen", 0, hubViewModel.videoTrackScreen!!, true, true,true,profile.profilePicture,false,profile.id,"socket",eglBaseContext, null)
         recyclerDataArrayList.add(userDataScreen!!)
         setUpEpoxy()
 
@@ -515,6 +541,13 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         })
     }
 
+    fun updateEpoxyAtPosition(it:Int){
+        val epoxyRecyclerView: EpoxyRecyclerView = findViewById<EpoxyRecyclerView>(R.id.idCourseRV)
+        epoxyRecyclerView.requestModelBuild()
+    }
+
+
+
     /**
      * Handling the epoxy with the case of array size
      * of array size is small than the grid is with single span count
@@ -522,6 +555,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      */
 
     private fun setUpEpoxy() {
+        epoxyset= true
         val layoutManager: GridLayoutManager
         if (recyclerDataArrayList.size == 1 || recyclerDataArrayList.size == 2) {
             Log.d("recyclerDataArrayList", "size ${recyclerDataArrayList.size}")
@@ -590,6 +624,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 override fun onAddStream(mediaStream: MediaStream) {
                     super.onAddStream(mediaStream)
 
+                    val remoteUser= SignalingClient.get()?.socketUserMap!![socketId]!!
                     hubViewModel.fileName = createVideoPath(applicationContext, hubViewModel.fileName)
                     hubViewModel.remoteVideoTrack = mediaStream.videoTracks[0]
                     recyclerDataArrayList.add(
@@ -598,6 +633,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                             hubViewModel.remoteViewsIndex++,
                             mediaStream.videoTracks[0],
                             false,
+                            !remoteUser.optBoolean("isMuted"),
+                            remoteUser.optBoolean("isNotCamera"),
+                            remoteUser.optString("profilePicture"),
+                            remoteUser.optBoolean("isHandRaised"),
+                            remoteUser.optString("id"),
+                            remoteUser.optString("socket"),
                             eglBaseContext,
                             null
                         )
@@ -609,7 +650,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
 
             })
-//        peerConnection!!.addStream(hubViewModel.mediaStream)
+        Log.d("peer","${peerConnection.toString()}")
+        peerConnection!!.addStream(hubViewModel.mediaStream)
         hubViewModel.peerConnectionMap[socketId] = peerConnection!!
         return peerConnection
     }
@@ -659,12 +701,19 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onOfferReceived(data: JSONObject) {
         runBlocking {
 
-            val socketId = data.optString("from")
+            val socketId = data.optString("type")
             val peerConnection = getOrCreatePeerConnection(socketId)
-            peerConnection.setRemoteDescription(
-                SdpAdapter("setRemoteSdp:$socketId"),
-                SessionDescription(SessionDescription.Type.OFFER, data.optString("sdp"))
-            )
+
+            val jsonObject = Gson().fromJson(data.optString("sdp").toString(), JsonObject::class.java)
+            val sdp = Gson().fromJson(jsonObject, SessionDescription::class.java)
+
+            peerConnection.setRemoteDescription(SdpAdapter("setRemoteASdp:$socketId"),sdp)
+
+
+//            peerConnection.setRemoteDescription(
+//                SdpAdapter("setRemoteSdp:$socketId"),
+//                SessionDescription(SessionDescription.Type.OFFER, data.optString("sdp") )
+//            )
             val constraints = MediaConstraints().apply {
                 mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
             }
@@ -677,9 +726,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 override fun onCreateSuccess(sessionDescription: SessionDescription) {
                     super.onCreateSuccess(sessionDescription)
                     peerConnection.setLocalDescription(SdpAdapter("setLocalSdp:$socketId"), sessionDescription)
-                    SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"ok")
+                    SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"ans")
                 }
             }, constraints)
+
+
+
         }
     }
 
@@ -688,12 +740,19 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      *
      */
     override fun onAnswerReceived(data: JSONObject) {
-        val socketId = data.optString("from")
+        val socketId = data.optString("type")
         val peerConnection = getOrCreatePeerConnection(socketId)
-        peerConnection.setRemoteDescription(
-            SdpAdapter("setRemoteASdp:$socketId"),
-            SessionDescription(SessionDescription.Type.ANSWER, data.optString("sdp"))
-        )
+
+        val jsonObject = Gson().fromJson(data.optString("sdp").toString(), JsonObject::class.java)
+        val sdp = Gson().fromJson(jsonObject, SessionDescription::class.java)
+
+          peerConnection.setRemoteDescription(SdpAdapter("setRemoteASdp:$socketId"),sdp)
+
+//        peerConnection.setRemoteDescription(
+////            SdpAdapter("setRemoteASdp:$socketId"),
+////            SessionDescription(SessionDescription.Type.ANSWER, data.optString("sdp"))
+//        )
+        setUpEpoxy()
         if(data.optString("part")=="not ok")
         {
             recyclerDataArrayList.removeLast()
@@ -706,14 +765,18 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      */
 
     override fun onIceCandidateReceived(data: JSONObject) {
-        val socketId = data.optString("from")
+        val socketId = data.optString("type")
         val peerConnection = getOrCreatePeerConnection(socketId)
+//        val obj: JSONObject = JSONObject(data.optString("candidate"))
+        val jsonObject = Gson().fromJson(data.optString("candidate").toString(), JsonObject::class.java)
+       val candidate = Gson().fromJson(jsonObject, IceCandidate::class.java)
         peerConnection.addIceCandidate(
-            IceCandidate(
-                data.optString("id"),
-                data.optInt("label"),
-                data.optString("candidate")
-            )
+            candidate
+//            IceCandidate(
+//                data.optString("id"),
+//                0,
+//                data.optString("candidate")
+//            )
         )
 
         Log.e("ice candidate","Added ice candidate")
@@ -734,10 +797,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             it.setImage(R.drawable.ic_addvideo)
             count++
             hubViewModel.videoTrack?.setEnabled(true)
+            SignalingClient.get()?.sendCamera(true)
         }else{
             it.setImage(R.drawable.ic_removevideo)
             count++
             hubViewModel.videoTrack?.setEnabled(false)
+            SignalingClient.get()?.sendCamera(false)
         }
 //        localView.isEnabled = !(localView.isEnabled)
     }
@@ -747,10 +812,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         if (hubViewModel.localAudioTrack != null) {
             if (hubViewModel.localAudioTrack?.enabled() == true) {
                 hubViewModel.localAudioTrack?.setEnabled(false)
+                SignalingClient.get()?.sendMicrophone(false)
                 it.setImage(R.drawable.ic_removeaudio)
             }
             else {
                 hubViewModel.localAudioTrack?.setEnabled(true)
+                SignalingClient.get()?.sendMicrophone(true)
                 it.setImage(R.drawable.ic_addaudio)
             }
         }
@@ -768,12 +835,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         if(!hubViewModel.isScreenShare){
             startScreenCapture()
+            SignalingClient.get()?.sendScreen(true)
             screenShare.let {
                 it.setTextColor(R.color.quantum_black_100)
                 it.background = ContextCompat.getDrawable(this,R.drawable.circular_button_view_without_border)
             }
             hubViewModel.isScreenShare=true
         }else{
+            SignalingClient.get()?.sendScreen(false)
             hubViewModel.videoTrackScreen?.setEnabled(false)
             hubViewModel.localAudioTrackScreen?.setEnabled(false)
             hubViewModel.isScreenShare = false
@@ -993,7 +1062,61 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     }
 
+    override fun onCallerMicrophoneSwitch(data: JSONObject) {
+      val status= !data.optBoolean("muted")
+        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
+        for(i in 0 until recyclerDataArrayList.size){
+            if(recyclerDataArrayList[i].userID==user.id){
+                recyclerDataArrayList[i].microphoneSwitch = status
+            }
+        }
+
+         setUpEpoxy()
+    }
+
+    override fun onCallerVideoSwitch(data: JSONObject) {
+        val status= !data.optBoolean("camera")
+        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
+
+        for(i in 0 until recyclerDataArrayList.size){
+            if(recyclerDataArrayList[i].userID==user.id){
+                recyclerDataArrayList[i].videoSwitch = status
+            }
+        }
+
+        setUpEpoxy()
+    }
+
+    override fun onCallerScreenShare(data: JSONObject) {
+//        val status= !data.optBoolean("value")
+//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
+//
+//        for(i in 0 until recyclerDataArrayList.size){
+//            if(recyclerDataArrayList[i].userID==user.id){
+//                recyclerDataArrayList[i]. = status
+//            }
+//        }
+//
+//        setUpEpoxy()
+    }
+
+    override fun onCallerHandSwitch(data: JSONObject) {
+        val status= !data.optBoolean("muted")
+        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
+
+        for(i in 0 until recyclerDataArrayList.size){
+            if(recyclerDataArrayList[i].userID==user.id){
+                recyclerDataArrayList[i].handSwitch = status
+            }
+        }
+
+        setUpEpoxy()
+    }
 
 
 }

@@ -8,6 +8,12 @@ data class data(
     var index: Int,
     var video: VideoTrack,
     val creater: Boolean,
+    var microphoneSwitch: Boolean,
+    var videoSwitch:Boolean,
+    var profilepic:String,
+    var handSwitch:Boolean,
+    var userID:String,
+    var socketId:String,
     val con: EglBase.Context,
     val fileRenderer: FileRenderer?
 )

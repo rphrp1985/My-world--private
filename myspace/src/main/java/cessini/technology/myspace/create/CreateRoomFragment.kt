@@ -151,6 +151,26 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
                         toast(message = "Enter name of Live Room")
                     } else {
 
+
+//                        val intent: Intent = Intent()
+//
+//                        intent.setClassName(
+//                            requireContext(),
+//                            "cessini.technology.commonui.activity.GridActivity"
+//                        )
+////            intent.setClassName(requireContext(),"cessini.technology.myspace.live.LiveMyspaceActivity")
+//
+//                        val putExtra = intent.putExtra("Room Name",
+//                            " ")
+//
+//                        viewLifecycleOwner.lifecycleScope.launch {
+//                            profileRepository.profile.collectLatest {
+//                                intent.putExtra("user_id", it.id)
+//
+//                                startActivity(intent)
+//                            }
+//                        }
+
                         roomSharedViewModel.createInstantRoom()
 
 
