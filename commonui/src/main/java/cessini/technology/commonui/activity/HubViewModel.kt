@@ -21,20 +21,20 @@ class HubViewModel @Inject constructor(
     application: Application
 ) :AndroidViewModel(application) {
      var iceServers: List<PeerConnection.IceServer> = listOf(
-    PeerConnection.IceServer.builder("stun.l.google.com:19302")
+    PeerConnection.IceServer.builder("stun:stun.l.google.com:19302")
         .setUsername("suraj@gmail.com")
         .setPassword("98376683")
         .createIceServer(),
 
-    PeerConnection.IceServer.builder("stun1.l.google.com:19302")
+    PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302")
         .setUsername("diya@gmail.com")
         .setPassword("98376683")
     .createIceServer(),
 
-//    PeerConnection.IceServer.builder("turn:rooms-api.joinmyworld.live")
-//    .setUsername("Admin")
-//    .setPassword("password")
-//    .createIceServer(),
+    PeerConnection.IceServer.builder("turn:rooms-api.joinmyworld.live")
+    .setUsername("Admin")
+    .setPassword("password")
+    .createIceServer(),
 
     )
 
