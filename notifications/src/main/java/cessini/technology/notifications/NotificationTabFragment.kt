@@ -74,6 +74,21 @@ class NotificationTabFragment : Fragment() {
         getData(notification)
     }
     private fun getData(notification: ArrayList<MyWorldNotification>){
+        Firebase.firestore.collection("Notification")   
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    Log.d(TAG, "${document.id} => ${document.data}")
+                    val id = document.getString("id").toString()
+                    val message = document.getString("message").toString()
+                    val profile_image = document.getString("profile_image").toString()
+                    val username = document.getString("username").toString()
+                    Log.e(TAG, id)
+                    Log.e(TAG, message)
+                    Log.e(TAG, profile_image)
+                    Log.e(TAG, username)
+                    notification.add(MyWorldNotification(id, message, username, profile_image))
+                }
         Firebase.firestore.collection("GlobalNotifications")
             .document("${userIdentifierPreferences.id}")
             .collection("NotificationData")
@@ -90,12 +105,19 @@ class NotificationTabFragment : Fragment() {
                     Log.e(TAG,profile_image)
                     Log.e(TAG,username)
                     notification.add(MyWorldNotification(id,message,username,profile_image))
-                }
-                buildNotificationsModel(notification)
+                        }
+
+                        buildNotificationsModel(notification)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.w(TAG, "Error getting documents.", exception)
+                    }
+
             }
             .addOnFailureListener { exception ->
                 Log.w(TAG, "Error getting documents.", exception)
             }
+
     }
 
 //    private suspend fun getNotifications(token: String): ApiNotification {

@@ -61,7 +61,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         Log.d(TAG, remoteMessage.data.toString())
         val body=remoteMessage.notification?.body.toString()
         val title=remoteMessage.notification?.title.toString()
-        amazonSNSImpl.addGlobalData(body)
+        if (body.isNotEmpty() && title.isNotEmpty())
+            addData(MyWorldNotification("id",body,"Myworld","https://my-world-bucket-alpha.s3.ap-south-1.amazonaws.com/notification/72.png"))
         showNotification(body,title)
     }
 
@@ -90,7 +91,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         notificationManager.notify(123, mBuilder.build())
     }
     private fun addData(myWorldNotification: MyWorldNotification){
-        Firebase.firestore.collection("GlobalNotifications").document().set(myWorldNotification)
+        Firebase.firestore.collection("Notification").document().set(myWorldNotification)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     Log.d(TAG, "Data added to Firestore ${it.result}")

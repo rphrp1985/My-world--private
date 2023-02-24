@@ -94,7 +94,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
     }
 
     suspend fun sendFollowNotification(userId: String) {
-
+        val message="$displayName followed you"
         Log.d(TAG, "sendFollowNotification: ")
 
 
@@ -116,7 +116,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
                             this.messageStructure
                             this.messageAttributes //= Map<String, MessageAttributeValue>("", )
                             this.subject = ""
-                            this.message = "$displayName followed you"
+                            this.message = message
                             this.targetArn = endpoint
                             this.subject = "New follower"
                         }
@@ -148,7 +148,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
                     Log.d(TAG, "Device not present in Firestore ${it.message}")
                 }
         }
-
+        addGlobalData(message,userId)
 //        if (endpoint.isNotEmpty()) {
 //
 //            val request = PublishRequest {
@@ -192,30 +192,33 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
         snsClient.subscribe(subscribe)
 
     }
-    fun addGlobalData(message:String){
+    fun addGlobalData(message:String,id:String){
         var profile_image=""
         var username=""
         val colRef=Firebase.firestore.collection("GlobalNotifications")
-        val docRef=colRef.document("${userId}")
-        docRef.get()
+        val olddocRef=colRef.document("${userId}")
+        val newdocRef=colRef.document("${id}")
+        olddocRef.get()
             .addOnSuccessListener { doc ->
-                profile_image=doc.toObject<MyWorldNotification>()?.profile_image.toString()
-                username=doc.toObject<MyWorldNotification>()?.username.toString()
+                profile_image=doc.getString("profile_image").toString()
+                username=doc.getString("username").toString()
+                Log.e(TAG,profile_image)
+                Log.e(TAG,username)
+                newdocRef.collection("NotificationData")
+                    .document()
+                    .set(MyWorldNotification(userId,message,username,profile_image))
+                    .addOnCompleteListener {
+                        if (it.isSuccessful) {
+                            Log.d(TAG, "Data added to Firestore ${it.result}")
+                        } else {
+                            Log.d(TAG, "Data added to Firestore ${it.exception}")
+                        }
+                    }
             }
             .addOnFailureListener {
                 Log.d(TAG, "Data not present in Firestore ${it.message}")
             }
 
-        docRef.collection("NotificationData")
-            .document()
-            .set(MyWorldNotification(userId,message,username,profile_image))
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    Log.d(TAG, "Data added to Firestore ${it.result}")
-                } else {
-                    Log.d(TAG, "Data added to Firestore ${it.exception}")
-                }
-            }
 
 
 
