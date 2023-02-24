@@ -132,15 +132,12 @@ class SignInViewModel @Inject constructor(
                 _signInProgress.value = 100
                 callback(it.channelName)
                 val userId=it.id
-<<<<<<< HEAD
                 val displayName=it.displayName
                 val profileImage=it.photoUrl
-                updateFirebaseData(getToken,userId)
+                updateFirebaseData(getToken,userId,displayName)
                 addGlobalNotification(userId,profileImage,displayName)
-=======
                 val name=it.displayName
                 updateFirebaseData(getToken,userId,name)
->>>>>>> show_name
             }
 
             result.onFailure {
