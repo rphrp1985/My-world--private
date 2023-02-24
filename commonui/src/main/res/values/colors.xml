@@ -36,4 +36,5 @@
     <color name="c4">#52CFFF</color>
     <color name="cpPrime">#ff7725ff</color>
     <color name="quantum_black_100">#292727</color>
+    <color name="translucent_bottom_nav_background">#C4D0C5C5</color>
 </resources>

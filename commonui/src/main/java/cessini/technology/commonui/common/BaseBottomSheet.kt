@@ -93,7 +93,7 @@ abstract class BaseBottomSheet<T : ViewDataBinding>(
 
         val displayRectangle = Rect()
         this.requireDialog().window!!
-            .setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.cpTransparent)))
+            .setBackgroundDrawable(ColorDrawable(resources.getColor(android.R.color.transparent)))
         val window: Window = requireActivity().window
         window.decorView.getWindowVisibleDisplayFrame(displayRectangle)
         this.requireDialog().window!!.setLayout(
@@ -113,7 +113,7 @@ abstract class BaseBottomSheet<T : ViewDataBinding>(
         val behaviour = BottomSheetBehavior.from(bottomSheet!!)
         val layoutParams = bottomSheet.layoutParams
         val activityHeight = requireActivity().display?.height!!
-        layoutParams.height = activityHeight*95/100
+        layoutParams.height = activityHeight- dp
         Log.d("BaseBottomSheet","final height= ${layoutParams.height}")
         bottomSheet.layoutParams = layoutParams
         behaviour.state = BottomSheetBehavior.STATE_EXPANDED
