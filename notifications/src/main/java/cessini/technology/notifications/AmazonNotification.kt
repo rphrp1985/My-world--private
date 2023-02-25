@@ -5,7 +5,10 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import cessini.technology.commonui.AmazonSNSImpl
+import cessini.technology.newapi.model.MyWorldNotification
 import cessini.technology.newrepository.explore.RegistrationRepository
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,7 +40,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         coroutineScope.launch {
             launch {
                 try {
-                    amazonSNSImpl.createNewEndpoint(token)
+                    val endpoint=amazonSNSImpl.createNewEndpoint(token)
+                    amazonSNSImpl.subscribe("arn:aws:sns:ap-south-1:523652883143:All",endpoint)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -55,7 +59,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, remoteMessage.data.toString())
-        showNotification(remoteMessage.data.toString())
+        val body=remoteMessage.notification?.body.toString()
+        val title=remoteMessage.notification?.title.toString()
+        if (body.isNotEmpty() && title.isNotEmpty())
+            addData(MyWorldNotification("id",body,"Myworld","https://my-world-bucket-alpha.s3.ap-south-1.amazonaws.com/notification/72.png"))
+        showNotification(body,title)
     }
 
     override fun onDestroy() {
@@ -63,13 +71,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         job.cancel()
     }
 
-    private fun showNotification(body: String) {
+    private fun showNotification(body: String,title: String) {
 
         val mBuilder: NotificationCompat.Builder = NotificationCompat
             .Builder(this, "Channel_Id")
             .setSmallIcon(R.drawable.notifications_icon)
             .setContentText(body)
-            .setContentTitle("Notifcations")
+            .setContentTitle(title)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
@@ -81,5 +89,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             NotificationChannel("Channel_Id", "message", NotificationManager.IMPORTANCE_HIGH)
         notificationManager.createNotificationChannel(notificationChannel)
         notificationManager.notify(123, mBuilder.build())
+    }
+    private fun addData(myWorldNotification: MyWorldNotification){
+        Firebase.firestore.collection("Notification").document().set(myWorldNotification)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.d(TAG, "Data added to Firestore ${it.result}")
+                } else {
+                    Log.d(TAG, "Data added to Firestore ${it.exception}")
+                }
+            }
     }
 }
