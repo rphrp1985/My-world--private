@@ -39,6 +39,7 @@ class HubViewModel @Inject constructor(
     )
 
     var peerConnectionMap: HashMap<String, PeerConnection> = HashMap()
+    var peerConnectionScreenMap: HashMap<String, PeerConnection> = HashMap()
 
 
     var STREAM_NAME_PREFIX = "android_device_stream"
@@ -49,6 +50,8 @@ class HubViewModel @Inject constructor(
 
      lateinit var fileRenderer:FileRenderer
     lateinit var remoteVideoTrack:VideoTrack
+
+    var hand= false
 
      var isFront = true
      val CAPTURE_PERMISSION_REQUEST_CODE = 1

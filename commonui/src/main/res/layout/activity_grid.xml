@@ -115,7 +115,7 @@
             app:layout_constraintStart_toEndOf="@+id/btnShareScreen"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="1.0"
-            app:srcCompat="@drawable/ic_removeaudio" />
+            app:srcCompat="@drawable/ic_addaudio" />
 
         <Spinner
             android:id="@+id/delete"

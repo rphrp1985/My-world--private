@@ -27,11 +27,12 @@ class SignalingClient() {
     var lastConnection = ""
     var room_code=""
 
+//    lateinit var profile: Profile
+
     // TODO: REPLACE WITH "https://rooms-api.joinmyworld.live"
     private val socketUrl = "https://socket.joinmyworld.in/"
 //    "https://socket.joinmyworld.in/"
 //        "http://172.17.0.156:8000/"
-    val socketUserMap = mutableMapOf<String,JSONObject>()
 
 
     private val hostnameVerifier: HostnameVerifier = HostnameVerifier { hostname, session -> true }
@@ -44,9 +45,15 @@ class SignalingClient() {
     })
 
     val trustManager = trustAllCerts[0] as X509TrustManager
-    fun init(callback: Callback, rname: String,profile:Profile) {
+    fun init(
+        callback: Callback,
+        rname: String,
+        profile: Profile,
+        socketUserMap: MutableMap<String, JSONObject>
+    ) {
         room_code= rname
         this.callback = callback
+//        this.profile= profile
         try {
 
 //            val sslContext = SSLContext.getInstance("TLS")
@@ -72,12 +79,30 @@ class SignalingClient() {
 //              val data = JSONObject("""{"room":"$rname"}""")
               val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
 
-//              val data = JoinRoom("surajpisal_ee_123855667896512_1676786614",sgcUser,"surajpisal113@gmail.com").getJson()
+//                 room_code= "Prianshu Prasad_vv_583149515846757_1677173321"
+//              val data = JoinRoom("Prianshu Prasad_vv_583149515846757_1677173321",sgcUser,"rpinformationhub@gmail.com").getJson()
                  val data = JoinRoom(rname,sgcUser,profile.email).getJson()
 
                  Log.d(TAG,"join room = ${data}")
               socket.emit("join room", data )
           }
+
+            socket.on("denied"){
+
+                val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
+
+//                 room_code= "Prianshu Prasad_vv_583149515846757_1677173321"
+//              val data = JoinRoom("Prianshu Prasad_vv_583149515846757_1677173321",sgcUser,"rpinformationhub@gmail.com").getJson()
+                val data = JoinRoom(rname,sgcUser,profile.email).getJson()
+
+                Log.d(TAG,"permission = ${data}")
+                socket.emit("permission", data )
+                callback.onPermissionWaiting()
+
+            }
+
+            var temp=0;
+
             socket.on("all users", Emitter.Listener { args: Array<Any>? ->
 
                 Log.d(TAG, "data= ${Arrays.toString(args)} socket id= ${socket.id()}")
@@ -87,26 +112,41 @@ class SignalingClient() {
                 for( i in 0 until array.length()){
                     val user = array.getJSONObject(i)
                     val socketid = user.optString("socket")
-                    socketUserMap.put(socketid,user)
-                    callback.onPeerJoined(socketid)
+                    socketUserMap[socketid] = user
+
+                }
+                if(temp==0) {
+                    temp++;
+                    for (i in 0 until array.length()) {
+                        val user = array.getJSONObject(i)
+                        val socketid = user.optString("socket")
+//                    socketUserMap.put(socketid,user)
+                        callback.onPeerJoined(socketid, false)
+                    }
                 }
 
-
-//
-//                    x=x.replace('[',' ')
-//                    x=x.replace(']',' ')
-//                    x= x.trim()
-//                    val arr= x.split(',')
-//                    for(ids in arr){
-//                     var z=  ids.replace('"',' ')
-//                     z= z.trim()
-//                        Log.d(TAG,"id = $z")
-//                        callback.onPeerJoined(z)
-//                    }
-
             })
+            socket.on("allowed"){
+                Log.d(TAG,"allowed $rname")
+//              val data = JSONObject("""{"room":"$rname"}""")
+                val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
 
+//                 room_code= "Prianshu Prasad_vv_583149515846757_1677173321"
+//              val data = JoinRoom("Prianshu Prasad_vv_583149515846757_1677173321",sgcUser,"rpinformationhub@gmail.com").getJson()
+                val data = JoinRoom(rname,sgcUser,profile.email).getJson()
+                callback.hidefragment()
+                Log.d(TAG,"join room = ${data}")
+                socket.emit("join room", data )
+
+            }
             socket.on("new-ice-candidate"){
+
+                val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
+                val data = JoinRoom(rname,sgcUser,profile.email).getJson()
+                callback.hidefragment()
+                Log.d(TAG,"join room = ${data}")
+
+                socket.emit("join room", data )
 
                 Log.d(TAG,"ice candidate recived")
                 val json= JSONObject(it!![0].toString())
@@ -130,25 +170,30 @@ class SignalingClient() {
 
             socket.on("mic"){
                 val json= JSONObject(it!![0].toString())
+                Log.d(TAG,"mic = $json")
                 callback.onCallerMicrophoneSwitch(json)
             }
 
             socket.on("camera"){
                 val json= JSONObject(it!![0].toString())
+                Log.d(TAG,"camera = $json")
                 callback.onCallerVideoSwitch(json)
             }
 
             socket.on("hand"){
                 val json= JSONObject(it!![0].toString())
+                Log.d(TAG,"hand = $json")
                 callback.onCallerHandSwitch(json)
             }
 
             socket.on("screen"){
                 val json= JSONObject(it!![0].toString())
+                Log.d(TAG,"screen = $json")
                 callback.onCallerScreenShare(json)
             }
-            socket.on("permission"){
+            socket.on("permit?"){
                 val json= JSONObject(it!![0].toString())
+                Log.d("permt?",json.toString())
                 callback.onJoinPermission(json,socket)
             }
 
@@ -169,12 +214,18 @@ class SignalingClient() {
 //        instance = null
     }
 
-    fun sendIceCandidate(iceCandidate: IceCandidate, to: String?) {
+    fun sendIceCandidate(iceCandidate: IceCandidate, to: String?,screen:Boolean) {
         val jo = JSONObject()
+//        val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
+
         try {
+            val jo2 = JSONObject()
+            jo2.put("socket",socket.id())
+            jo2.put("screen",screen)
+//            jo2.put("user",sgcUser.getJson())
 
             val jsonString = GsonBuilder().create().toJson(iceCandidate)
-            jo.put("type",socket.id())
+            jo.put("type",jo2.toString())
             jo.put("candidate",jsonString)
             jo.put("target",to)
             Log.d(TAG,"ice send $jo")
@@ -186,15 +237,19 @@ class SignalingClient() {
     }
 
 
-    fun sendSessionDescription(sdp: SessionDescription, to: String?, p: String) {
+    fun sendSessionDescription(sdp: SessionDescription, to: String?, p: String,screen:Boolean) {
         Log.e("in session desc", "in session desc")
         val jo = JSONObject()
+        val jo2 = JSONObject()
         try {
+
+            jo2.put("socket",socket.id())
+            jo2.put("screen",screen)
 
             val jsonString = GsonBuilder().create().toJson(sdp)
             jo.put("name",p)
             jo.put("target",to)
-            jo.put("type",socket.id())
+            jo.put("type",jo2.toString())
             jo.put("sdp",jsonString)
             Log.d(TAG,"sdp send $jo")
             socket.emit("offer", jo)
@@ -204,15 +259,31 @@ class SignalingClient() {
     }
 
     fun sendMicrophone(it:Boolean){
-        socket.emit("mic", MicEvent(room_code,it,"").getJson() )
+        val jo = JSONObject()
+        jo.put("room_code",room_code)
+        jo.put("value",it)
+        jo.put("url","")
+        Log.d("Rp-Event","mic= ${jo}")
+
+        socket.emit("mic", jo )
     }
 
     fun sendCamera(it: Boolean){
-        socket.emit("camera",CameraEvent(room_code,it,"").getJson())
+        val jo = JSONObject()
+        jo.put("room_code",room_code)
+        jo.put("value",it)
+        jo.put("url","")
+        Log.d("Rp-Event","camera= $jo")
+        socket.emit("camera",jo)
     }
 
     fun sendHand(it:Boolean){
-        socket.emit("hand",HandEvent(room_code,it).getJson())
+        val jo = JSONObject()
+        jo.put("room_code",room_code)
+        jo.put("value",it)
+//        jo.put("url","")
+        Log.d("Rp-Event","hand= ${jo}")
+        socket.emit("hand",jo)
     }
 
     fun sendScreen(it:Boolean){
@@ -222,7 +293,7 @@ class SignalingClient() {
 
     interface Callback {
         fun onCreateRoom(id: String)
-        fun onPeerJoined(socketId: String)
+        fun onPeerJoined(socketId: String,screen:Boolean)
         fun onSelfJoined()
         fun onPeerLeave(data: String)
         fun onOfferReceived(data: JSONObject)
@@ -233,6 +304,8 @@ class SignalingClient() {
         fun onCallerScreenShare(data: JSONObject)
         fun onCallerHandSwitch(data: JSONObject)
         fun onJoinPermission(data: JSONObject, socket: Socket)
+        fun onPermissionWaiting()
+        fun hidefragment()
     }
 
     companion object {

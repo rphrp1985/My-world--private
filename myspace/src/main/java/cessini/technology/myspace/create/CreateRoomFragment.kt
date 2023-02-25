@@ -301,6 +301,8 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
         val putExtra = intent.putExtra("Room Name",
             "${roomID}")
 
+        intent.putExtra("created",true)
+
         viewLifecycleOwner.lifecycleScope.launch {
             profileRepository.profile.collectLatest {
                 intent.putExtra("user_id", it.id)

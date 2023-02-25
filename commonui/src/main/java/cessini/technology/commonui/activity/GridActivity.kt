@@ -37,6 +37,7 @@ import cessini.technology.commonui.activity.services.screen_share.MediaProjectio
 import cessini.technology.commonui.adapter.RecAdapter
 import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
 import cessini.technology.commonui.fragment.RoomJoinRequestFragment
+import cessini.technology.commonui.fragment.RoomJoinWaiting
 import cessini.technology.commonui.fragment.commonChat.CommonChatFragment
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatPayload
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatViewModel
@@ -57,6 +58,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3Client
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
@@ -95,14 +97,13 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     private var mMediaProjectionPermissionResultData: Intent? = null
     private var mMediaProjectionPermissionResultCode = 0
-    private var requestjoinfrag= RoomJoinRequestFragment()
+    private var requestjoinfrag= RoomJoinRequestFragment(this)
+    private var joinwaitingfrag = RoomJoinWaiting()
 
     val KEY = true
     var epoxyset=false;
 
     val hubViewModel:HubViewModel by viewModels()
-
-
 
     private val audioManager by lazy { RTCAudioManager.create(this) }
     @Inject
@@ -111,17 +112,16 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     @Inject
     lateinit var peerConnectionFactory: PeerConnectionFactory
     private lateinit var localView: SurfaceViewRenderer
-
-
     private lateinit var  remoteViews: Array<SurfaceViewRenderer>
     private lateinit var camera: ImageView
-    private lateinit var screenShare: Button
+    private lateinit var screenShare: ImageView
+    private lateinit var raiseHand:Button
     private lateinit var audio: ImageView
-
-
     private lateinit var recAdapter: RecAdapter
     private var count = 0
-
+    private var isCreated=false
+    lateinit var controller:EpoxyController
+    lateinit var epoxyRecyclerView: EpoxyRecyclerView
 
     /** Storing data model of local user camera and screen to handle it in epoxy */
     private var userData : data? = null
@@ -140,6 +140,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     val recyclerDataArrayList:ArrayList<data> = ArrayList()
 
     lateinit var profile: Profile
+    val socketUserMap = mutableMapOf<String,JSONObject>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -158,13 +159,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             navigationBarColor = ContextCompat.getColor(this@GridActivity,R.color.Dark)
 
         }
+        val screenWidth: Int = Resources.getSystem().displayMetrics.widthPixels
+        val screenHeight: Int = Resources.getSystem().displayMetrics.heightPixels - 20
 
-        lifecycleScope.launch {
-            profileRepository.profile.collectLatest {
-                profile= it
-            }
-        }
+         controller = EpoxyController(screenHeight, screenWidth, applicationContext)
 
+        epoxyRecyclerView = findViewById<EpoxyRecyclerView>(R.id.idCourseRV)
+
+        epoxyRecyclerView.setController(controller)
 
         // Streaming video
         val mediaProjectionService: MediaProjectionService? = MediaProjectionService.INSTANCE
@@ -180,9 +182,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         // Get Permission for screen Capturing
-        if(mediaProjectionManager!=null){
-            startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), hubViewModel.REQUEST_CODE_STREAM)
-        }
+//        if(mediaProjectionManager!=null){
+//            startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), hubViewModel.REQUEST_CODE_STREAM)
+//        }
 
         Log.e("jsom",JSONObject(HubConstants.awsconfig).toString())
         /**
@@ -204,12 +206,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         val share = findViewById<ImageView>(R.id.share)
         val cameraSwitch = findViewById<ImageView>(R.id.cameraSwitch)
         camera = findViewById<ImageView>(R.id.iv_video)
-        screenShare = findViewById<Button>(R.id.btnShareScreen)
+        screenShare = findViewById<ImageView>(R.id.shareScreen)
+        raiseHand = findViewById(R.id.btnShareScreen)
 //        localView = findViewById(R.id.localView)
         handleIntent(intent)
         if(hubViewModel.rname=="RoomLive") {
             try {
                 hubViewModel.rname = intent.getStringExtra("Room Name").toString()
+
 
                 Log.e("room name", hubViewModel.rname)
 
@@ -227,22 +231,38 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
             }
         }
+        isCreated= intent.getBooleanExtra("created",false);
 
         chatViewModel.setSocket(hubViewModel.rname)
         chatViewModel.roomID= hubViewModel.rname
         chatViewModel.user_id = hubViewModel.user_id
         chatViewModel.listenTo(hubViewModel.rname)
 
-        SignalingClient.get()?.init(this, hubViewModel.rname,profile)
+        lifecycleScope.launch {
+            profileRepository.profile.collectLatest {
+                profile= it
+                SignalingClient.get()?.init(this@GridActivity, hubViewModel.rname,profile,socketUserMap)
+
+                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    askPermission()
+                }else{
+//            localView.isEnabled = true
+                    hubViewModel.isFront = true
+                    showCamera()
+                }
+                if(isCreated)
+                createRoomLink()
+            }
+        }
+
+
+
 
         chatViewModel.messages.observe(this){
             //TODO
             val lastMessage = it.last()
             showSnack(lastMessage)
         }
-
-
-
 
 
         cameraSwitch.setOnClickListener(){
@@ -270,6 +290,10 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         screenShare.setOnClickListener {
             onScreenShare()
         }
+
+        raiseHand.setOnClickListener {
+             hand()
+        }
         hubViewModel.peerConnectionMap = HashMap()
 
         audioManager.selectAudioDevice(RTCAudioManager.AudioDevice.SPEAKER_PHONE)
@@ -280,31 +304,68 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
          * Starting the camera if permission is granted else requesting for permission
          */
 
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            askPermission()
-        }else{
-//            localView.isEnabled = true
-            hubViewModel.isFront = true
-            showCamera()
-        }
+
 
         ivMessage.setOnClickListener {
             val commonChat = CommonChatFragment()
             commonChat.show(supportFragmentManager, CommonChatFragment.TAG)
         }
 
+
+
+    }
+
+    fun hand(){
+        hubViewModel.hand= !hubViewModel.hand
+        SignalingClient.get()?.sendHand(hubViewModel.hand)
+        if(hubViewModel.hand){
+            raiseHand.let {
+                it.setTextColor(R.color.quantum_black_100)
+                it.background = ContextCompat.getDrawable(this,R.drawable.circular_button_view_without_border)
+            }
+
+        }else{
+            raiseHand.background=null
+            raiseHand.background= ContextCompat.getDrawable(this,R.drawable.ic_hubaskwhite)
+
+
+        }
     }
 
 
-
     override fun onJoinPermission(data: JSONObject, socket: Socket) {
-        val useralias= data.getJSONObject("userAlias")
-        requestjoinfrag.showRequest(
-            useralias.optString("name"),
-            useralias.optString("profilePicture"), socket)
-        supportFragmentManager.beginTransaction().
-        replace(R.id.room_join_framelayout, requestjoinfrag)
-            .commit()
+
+        runOnUiThread {
+            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
+            layout.visibility = View.VISIBLE
+
+            val useralias = data.getJSONObject("userAlias")
+            requestjoinfrag.showRequest(
+                useralias.optString("name"),
+                useralias.optString("profilePicture"), socket, data.optString("id"))
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.room_join_framelayout, requestjoinfrag)
+                .commit()
+
+        }
+    }
+
+    override fun onPermissionWaiting() {
+        runOnUiThread {
+            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
+            layout.visibility = View.VISIBLE
+            joinwaitingfrag.update(hubViewModel.rname)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.room_join_framelayout, joinwaitingfrag)
+                .commit()
+        }
+    }
+
+    override fun hidefragment() {
+        runOnUiThread {
+            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
+            layout.visibility = View.GONE
+        }
     }
 
     /**
@@ -470,9 +531,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             Toast.makeText(this,"permission not granted",Toast.LENGTH_SHORT).show()
             return;
         }else {
-            mMediaProjectionPermissionResultCode = resultCode
-            mMediaProjectionPermissionResultData = data
-            screenCast()
+
+            if(resultCode==0){
+                Toast.makeText(this,"permission not granted",Toast.LENGTH_SHORT).show()
+            }else {
+                mMediaProjectionPermissionResultCode = resultCode
+                mMediaProjectionPermissionResultData = data
+                screenCast()
+            }
         }
         if (data != null && (requestCode == hubViewModel.REQUEST_CODE_STREAM && resultCode == RESULT_OK)
         ) {
@@ -492,7 +558,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         // create Video Capturer
         if(userDataScreen!=null){
             recyclerDataArrayList.remove(userDataScreen)
+
         }
+//        recyclerDataArrayList.remove(userData)
         val videoCapturer = createScreenCapturer()
 
         val surfaceTextureHelper = SurfaceTextureHelper.create("ScreenThread", eglBaseContext)
@@ -515,12 +583,32 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         hubViewModel.mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
         hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrackScreen)
-        hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrackScreen)
-        userDataScreen = data("userScreen", 0, hubViewModel.videoTrackScreen!!, true, true,true,profile.profilePicture,false,profile.id,"socket",eglBaseContext, null)
+//        hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrackScreen)
+        userDataScreen = data("userScreen", 0, hubViewModel.videoTrackScreen!!,
+            creater = true,
+            microphoneSwitch = true,
+            videoSwitch = true,
+            profilepic = profile.profilePicture,
+            handSwitch = false,
+            userID = profile.id,
+            socketId = "socket",
+            con = eglBaseContext,
+            fileRenderer = null)
         recyclerDataArrayList.add(userDataScreen!!)
+
+//        hubViewModel.peerConnectionMap.clear()
+
+
+        for(x in socketUserMap){
+            onPeerJoined(x.key,true)
+        }
+
+
+
         setUpEpoxy()
 
-        SignalingClient.get()?.init(this,hubViewModel.rname,profile)
+
+//        SignalingClient.get()?.init(this,hubViewModel.rname,profile)
     }
 
     /**
@@ -578,14 +666,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         /**
          * Setting values to the epoxy controller
          */
-        val screenWidth: Int = Resources.getSystem().displayMetrics.widthPixels
-        val screenHeight: Int = Resources.getSystem().displayMetrics.heightPixels - 20
-        val controller = EpoxyController(screenHeight, screenWidth, applicationContext)
+
         controller.images = recyclerDataArrayList
-        val epoxyRecyclerView: EpoxyRecyclerView = findViewById<EpoxyRecyclerView>(R.id.idCourseRV)
+
         runOnUiThread() {
             epoxyRecyclerView.layoutManager = layoutManager
-            epoxyRecyclerView.setController(controller)
+//            epoxyRecyclerView.setController(controller)
+            controller.requestModelBuild()
+
         }
     }
 
@@ -604,10 +692,20 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      * Creating the PeerConnection to establish connection between two devices
      */
     @Synchronized
-    private fun getOrCreatePeerConnection(socketId: String): PeerConnection {
-        var peerConnection = hubViewModel.peerConnectionMap[socketId]
+    private fun getOrCreatePeerConnection(socketId: String,screeni: Boolean,screenType:String): PeerConnection {
+        val screen= screeni
+        var peerConnection:PeerConnection?
+        if(!screen){
+         peerConnection = hubViewModel.peerConnectionMap[socketId]
         if (peerConnection != null) {
             return peerConnection
+        }
+        }else
+        {
+            peerConnection = hubViewModel.peerConnectionScreenMap[socketId]
+            if (peerConnection != null) {
+                return peerConnection
+            }
         }
         peerConnection =
             peerConnectionFactory.createPeerConnection(hubViewModel.iceServers, object : PeerConnectionAdapter(
@@ -615,7 +713,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             ) {
                 override fun onIceCandidate(iceCandidate: IceCandidate) {
                     super.onIceCandidate(iceCandidate)
-                    SignalingClient.get()?.sendIceCandidate(iceCandidate, socketId)
+                    SignalingClient.get()?.sendIceCandidate(iceCandidate, socketId,screen)
                 }
 
                 /**
@@ -624,35 +722,56 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 override fun onAddStream(mediaStream: MediaStream) {
                     super.onAddStream(mediaStream)
 
-                    val remoteUser= SignalingClient.get()?.socketUserMap!![socketId]!!
-                    hubViewModel.fileName = createVideoPath(applicationContext, hubViewModel.fileName)
-                    hubViewModel.remoteVideoTrack = mediaStream.videoTracks[0]
-                    recyclerDataArrayList.add(
-                        data(
-                            "user",
-                            hubViewModel.remoteViewsIndex++,
-                            mediaStream.videoTracks[0],
-                            false,
-                            !remoteUser.optBoolean("isMuted"),
-                            remoteUser.optBoolean("isNotCamera"),
-                            remoteUser.optString("profilePicture"),
-                            remoteUser.optBoolean("isHandRaised"),
-                            remoteUser.optString("id"),
-                            remoteUser.optString("socket"),
-                            eglBaseContext,
-                            null
+
+                    if(screenType!="offer" && screen)
+                    return
+
+//                        val remoteUser = socketUserMap[socketId]
+//                       if(remoteUser==null){
+//                           runOnUiThread {
+//                               Toast.makeText(this@GridActivity, "undefined user", Toast.LENGTH_SHORT).show()
+//                           }
+//                       }
+
+                        hubViewModel.fileName =
+                            createVideoPath(applicationContext, hubViewModel.fileName)
+                        hubViewModel.remoteVideoTrack = mediaStream.videoTracks[0]
+
+                        recyclerDataArrayList.add(
+                            data(
+                                "user",
+                                hubViewModel.remoteViewsIndex++,
+                                mediaStream.videoTracks[0],
+                                false,
+                                false, false,"",false,"",socketId,
+//                                !remoteUser!!.optBoolean("isMuted"),
+//                                remoteUser.optBoolean("isNotCamera"),
+//                                remoteUser.optString("profilePicture"),
+//                                remoteUser.optBoolean("isHandRaised"),
+//                                remoteUser.optString("id"),
+//                                remoteUser.optString("socket"),
+                                eglBaseContext,
+                                null
+                            )
                         )
-                    )
-                    setUpEpoxy()
-                    Log.e("stream", "stream added ${mediaStream.videoTracks.size}")
-                    Log.e("path", createVideoPath(applicationContext, hubViewModel.fileName).toString())
+                        setUpEpoxy()
+                        Log.e("stream", "stream added ${mediaStream.videoTracks.size}")
+                        Log.e("path", createVideoPath(applicationContext, hubViewModel.fileName).toString())
+//                    }catch (e:Exception){
+//                        e.printStackTrace()
+//                    }
                 }
 
-
             })
+
+
         Log.d("peer","${peerConnection.toString()}")
         peerConnection!!.addStream(hubViewModel.mediaStream)
+        if(!screen)
         hubViewModel.peerConnectionMap[socketId] = peerConnection!!
+        else
+            hubViewModel.peerConnectionScreenMap[socketId] = peerConnection!!
+
         return peerConnection
     }
 
@@ -669,8 +788,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      * Creating the Peer Connection
      */
 
-    override fun onPeerJoined(socketId: String) {
-        val peerConnection = getOrCreatePeerConnection(socketId)
+    override fun onPeerJoined(socketId: String,screen:Boolean) {
+        val peerConnection = getOrCreatePeerConnection(socketId,screen,"send")
         val constraints = MediaConstraints().apply {
             mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
         }
@@ -681,7 +800,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                     SdpAdapter("setLocalSdp:$socketId"),
                     sessionDescription
                 )
-                SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"ok")
+                SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"ok",screen)
             }
         }, constraints)
     }
@@ -701,14 +820,17 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onOfferReceived(data: JSONObject) {
         runBlocking {
 
-            val socketId = data.optString("type")
-            val peerConnection = getOrCreatePeerConnection(socketId)
 
+            val obj: JSONObject = JSONObject(data.optString("type"))
+            val socketId= obj.optString("socket")
+            val screen = obj.optBoolean("screen")
+            Log.d("screen data","screen = $screen")
+
+            val peerConnection = getOrCreatePeerConnection(socketId, screen,"offer")
             val jsonObject = Gson().fromJson(data.optString("sdp").toString(), JsonObject::class.java)
             val sdp = Gson().fromJson(jsonObject, SessionDescription::class.java)
 
             peerConnection.setRemoteDescription(SdpAdapter("setRemoteASdp:$socketId"),sdp)
-
 
 //            peerConnection.setRemoteDescription(
 //                SdpAdapter("setRemoteSdp:$socketId"),
@@ -726,7 +848,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 override fun onCreateSuccess(sessionDescription: SessionDescription) {
                     super.onCreateSuccess(sessionDescription)
                     peerConnection.setLocalDescription(SdpAdapter("setLocalSdp:$socketId"), sessionDescription)
-                    SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"ans")
+                    SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"ans",screen)
                 }
             }, constraints)
 
@@ -740,24 +862,44 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      *
      */
     override fun onAnswerReceived(data: JSONObject) {
-        val socketId = data.optString("type")
-        val peerConnection = getOrCreatePeerConnection(socketId)
+        val obj: JSONObject = JSONObject(data.optString("type"))
+
+        val socketId= obj.optString("socket")
+        val screen = obj.optBoolean("screen")
+
+        val remoteUser = socketUserMap[socketId]
+        if(remoteUser==null){
+            runOnUiThread {
+                Toast.makeText(this@GridActivity, "undefined user", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        for(i in 0 until recyclerDataArrayList.size){
+            if(recyclerDataArrayList[i].socketId==socketId)
+            {
+                recyclerDataArrayList[i].microphoneSwitch= !remoteUser!!.optBoolean("isMuted")
+                recyclerDataArrayList[i].videoSwitch= remoteUser.optBoolean("isNotCamera")
+                recyclerDataArrayList[i].profilepic= remoteUser.optString("profilePicture")
+                recyclerDataArrayList[i].handSwitch =remoteUser.optBoolean("isHandRaised")
+                recyclerDataArrayList[i].userID=remoteUser.optString("id")
+                break;
+            }
+        }
+
+
+        val peerConnection = getOrCreatePeerConnection(socketId, screen,"offer")
 
         val jsonObject = Gson().fromJson(data.optString("sdp").toString(), JsonObject::class.java)
         val sdp = Gson().fromJson(jsonObject, SessionDescription::class.java)
 
           peerConnection.setRemoteDescription(SdpAdapter("setRemoteASdp:$socketId"),sdp)
 
-//        peerConnection.setRemoteDescription(
-////            SdpAdapter("setRemoteASdp:$socketId"),
-////            SessionDescription(SessionDescription.Type.ANSWER, data.optString("sdp"))
-//        )
         setUpEpoxy()
-        if(data.optString("part")=="not ok")
-        {
-            recyclerDataArrayList.removeLast()
-            setUpEpoxy()
-        }
+//        if(data.optString("part")=="not ok")
+//        {
+//            recyclerDataArrayList.removeLast()
+//            setUpEpoxy()
+//        }
     }
 
     /**
@@ -765,20 +907,17 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      */
 
     override fun onIceCandidateReceived(data: JSONObject) {
-        val socketId = data.optString("type")
-        val peerConnection = getOrCreatePeerConnection(socketId)
+        val obj: JSONObject = JSONObject(data.optString("type"))
+
+        val socketId= obj.optString("socket")
+        val screen = obj.optBoolean("screen")
+
+
+        val peerConnection = getOrCreatePeerConnection(socketId, screen,"offer")
 //        val obj: JSONObject = JSONObject(data.optString("candidate"))
         val jsonObject = Gson().fromJson(data.optString("candidate").toString(), JsonObject::class.java)
        val candidate = Gson().fromJson(jsonObject, IceCandidate::class.java)
-        peerConnection.addIceCandidate(
-            candidate
-//            IceCandidate(
-//                data.optString("id"),
-//                0,
-//                data.optString("candidate")
-//            )
-        )
-
+        peerConnection.addIceCandidate(candidate)
         Log.e("ice candidate","Added ice candidate")
     }
 
@@ -836,16 +975,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         if(!hubViewModel.isScreenShare){
             startScreenCapture()
             SignalingClient.get()?.sendScreen(true)
-            screenShare.let {
-                it.setTextColor(R.color.quantum_black_100)
-                it.background = ContextCompat.getDrawable(this,R.drawable.circular_button_view_without_border)
-            }
+
             hubViewModel.isScreenShare=true
         }else{
             SignalingClient.get()?.sendScreen(false)
             hubViewModel.videoTrackScreen?.setEnabled(false)
             hubViewModel.localAudioTrackScreen?.setEnabled(false)
             hubViewModel.isScreenShare = false
+            recyclerDataArrayList.remove(userDataScreen)
             setUpEpoxy()
         }
     }
@@ -952,12 +1089,20 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         Log.d("Intent","The intent that I am looking at is called")
         val shareBody="https://www.myworld.com/liveRoom?code=${hubViewModel.rname}"
         val bottomSheetDialog=BottomSheetDialog(this)
+        bottomSheetDialog.setContentView(R.layout.fragment_share_myworld)
         val link=bottomSheetDialog.findViewById<TextView>(R.id.textView16)
-        link?.setText(shareBody)
-        //TODO To be changed
-        // bottomSheetDialog.setContentView(R.layout.share_myworld)
+        link?.text = shareBody
+        val name= bottomSheetDialog.findViewById<TextView>(R.id.textView14)
+        name?.text= profile.name
+        val image= bottomSheetDialog.findViewById<ImageView>(R.id.imageView9)
+        image?.let {
+            Glide.with(this)
+                .load(profile.profilePicture)
+                .into(it)
+        };
+
         val pm: PackageManager = this.packageManager
-        val finalLaunchables:MutableList<ResolveInfo> =ArrayList()
+        val finalLaunchables:MutableList<ResolveInfo> = ArrayList()
         val recyclerView=bottomSheetDialog.findViewById<RecyclerView>(R.id.myrecview)
         recAdapter=RecAdapter(pm,finalLaunchables,applicationContext,shareBody)
         recyclerView?.adapter=recAdapter

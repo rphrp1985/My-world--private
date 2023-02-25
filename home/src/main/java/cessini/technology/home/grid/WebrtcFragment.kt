@@ -26,6 +26,7 @@ import cessini.technology.newapi.model.CreatorListeners
 import cessini.technology.newapi.preferences.AuthPreferences
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import dagger.hilt.android.AndroidEntryPoint
+import io.socket.client.Socket
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.webrtc.*
@@ -343,7 +344,7 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
             ) {
                 override fun onIceCandidate(iceCandidate: IceCandidate) {
                     super.onIceCandidate(iceCandidate)
-                    cessini.technology.commonui.activity.live.SignalingClient.get()?.sendIceCandidate(iceCandidate, socketId)
+//                    cessini.technology.commonui.activity.live.SignalingClient.get()?.sendIceCandidate(iceCandidate, socketId)
                 }
 
                 override fun onAddStream(mediaStream: MediaStream) {
@@ -378,7 +379,11 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
     override fun onCreateRoom(id: String) {
     }
 
-    override fun onPeerJoined(socketId: String) {
+    override fun onPeerJoined(socketId: String, screen: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+     fun onPeerJoined(socketId: String) {
         val peerConnection = getOrCreatePeerConnection(socketId)
         val constraints = MediaConstraints().apply {
             mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
@@ -390,7 +395,7 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
                     SdpAdapter("setLocalSdp:$socketId"),
                     sessionDescription
                 )
-                cessini.technology.commonui.activity.live.SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"ok")
+//                cessini.technology.commonui.activity.live.SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"ok")
 
             }
         }, constraints)
@@ -418,7 +423,7 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
                 override fun onCreateSuccess(sessionDescription: SessionDescription) {
                     super.onCreateSuccess(sessionDescription)
                     peerConnection.setLocalDescription(SdpAdapter("setLocalSdp:$socketId"), sessionDescription)
-                    SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"not ok")
+//                    SignalingClient.get()?.sendSessionDescription(sessionDescription, socketId,"not ok")
                 }
             }, constraints)
         }
@@ -459,6 +464,18 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
     }
 
     override fun onCallerHandSwitch(data: JSONObject) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onJoinPermission(data: JSONObject, socket: Socket) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onPermissionWaiting() {
+        TODO("Not yet implemented")
+    }
+
+    override fun hidefragment() {
         TODO("Not yet implemented")
     }
 

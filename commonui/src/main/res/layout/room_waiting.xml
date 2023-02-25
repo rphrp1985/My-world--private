@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@color/white"
+        app:cardElevation="@dimen/dimen_15"
+        android:layout_marginRight="@dimen/dimen_15"
+        android:layout_marginLeft="@dimen/dimen_15"
+        app:cardCornerRadius="@dimen/dimen_10"
+        android:padding="10dp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
+
+
+            <TextView
+                android:id="@+id/room_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Room -1"
+                android:gravity="center"
+                android:textColor="@color/browser_actions_text_color"
+                android:textSize="18sp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="30dp"
+                />
+
+
+            <TextView
+                android:id="@+id/join_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Waiting for Accept"
+                android:textColor="@color/quantum_grey"
+                android:textSize="14sp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+
+                />
+
+            <ProgressBar
+                android:id="@+id/waiting_bar"
+                android:layout_width="72dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_alignParentEnd="true"/>
+
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+</layout>
