@@ -479,6 +479,10 @@ class WebrtcFragment : Fragment(), SignalingClient.Callback {
         TODO("Not yet implemented")
     }
 
+    override fun updateUserDetails() {
+        TODO("Not yet implemented")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         for(i in peerConnectionMap.values)

@@ -467,7 +467,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
 
 //        if(!recyclerDataArrayList.contains(userData)){
-            userData = data("userLocal", 0, hubViewModel.videoTrack!!, true, true,true,profile.profilePicture,false,profile.id,false,"socket",eglBaseContext, null)
+            userData = data(profile.name, 0, hubViewModel.videoTrack!!, true, true,true,profile.profilePicture,false,profile.id,false,"socket",eglBaseContext, null)
             recyclerDataArrayList.add(userData!!)
             setUpEpoxy()
 //        }else
@@ -743,12 +743,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                                 mediaStream.videoTracks[0],
                                 false,
                                 false, false,"",false,"",screen,socketId,
-//                                !remoteUser!!.optBoolean("isMuted"),
-//                                remoteUser.optBoolean("isNotCamera"),
-//                                remoteUser.optString("profilePicture"),
-//                                remoteUser.optBoolean("isHandRaised"),
-//                                remoteUser.optString("id"),
-//                                remoteUser.optString("socket"),
                                 eglBaseContext,
                                 null
                             )
@@ -847,6 +841,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
             }
 
+
             /**
              * Initiates the creation an SDP answer to an offer received from a remote peer
              * during the offer/answer negotiation of a WebRTC connection.
@@ -864,6 +859,47 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         }
     }
 
+    override fun updateUserDetails(){
+        runBlocking {
+            for(user in recyclerDataArrayList) {
+                val socketId= user.socketId
+                val remoteUser = socketUserMap[socketId]
+                if (remoteUser == null) {
+//                    runOnUiThread {
+////                        Toast.makeText(this@GridActivity, "undefined user", Toast.LENGTH_SHORT)
+//                            .show()
+//                    }
+                } else {
+
+//                    runOnUiThread {
+//                        Toast.makeText(this@GridActivity, "user =$remoteUser", Toast.LENGTH_SHORT)
+//                            .show()
+//                    }
+                    for (i in 0 until recyclerDataArrayList.size) {
+                        if (recyclerDataArrayList[i].socketId == socketId) {
+//                            runOnUiThread {
+//                                Toast.makeText(this@GridActivity, "user found", Toast.LENGTH_SHORT)
+//                                    .show()
+//                            }
+                            recyclerDataArrayList[i].title = remoteUser!!.optString("name")
+                            recyclerDataArrayList[i].microphoneSwitch =
+                                !remoteUser!!.optBoolean("isMuted")
+                            recyclerDataArrayList[i].videoSwitch =
+                                remoteUser.optBoolean("isNotCamera")
+                            recyclerDataArrayList[i].profilepic =
+                                remoteUser.optString("profilePicture")
+                            recyclerDataArrayList[i].handSwitch =
+                                remoteUser.optBoolean("isHandRaised")
+                            recyclerDataArrayList[i].userID = remoteUser.optString("id")
+//                    break;
+                        }
+                    }
+                }
+            }
+            runOnUiThread { setUpEpoxy() }
+        }
+    }
+
 
     /**
      *
@@ -874,24 +910,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         val socketId= obj.optString("socket")
         val screen = obj.optBoolean("screen")
 
-        val remoteUser = socketUserMap[socketId]
-        if(remoteUser==null){
-            runOnUiThread {
-                Toast.makeText(this@GridActivity, "undefined user", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        for(i in 0 until recyclerDataArrayList.size){
-            if(recyclerDataArrayList[i].socketId==socketId)
-            {
-                recyclerDataArrayList[i].microphoneSwitch= !remoteUser!!.optBoolean("isMuted")
-                recyclerDataArrayList[i].videoSwitch= remoteUser.optBoolean("isNotCamera")
-                recyclerDataArrayList[i].profilepic= remoteUser.optString("profilePicture")
-                recyclerDataArrayList[i].handSwitch =remoteUser.optBoolean("isHandRaised")
-                recyclerDataArrayList[i].userID=remoteUser.optString("id")
-                break;
-            }
-        }
 
 
         val peerConnection = getOrCreatePeerConnection(socketId, screen,"offer")
@@ -1218,30 +1236,39 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     }
 
     override fun onCallerMicrophoneSwitch(data: JSONObject) {
-      val status= !data.optBoolean("muted")
-        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
+      val status= data.optBoolean("muted")
+        val socketid= data.optString("id")
+//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
         for(i in 0 until recyclerDataArrayList.size){
-            if(recyclerDataArrayList[i].userID==user.id){
+            if(recyclerDataArrayList[i].socketId==socketid){
                 recyclerDataArrayList[i].microphoneSwitch = status
+                runOnUiThread {
+                    Toast.makeText(this,
+                        "${recyclerDataArrayList[i].title} ${status} mic",
+                        Toast.LENGTH_LONG).show()
+                }
                 setUpEpoxy()
                 break;
             }
         }
-
-
     }
 
     override fun onCallerVideoSwitch(data: JSONObject) {
         val status= data.optBoolean("camera")
-        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
+        val socketid= data.optString("id")
+//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
         for(i in 0 until recyclerDataArrayList.size){
-            if(recyclerDataArrayList[i].userID==user.id){
+            if(recyclerDataArrayList[i].socketId==socketid){
                 recyclerDataArrayList[i].videoSwitch = status
-
+                runOnUiThread {
+                    Toast.makeText(this,
+                        "${recyclerDataArrayList[i].title} ${status} camera",
+                        Toast.LENGTH_LONG).show()
+                }
                 setUpEpoxy()
                 break
             }
@@ -1252,13 +1279,25 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     override fun onCallerScreenShare(data: JSONObject) {
         val status= data.optBoolean("value")
-        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
-
+        val socketid= data.optString("id")
+//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
+        runOnUiThread {
+            Toast.makeText(this,
+                " ${status} screen",
+                Toast.LENGTH_LONG).show()
+        }
         if(status==false) {
             for (i in 0 until recyclerDataArrayList.size) {
-                if (recyclerDataArrayList[i].userID == user.id && recyclerDataArrayList[i].isScreen) {
+                if (recyclerDataArrayList[i].socketId == socketid && recyclerDataArrayList[i].isScreen) {
+//                    runOnUiThread {
+//                        Toast.makeText(this,
+//                            "${recyclerDataArrayList[i].title} ${status} screen",
+//                            Toast.LENGTH_LONG).show()
+//
+//                    }
                         recyclerDataArrayList.remove( recyclerDataArrayList[i])
+
                     setUpEpoxy()
                     break;
                 }
@@ -1270,12 +1309,18 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     override fun onCallerHandSwitch(data: JSONObject) {
         val status= data.optBoolean("muted")
-        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
+        val socketid= data.optString("id")
+//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
         for(i in 0 until recyclerDataArrayList.size){
-            if(recyclerDataArrayList[i].userID==user.id){
+            if(recyclerDataArrayList[i].socketId==socketid){
                 recyclerDataArrayList[i].handSwitch = status
+                runOnUiThread {
+                    Toast.makeText(this,
+                        "${recyclerDataArrayList[i].title} ${status} hand",
+                        Toast.LENGTH_LONG).show()
+                }
                 setUpEpoxy()
                 break;
             }

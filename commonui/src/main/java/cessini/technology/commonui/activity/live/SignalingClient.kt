@@ -124,6 +124,7 @@ class SignalingClient() {
                         callback.onPeerJoined(socketid, false)
                     }
                 }
+                callback.updateUserDetails()
 
             })
             socket.on("allowed"){
@@ -196,7 +197,7 @@ class SignalingClient() {
                 Log.d("permt?",json.toString())
                 callback.onJoinPermission(json,socket)
             }
-            socket.on("leave"){
+            socket.on("user left"){
                 val json= JSONObject(it!![0].toString())
                 Log.d("leave",json.toString())
                 callback.onPeerLeave(json.optString("id"))
@@ -301,7 +302,13 @@ class SignalingClient() {
     }
 
     fun sendScreen(it:Boolean){
-        socket.emit("screen",ScreenEvent(room_code,it,""))
+        val jo = JSONObject()
+        jo.put("room_code",room_code)
+        jo.put("value",it)
+        jo.put("url","")
+//        jo.put("url","")
+        Log.d("Rp-Event","hand= ${jo}")
+        socket.emit("screen",jo)
     }
 
 
@@ -320,6 +327,7 @@ class SignalingClient() {
         fun onJoinPermission(data: JSONObject, socket: Socket)
         fun onPermissionWaiting()
         fun hidefragment()
+        fun updateUserDetails()
 
     }
 

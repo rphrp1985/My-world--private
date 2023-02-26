@@ -105,6 +105,7 @@ class CommonChatViewModel : ViewModel() {
 
 
     fun emitMessage(message: CommonChatPayload){
+
         mSocket.emit("message",message.getChatPayload())
         Log.d(TAG,"emit Message")
         //TODO Emit
