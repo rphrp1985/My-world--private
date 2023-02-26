@@ -6,19 +6,18 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/card_view"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="match_parent"
         android:background="@color/white"
         app:cardElevation="@dimen/dimen_15"
-        android:layout_marginRight="@dimen/dimen_15"
-        android:layout_marginLeft="@dimen/dimen_15"
         app:cardCornerRadius="@dimen/dimen_10"
         android:padding="10dp">
 
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:layout_gravity="center_vertical"
             >
 
 
@@ -36,28 +35,77 @@
                 android:layout_marginTop="30dp"
                 />
 
+            <org.webrtc.SurfaceViewRenderer
+                android:id="@+id/localView"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_marginLeft="@dimen/dimen_15"
+                android:layout_marginRight="@dimen/dimen_15"
+                android:layout_marginTop="@dimen/dimen_15"
+                android:layout_height="300dp" />
 
             <TextView
-                android:id="@+id/join_status"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="Waiting for join"
                 android:gravity="center"
-                android:text="Waiting for Accept"
-                android:textColor="@color/quantum_grey"
-                android:textSize="14sp"
+                android:textColor="@color/browser_actions_text_color"
+                android:textSize="18sp"
+                android:ellipsize="end"
+                android:singleLine="true"
                 android:layout_marginStart="10dp"
-                android:layout_marginTop="10dp"
-
+                android:layout_marginTop="30dp"
                 />
+
 
             <ProgressBar
                 android:id="@+id/waiting_bar"
                 android:layout_width="72dp"
                 android:layout_height="36dp"
                 android:layout_gravity="center"
-                android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
-                android:layout_alignParentEnd="true"/>
+                android:layout_alignParentEnd="true"
+                />
+
+<!--            <LinearLayout-->
+<!--                android:id="@+id/linear1"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:layout_marginTop="@dimen/dimen_15"-->
+<!--                >-->
+
+<!--                <ImageView-->
+<!--                    android:id="@+id/iv_audio"-->
+<!--                    android:layout_width="@dimen/dimen_40"-->
+<!--                    android:layout_height="@dimen/dimen_40"-->
+<!--                    android:importantForAccessibility="no"-->
+<!--                    android:scaleType="centerCrop"-->
+<!--                    android:layout_marginRight="@dimen/dimen_15"-->
+<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                   app:srcCompat="@drawable/ic_addaudio_black" />-->
+
+<!--                <ImageView-->
+<!--                    android:id="@+id/iv_video"-->
+<!--                    android:layout_width="@dimen/dimen_40"-->
+<!--                    android:layout_height="@dimen/dimen_40"-->
+<!--                    android:scaleType="centerCrop"-->
+<!--                    android:layout_marginRight="@dimen/dimen_15"-->
+<!--                    app:srcCompat="@drawable/ic_addvideo_black" />-->
+
+
+
+
+<!--                <Button-->
+<!--                android:id="@+id/join_room"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content" -->
+<!--                android:text="@string/join"-->
+<!--                    -->
+<!--                />-->
+
+
+<!--            </LinearLayout>-->
 
 
         </LinearLayout>

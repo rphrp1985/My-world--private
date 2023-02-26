@@ -196,6 +196,13 @@ class SignalingClient() {
                 Log.d("permt?",json.toString())
                 callback.onJoinPermission(json,socket)
             }
+            socket.on("leave"){
+                val json= JSONObject(it!![0].toString())
+                Log.d("leave",json.toString())
+                callback.onPeerLeave(json.optString("id"))
+
+            }
+
 
 
 
@@ -209,10 +216,17 @@ class SignalingClient() {
     }
 
     fun destroy() {
+        socket.emit("leave")
         socket.disconnect()
         socket.close()
 //        instance = null
     }
+
+    fun endcall(){
+        socket.emit("leave")
+    }
+
+
 
     fun sendIceCandidate(iceCandidate: IceCandidate, to: String?,screen:Boolean) {
         val jo = JSONObject()
@@ -306,6 +320,7 @@ class SignalingClient() {
         fun onJoinPermission(data: JSONObject, socket: Socket)
         fun onPermissionWaiting()
         fun hidefragment()
+
     }
 
     companion object {

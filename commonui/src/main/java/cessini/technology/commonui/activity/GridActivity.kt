@@ -1,5 +1,6 @@
 package cessini.technology.commonui.activity
 
+//import cessini.technology.commonui.R2.id.cameraSwitch
 import android.Manifest
 import android.annotation.TargetApi
 import android.app.Activity
@@ -28,7 +29,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cessini.technology.commonui.R
-//import cessini.technology.commonui.R2.id.cameraSwitch
 import cessini.technology.commonui.activity.live.PeerConnectionAdapter
 import cessini.technology.commonui.activity.live.SdpAdapter
 import cessini.technology.commonui.activity.live.SignalingClient
@@ -200,6 +200,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             }
         })
 
+
         val endcall=findViewById<Button>(R.id.btnSchedule)
         audio=findViewById<ImageView>(R.id.iv_audio)
         val ivMessage = findViewById<ImageView>(R.id.ivMessage)
@@ -232,7 +233,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             }
         }
         isCreated= intent.getBooleanExtra("created",false);
-
         chatViewModel.setSocket(hubViewModel.rname)
         chatViewModel.roomID= hubViewModel.rname
         chatViewModel.user_id = hubViewModel.user_id
@@ -329,6 +329,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             raiseHand.background= ContextCompat.getDrawable(this,R.drawable.ic_hubaskwhite)
 
 
+
         }
     }
 
@@ -336,15 +337,15 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onJoinPermission(data: JSONObject, socket: Socket) {
 
         runOnUiThread {
-            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
+            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout2)
             layout.visibility = View.VISIBLE
 
             val useralias = data.getJSONObject("userAlias")
             requestjoinfrag.showRequest(
                 useralias.optString("name"),
-                useralias.optString("profilePicture"), socket, data.optString("id"))
+                useralias.optString("profilePicture"), socket, data.optString("id") )
             supportFragmentManager.beginTransaction()
-                .replace(R.id.room_join_framelayout, requestjoinfrag)
+                .replace(R.id.room_join_framelayout2, requestjoinfrag)
                 .commit()
 
         }
@@ -354,7 +355,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         runOnUiThread {
             val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
             layout.visibility = View.VISIBLE
-            joinwaitingfrag.update(hubViewModel.rname)
+            joinwaitingfrag.update(hubViewModel.rname, hubViewModel.videoTrack)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.room_join_framelayout, joinwaitingfrag)
                 .commit()
@@ -365,6 +366,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         runOnUiThread {
             val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
             layout.visibility = View.GONE
+            val layout2 = findViewById<FrameLayout>(R.id.room_join_framelayout2)
+            layout2.visibility = View.GONE
         }
     }
 
@@ -462,8 +465,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrack)
         hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrack)
 
+
 //        if(!recyclerDataArrayList.contains(userData)){
-            userData = data("userLocal", 0, hubViewModel.videoTrack!!, true, true,true,profile.profilePicture,false,profile.id,"socket",eglBaseContext, null)
+            userData = data("userLocal", 0, hubViewModel.videoTrack!!, true, true,true,profile.profilePicture,false,profile.id,false,"socket",eglBaseContext, null)
             recyclerDataArrayList.add(userData!!)
             setUpEpoxy()
 //        }else
@@ -593,7 +597,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             userID = profile.id,
             socketId = "socket",
             con = eglBaseContext,
-            fileRenderer = null)
+            fileRenderer = null,
+            isScreen = true
+        )
         recyclerDataArrayList.add(userDataScreen!!)
 
 //        hubViewModel.peerConnectionMap.clear()
@@ -726,13 +732,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                     if(screenType!="offer" && screen)
                     return
 
-//                        val remoteUser = socketUserMap[socketId]
-//                       if(remoteUser==null){
-//                           runOnUiThread {
-//                               Toast.makeText(this@GridActivity, "undefined user", Toast.LENGTH_SHORT).show()
-//                           }
-//                       }
-
                         hubViewModel.fileName =
                             createVideoPath(applicationContext, hubViewModel.fileName)
                         hubViewModel.remoteVideoTrack = mediaStream.videoTracks[0]
@@ -743,7 +742,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                                 hubViewModel.remoteViewsIndex++,
                                 mediaStream.videoTracks[0],
                                 false,
-                                false, false,"",false,"",socketId,
+                                false, false,"",false,"",screen,socketId,
 //                                !remoteUser!!.optBoolean("isMuted"),
 //                                remoteUser.optBoolean("isNotCamera"),
 //                                remoteUser.optString("profilePicture"),
@@ -810,6 +809,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     }
 
     override fun onPeerLeave(data: String) {
+
+        for(user in recyclerDataArrayList){
+            if(user.socketId==data){
+                 recyclerDataArrayList.remove(user)
+                setUpEpoxy()
+                break;
+            }
+        }
 
     }
 
@@ -895,6 +902,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
           peerConnection.setRemoteDescription(SdpAdapter("setRemoteASdp:$socketId"),sdp)
 
         setUpEpoxy()
+
+        streamShort()
 //        if(data.optString("part")=="not ok")
 //        {
 //            recyclerDataArrayList.removeLast()
@@ -992,6 +1001,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onBackPressed() {
         super.onBackPressed()
         hubViewModel.endcall()
+        SignalingClient.get()?.endcall()
         overridePendingTransition(R.anim.slide_in_animation, R.anim.slide_out_animation)
     }
 
@@ -1215,53 +1225,79 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].userID==user.id){
                 recyclerDataArrayList[i].microphoneSwitch = status
+                setUpEpoxy()
+                break;
             }
         }
 
-         setUpEpoxy()
+
     }
 
     override fun onCallerVideoSwitch(data: JSONObject) {
-        val status= !data.optBoolean("camera")
+        val status= data.optBoolean("camera")
         val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
         val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].userID==user.id){
                 recyclerDataArrayList[i].videoSwitch = status
+
+                setUpEpoxy()
+                break
             }
         }
 
-        setUpEpoxy()
+
     }
 
     override fun onCallerScreenShare(data: JSONObject) {
-//        val status= !data.optBoolean("value")
-//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
-//
-//        for(i in 0 until recyclerDataArrayList.size){
-//            if(recyclerDataArrayList[i].userID==user.id){
-//                recyclerDataArrayList[i]. = status
-//            }
-//        }
-//
-//        setUpEpoxy()
+        val status= data.optBoolean("value")
+        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
+        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
+
+        if(status==false) {
+            for (i in 0 until recyclerDataArrayList.size) {
+                if (recyclerDataArrayList[i].userID == user.id && recyclerDataArrayList[i].isScreen) {
+                        recyclerDataArrayList.remove( recyclerDataArrayList[i])
+                    setUpEpoxy()
+                    break;
+                }
+            }
+        }
+
+
     }
 
     override fun onCallerHandSwitch(data: JSONObject) {
-        val status= !data.optBoolean("muted")
+        val status= data.optBoolean("muted")
         val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
         val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].userID==user.id){
                 recyclerDataArrayList[i].handSwitch = status
+                setUpEpoxy()
+                break;
             }
         }
 
-        setUpEpoxy()
+
     }
+
+    fun streamShort(){
+
+        val view= window.decorView.rootView
+        view.isDrawingCacheEnabled = true
+        val bitmap = Bitmap.createBitmap(view.drawingCache)
+        view.isDrawingCacheEnabled = false
+
+
+
+
+    }
+
+
+
 
 
 }

@@ -255,4 +255,5 @@
 
     <string name="common_chat_hint" translatable="false">Send your message</string>
     <string name="common_chat_intro" translatable="false">Messages can be seen only during the call by people on the call</string>
+    <string name="join">Join</string>
 </resources>

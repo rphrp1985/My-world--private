@@ -13,6 +13,7 @@ data class data(
     var profilepic:String,
     var handSwitch:Boolean,
     var userID:String,
+    var isScreen:Boolean,
     var socketId:String,
     val con: EglBase.Context,
     val fileRenderer: FileRenderer?

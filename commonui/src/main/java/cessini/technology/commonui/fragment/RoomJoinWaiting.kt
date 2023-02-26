@@ -8,9 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import cessini.technology.commonui.R
 import cessini.technology.commonui.databinding.RoomWaitingBinding
-import com.bumptech.glide.Glide
-import io.socket.client.Socket
-import org.json.JSONObject
+import org.webrtc.VideoTrack
 
 class RoomJoinWaiting : Fragment() {
 
@@ -21,6 +19,7 @@ class RoomJoinWaiting : Fragment() {
 
     var rname=""
     lateinit var binding: RoomWaitingBinding
+    var track:VideoTrack? =null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,12 +28,14 @@ class RoomJoinWaiting : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.room_waiting, container, false)
 
          binding.roomName.text= rname
+        track?.addSink(binding.localView)
         return binding.root
 
     }
 
-    fun update(room:String){
+    fun update(room: String, videoTrack: VideoTrack?){
         rname= room
+        track= videoTrack
     }
 
 

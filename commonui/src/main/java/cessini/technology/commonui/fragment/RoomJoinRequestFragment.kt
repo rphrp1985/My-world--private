@@ -1,7 +1,6 @@
 package cessini.technology.commonui.fragment
 
 
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -9,11 +8,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import cessini.technology.commonui.R
 import cessini.technology.commonui.activity.GridActivity
-import coil.load
 import com.bumptech.glide.Glide
 import io.socket.client.Socket
 import org.json.JSONObject
-import java.net.URI
+import org.webrtc.VideoTrack
 
 
 class RoomJoinRequestFragment(val listner:GridActivity) : Fragment() {
@@ -72,13 +70,14 @@ class RoomJoinRequestFragment(val listner:GridActivity) : Fragment() {
 
     }
 
-    fun showRequest(name: String, pic: String, socket: Socket,id:String){
+    fun showRequest(name: String, pic: String, socket: Socket, id: String){
 
         nameI= name
         picI= pic
 
         idI= id
         socketI= socket
+
 
     }
 
