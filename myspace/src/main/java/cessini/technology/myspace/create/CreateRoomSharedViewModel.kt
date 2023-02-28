@@ -56,8 +56,7 @@ class CreateRoomSharedViewModel @Inject constructor(
                     title = roomTitle.value!!,
                     time = time.value!!,
                     private = false,
-
-//                    categories = selectedRoomCategories.toList()
+                    categories = selectedRoomCategories.toList()
 
                 )
             },
@@ -79,7 +78,7 @@ class CreateRoomSharedViewModel @Inject constructor(
                     time = time.value!!,
                     private = false,
 
-//                    categories = selectedRoomCategories.toList()
+                    categories = selectedRoomCategories.toList()
 
                 )
             },

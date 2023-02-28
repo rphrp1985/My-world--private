@@ -11,7 +11,7 @@ data class ApiRoomData(
 )
 
 data class ApiRoom(
-    @SerializedName(value = "_id") val id: String = "",
+    @SerializedName(value = "_id") val id: ApiId = ApiId(),
     val creator: ApiCreator = ApiCreator(),
     val title: String = "",
     val schedule: Long = 0L,
@@ -22,6 +22,8 @@ data class ApiRoom(
     val listeners: List<ApiListeners> = emptyList(),
 
 )
+
+data class ApiId( @SerializedName("\$oid")var oid:String="")
 
 data class ApiListeners(
     @SerializedName(value = "_id") val profileId: String = "",

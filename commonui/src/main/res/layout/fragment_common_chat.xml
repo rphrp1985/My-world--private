@@ -29,7 +29,7 @@
             android:layout_marginTop="@dimen/dimen_20"
             android:layout_marginBottom="@dimen/dimen_10"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:stackFromEnd="true"
+            app:reverseLayout="true"
             app:layout_constraintBottom_toTopOf="@id/etText"
             android:maxHeight="@dimen/dimen_max_height"
 

@@ -18,6 +18,7 @@ import cessini.technology.commonui.intro
 import cessini.technology.commonui.item
 import cessini.technology.commonui.utils.Constant
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatPayload
+import cessini.technology.commonui.viewmodel.commonChat.CommonChatPayload2
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatViewModel
 import cessini.technology.newapi.services.commonChat.CommonChatSocketHandler
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -49,9 +50,9 @@ class CommonChatFragment
 //        binding.rvChat.layoutManager= linearLayoutManager
         binding.rvChat.adapter= chatViewModel.chatController.adapter
 
-        chatViewModel.messages.observe(viewLifecycleOwner){
-//            populateMessages(it)
-        }
+//        chatViewModel.messages.observe(viewLifecycleOwner){
+////            populateMessages(it)
+//        }
 
         binding.ivSend.setOnClickListener {
             val etText = binding.etText.text
@@ -63,7 +64,7 @@ class CommonChatFragment
                 )
 
 //                populateMessages(listOf(chatPayload))
-                chatViewModel.addMessage(chatPayload)
+                chatViewModel.addMessage(CommonChatPayload2(chatPayload.message,chatPayload.user_id, chatPayload.room,"local user"))
 
                 chatViewModel.emitMessage(chatPayload)
                 etText.clear()

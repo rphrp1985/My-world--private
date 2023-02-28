@@ -21,7 +21,7 @@ object CommonChatSocketHandler {
             param.timeout= 600000
 //            param.secure= true
             Log.d(TAG,"room = $roomID")
-            param.query= "room=$roomID"
+            param.query= "room_code=$roomID"
 
 
             mSocket = IO.socket(CommonChatConstants.BASE_ENDPOINT,param)

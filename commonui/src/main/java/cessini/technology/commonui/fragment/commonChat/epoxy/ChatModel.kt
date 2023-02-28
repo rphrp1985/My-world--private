@@ -17,19 +17,31 @@ abstract class ChatModel :   EpoxyModelWithHolder<ChatModel.Holder>(){
     @EpoxyAttribute
     var sentbyme:Boolean=false;
 
+    @EpoxyAttribute
+    var name:String =""
+
 
     override fun bind(holder: Holder) {
         holder.messageView.text= messageText
+
+        if(!sentbyme)
+            holder.textView?.text =  name
 
     }
 
     inner class Holder : EpoxyHolder(){
 
         lateinit var messageView: TextView
+         var textView: TextView? = null
 
         override fun bindView(itemView: View) {
 
             messageView= itemView?.findViewById(R.id.message)!!
+
+            if(!sentbyme){
+                textView = itemView?.findViewById(R.id.other_username)
+            }
+
 
 
 

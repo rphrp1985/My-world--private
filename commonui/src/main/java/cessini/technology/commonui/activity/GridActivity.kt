@@ -147,7 +147,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         setTheme(R.style.AppTheme_ActionBar)
         setContentView(R.layout.activity_grid)
 
-        setupCustomSnackBar()
+//        setupCustomSnackBar()
 
 
         (this@GridActivity).window.apply {
@@ -257,11 +257,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
 
 
-
+//        showSnack(CommonChatPayload("mmm","mm",""))
         chatViewModel.messages.observe(this){
-            //TODO
-            val lastMessage = it.last()
-            showSnack(lastMessage)
+            showSnack(it)
         }
 
 
@@ -1018,7 +1016,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     // ending the call
     override fun onBackPressed() {
         super.onBackPressed()
-        hubViewModel.endcall()
+//        hubViewModel.endcall()
         SignalingClient.get()?.endcall()
         overridePendingTransition(R.anim.slide_in_animation, R.anim.slide_out_animation)
     }
@@ -1335,6 +1333,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         view.isDrawingCacheEnabled = true
         val bitmap = Bitmap.createBitmap(view.drawingCache)
         view.isDrawingCacheEnabled = false
+
 
 
 

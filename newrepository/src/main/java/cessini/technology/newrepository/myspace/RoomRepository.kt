@@ -32,7 +32,7 @@ class RoomRepository @Inject constructor(
         time: Long,
         private: Boolean = false,
 
-        categories: String="2"
+        categories: List<Int>
     ) = roomApi.createRoom(RoomBody(title=title, schedule = time, private = private, category = categories))
         .getOrThrow().data.name
 

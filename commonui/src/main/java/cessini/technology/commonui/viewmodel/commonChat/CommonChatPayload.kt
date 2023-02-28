@@ -7,7 +7,7 @@ import org.json.JSONObject
 class CommonChatPayload(
     @SerializedName("message")val message : String,
     @SerializedName("user_id")val user_id: String,
-    @SerializedName("room")val room: String
+    @SerializedName("room_code")val room: String
 
 ){
     fun getChatPayload() : JSONObject {
@@ -15,3 +15,11 @@ class CommonChatPayload(
         return JSONObject(jsonString)
     }
  }
+
+data class CommonChatPayload2(
+    val message : String,
+    val user_id: String,
+    val room: String,
+    val name:String
+
+)

@@ -12,7 +12,7 @@ fun ApiExplore.toModel(): Explore {
                 publicEvents = publicEvents.map { it.toModel() },
 
                topProfiles = topProfiles.map { it.toModel() },
-//                rooms = rooms.map { it.toModel() },
+                rooms = rooms.map { it.toModel() },
 //            liveRooms = listOf(LiveRoom(null,"1",null,null,null,null,null,null,null,"jbh","vgc","ugftrd","kjhbhf",null,"hyg",
 //                emptyList())),
 //                liveRooms = live_rooms,

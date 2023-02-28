@@ -12,7 +12,7 @@ data class ApiExplore(
 
 data class ApiExploreData(
     @SerializedName(value = "public_events") val publicEvents: List<ApiPublicEvent> = emptyList(),
-//    @SerializedName(value = "rooms")val rooms: List<ApiRoom> = emptyList(),
+    @SerializedName(value = "rooms")val rooms: List<ApiRoom> = emptyList(),
     @SerializedName(value = "top_profiles") val topProfiles: List<ApiTopProfile> = emptyList(),
 //    val live_rooms: List<LiveRoom> = emptyList(),
 

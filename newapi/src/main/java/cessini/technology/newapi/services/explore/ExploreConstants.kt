@@ -13,12 +13,6 @@ object ExploreConstants {
     const val NOTIFICATION_GET_ENDPOINT = "notification/get"
     const val EXPLORE_ENDPOINT = "unauth/explore/"
     const val MUSIC_ENDPOINT = "music/fetchmusic/"
-
-
-
-
-
-
     const val REGISTER_VIDEO_CATEGORY_PUBLIC_ENDPOINT = "cat/user/"
     const val REGISTER_VIDEO_CATEGORY_AUTH_ENDPOINT = "cat/auth/"
     const val MUSIC_CATEGORIES_END_POINT = "cat/music/"

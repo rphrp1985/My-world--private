@@ -11,7 +11,7 @@ import cessini.technology.newapi.services.myworld.model.response.ApiCreateRoomMe
 import cessini.technology.newapi.services.myworld.model.response.ApiRoomMessages
 
 fun ApiRoom.toModel() = Room(
-    id = id,
+    id = id.oid,
     name = code,
     title = title,
     creator = creator.toModel(),

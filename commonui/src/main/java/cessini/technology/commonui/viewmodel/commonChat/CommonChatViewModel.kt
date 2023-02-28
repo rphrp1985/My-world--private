@@ -1,27 +1,21 @@
 package cessini.technology.commonui.viewmodel.commonChat
 
+//import cessini.technology.commonui.fragment.commonChat.epoxy.ChatController
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import cessini.technology.commonui.fragment.commonChat.epoxy.ChatController
-//import cessini.technology.commonui.fragment.commonChat.epoxy.ChatController
-import cessini.technology.newapi.services.commonChat.CommonChatConstants
 import cessini.technology.newapi.services.commonChat.CommonChatSocketHandler
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
-import kotlinx.coroutines.launch
-import java.lang.Thread.sleep
-import kotlin.concurrent.thread
-import kotlinx.coroutines.flow.collectLatest as collectLatest
+import org.json.JSONObject
 
 class CommonChatViewModel : ViewModel() {
 
-    private val _messages = MutableLiveData<List<CommonChatPayload>>()
-    val messages: LiveData<List<CommonChatPayload>> get() = _messages
+     val messages = MutableLiveData<CommonChatPayload>()
+//    val messages: LiveData<CommonChatPayload> get() = _messages
     val chatController:ChatController = ChatController()
     var roomID:String="Room Live"
     var user_id:String ="user_id"
@@ -40,8 +34,8 @@ class CommonChatViewModel : ViewModel() {
         mSocket = CommonChatSocketHandler.getSocket()
 
         mSocket.on("connect", onConnect)
-        mSocket.on("connect_error", onConnectError)
-        mSocket.on("connect_timeout", onConnectError)
+//        mSocket.on("connect_error", onConnectError)
+//        mSocket.on("connect_timeout", onConnectError)
 
     }
 
@@ -61,12 +55,19 @@ class CommonChatViewModel : ViewModel() {
 
     }
 
-    fun addMessage(chatPayload: CommonChatPayload){
+    fun addMessage(chatPayload: CommonChatPayload2){
         Log.d(TAG,"addmessage() user_id = $user_id")
         chatController.addChatPayLoad(chatPayload,user_id)
         chatController.requestModelBuild()
+        if(chatPayload.user_id!=user_id){
+//            Handler(Looper.getMainLooper()).post {
+//                messages.value= chatPayload
+//            }
+        }
+
 //        val chats= mutableListOf<CommonChatPayload>()
-//        _messages.value?.let { chats.addAll(it) }
+//         chats.addAll(chatController.items)
+//        _messages.value= chats
 //        chats.add(chatPayload)
 //        _messages.value= chats
 
@@ -76,29 +77,34 @@ class CommonChatViewModel : ViewModel() {
     fun listenTo(roomID: String){
         mSocket.on("message"){
 
-            Log.d(TAG,"new message")
-            fun listentochats() = viewModelScope.launch {
-            val chats = mutableListOf<CommonChatPayload>()
-            CommonChatSocketHandler.chats().collectLatest {
-              val chatload= CommonChatPayload(
+            if(!it.isEmpty()){
 
-                  message = it.getString("message"),
-                  room= it.getString("room"),
-                  user_id = it.getString("user_id")
-              )
-            chats.add(chatload)
+                val json= JSONObject(it!![0].toString())
 
+                if(json.optString("user_id")!=user_id){
+
+                addMessage(CommonChatPayload2(json.optString("message"),json.optString("user_id"),roomID,json.optString("name")))
+                }
             }
-                _messages.value= chats
 
-        }
+
+//            Log.d(TAG,"new message")
+//            fun listentochats() = viewModelScope.launch {
+//            val chats = mutableListOf<CommonChatPayload>()
+//            CommonChatSocketHandler.chats().collectLatest {
+//              val chatload= CommonChatPayload(
+//
+//                  message = it.getString("message"),
+//                  room= it.getString("room"),
+//                  user_id = it.getString("user_id")
+//              )
+//            chats.add(chatload)
+//
+
+//                _messages.value= chats
+
+
     }
-
-        mSocket.on("delivered"){
-
-
-        }
-
 
 
     }
