@@ -54,6 +54,7 @@ class MediaProjectionService : Service() {
         INSTANCE = this
         Log.i(TAG, "RTP Display service started")
         displayBase = RtmpDisplay(baseContext, true, connectCheckerRtp)
+
         displayBase?.glInterface?.setForceRender(true)
         return START_STICKY
     }
@@ -118,7 +119,7 @@ class MediaProjectionService : Service() {
 
         override fun onConnectionSuccessRtp() {
             showNotification("Stream started")
-            Log.i(TAG, "RTP service destroy")
+            Log.i(TAG, "RTP service success")
         }
 
         override fun onNewBitrateRtp(bitrate: Long) {
@@ -127,7 +128,7 @@ class MediaProjectionService : Service() {
 
         override fun onConnectionFailedRtp(reason: String) {
             showNotification("Stream connection failed")
-            Log.i(TAG, "RTP service destroy")
+            Log.i(TAG, "RTP service destroy  $reason")
         }
 
         override fun onDisconnectRtp() {
@@ -155,6 +156,8 @@ class MediaProjectionService : Service() {
         if (endpoint.startsWith("rtmp")) {
             displayBase = RtmpDisplay(baseContext, true, connectCheckerRtp)
             displayBase?.setIntentResult(resultCode, data)
+
+
         } else {
             displayBase = RtspDisplay(baseContext, true, connectCheckerRtp)
             displayBase?.setIntentResult(resultCode, data)
@@ -163,6 +166,7 @@ class MediaProjectionService : Service() {
     }
 
     fun startStreamRtp(endpoint: String) {
+        Log.d(TAG,"start streamer ${displayBase?.isStreaming}")
         if (displayBase?.isStreaming != true) {
             if (displayBase?.prepareVideo() == true && displayBase?.prepareAudio() == true) {
                 displayBase?.startStream(endpoint)

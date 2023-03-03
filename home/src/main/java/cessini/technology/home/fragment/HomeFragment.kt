@@ -3,6 +3,7 @@ package cessini.technology.home.fragment
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -13,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.PagerSnapHelper
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.common.BaseFragment
@@ -22,6 +24,7 @@ import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
 import cessini.technology.home.R
 import cessini.technology.home.controller.HomeEpoxyController
 import cessini.technology.home.databinding.NewHomeFragmentBinding
+import cessini.technology.home.homeLoading
 import cessini.technology.home.model.HomeEpoxyStreamsModel
 import cessini.technology.home.model.JoinRoomSocketEventPayload
 import cessini.technology.home.model.User
@@ -29,7 +32,6 @@ import cessini.technology.home.viewmodel.HomeFeedViewModel
 import cessini.technology.home.viewmodel.SocketFeedViewModel
 import cessini.technology.home.webSockets.HomeSignallingClient
 import cessini.technology.home.webSockets.SocketEventCallback
-import cessini.technology.home.webSockets.model.HomeFeedSocketPayload
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.ToFlowNavigable
 import cessini.technology.newapi.preferences.AuthPreferences
@@ -38,6 +40,9 @@ import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.newrepository.video.VideoRepository
 import cessini.technology.newrepository.websocket.video.VideoViewUpdaterWebSocket
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+//import kotlinx.android.synthetic.main.user_save_video.*
 import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
@@ -63,6 +68,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
     private val galleryViewModel by activityViewModels<GalleryViewModel>()
 
+
     companion object {
         private const val TAG = "HomeFragment"
     }
@@ -78,6 +84,12 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
     private val homeFeedViewModel: HomeFeedViewModel by viewModels()
     private val socketFeedViewModel: SocketFeedViewModel by viewModels()
 
+
+
+
+
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "CREATED")
@@ -90,13 +102,68 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         /**Setting a lifecycleOwner as this Fragment.*/
         binding.lifecycleOwner = viewLifecycleOwner
 
+
+        if(socketFeedViewModel.controller==null) {
+            socketFeedViewModel.controller = HomeEpoxyController(
+                context = requireContext(),
+                onJoinClicked = { joinRoomSocketEventPayload ->
+                    if (!isUserSignedIn)
+                        showSignInBottomSheet()
+                    else {
+                        joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload))
+                    }
+                },
+                checkSignInStatus = {
+                    if (!isUserSignedIn) {
+                        showSignInBottomSheet()
+                        false
+                    } else true
+                },
+                socketFeedViewModel.canLoadMore
+            )
+        }
+
+
         homeFeedViewModel.isUserSignedIn()
+        binding.recyclerView.setController(socketFeedViewModel.controller!!)
+        val snapHelper = PagerSnapHelper()
+        snapHelper.attachToRecyclerView(binding.recyclerView)
+
+        showLoader()
+
+        binding.recyclerView.adapter = socketFeedViewModel.controller!!.adapter
+
         homeFeedViewModel.authFlag.observe(viewLifecycleOwner, Observer { isSignedIn->
             if (isSignedIn) {
                 isUserSignedIn = true
                 homeFeedViewModel.loadUserInfo()
+
+            }else{
             }
+
         })
+
+
+        if(socketFeedViewModel.userID==""){
+            lifecycleScope.launch {
+                profileRepository.profile.collectLatest {
+                    if(it.id!="")
+                    socketFeedViewModel.userID= it.id
+                    else
+                        socketFeedViewModel.userID=userIdentifierPreferences.uuid
+
+                    socketFeedViewModel.setPaging(profileRepository.profile, userIdentifierPreferences.uuid)
+
+                    requireActivity().runOnUiThread {
+                        binding.recyclerView.adapter= socketFeedViewModel.controller!!.adapter
+                        setupEpoxy() }
+
+                }
+            }
+        }
+
+
+
 
 
         //blurview
@@ -142,31 +209,15 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         setUpHomeFeed()*/
 
         // TODO: To be replaced with Pagination
-        socketFeedViewModel.sendUserPayload(HomeFeedSocketPayload(
-            user_id = userIdentifierPreferences.uuid,
-            page = 1
-        ))
 
 
 
-        val controller = HomeEpoxyController(
-            context = requireContext(),
-            onJoinClicked = { joinRoomSocketEventPayload ->
-                if (!isUserSignedIn)
-                    showSignInBottomSheet()
-                else {
-                    joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload))
-                }
-            },
-            checkSignInStatus = {
-                if (!isUserSignedIn) {
-                    showSignInBottomSheet()
-                    false
-                }
-                else true
-            },
-        )
-        val snapHelper = PagerSnapHelper()
+
+
+
+
+
+
         /*TODO:
            lifecycleScope.launch {
             viewModel.flow.collectLatest { pagingData: PagingData<home_data> ->
@@ -174,8 +225,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             }
         }*/
 
-        binding.recyclerView.setController(controller)
-        snapHelper.attachToRecyclerView(binding.recyclerView)
+
 
         val DUMMY_HLS_FEED_LINK = "http://amssamples.streaming.mediaservices.windows.net/69fbaeba-8e92-4740-aedc-ce09ae945073/AzurePromo.ism/manifest(format=m3u8-aapl)"
         val DUMMY_DATA = HomeEpoxyStreamsModel(
@@ -194,38 +244,83 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         )
 
 
-        socketFeedViewModel.homeFeeds.observe(viewLifecycleOwner, Observer { homeFeedSocketResponse->
-            val homeEpoxyStreams = mutableListOf<HomeEpoxyStreamsModel>()
-            homeFeedSocketResponse.data.map { dataResponse ->
-                homeEpoxyStreams.add(
-                    HomeEpoxyStreamsModel(
-                        link = DUMMY_HLS_FEED_LINK,
-                        title = dataResponse.title,
-                        room = dataResponse.room,
-                        admin = dataResponse.admin,
-                        user = User(
-                            channelName = homeFeedViewModel.channelName.toString(),
-                            email = homeFeedViewModel.email.toString(),
-                            id = homeFeedViewModel.userId.toString(),
-                            name = homeFeedViewModel.username.toString(),
-                            profilePicture = homeFeedViewModel.profilePicture.toString()
-                        ),
-                        email = homeFeedViewModel.email.toString()
-                    )
-                )
-            }
-            homeFeedViewModel.homeEpoxyStreamsList.value = homeEpoxyStreams
-        })
-        if(!homeFeedViewModel.homeEpoxyStreamsList.value.isNullOrEmpty()) {
-            controller.streams = homeFeedViewModel.homeEpoxyStreamsList.value!!
-        } else {
-            controller.streams = mutableListOf(DUMMY_DATA)
-        }
+//        socketFeedViewModel.homeFeeds.observe(viewLifecycleOwner, Observer { homeFeedSocketResponse->
+//            val homeEpoxyStreams = mutableListOf<HomeEpoxyStreamsModel>()
+//
+//            homeFeedSocketResponse.data
+//            homeFeedSocketResponse.data.map {
+//
+////                homeEpoxyStreams.add(
+////                    link= it.hls,
+////                    title= it.title,
+////                    room = it.room,
+////                    admin = it.admin,
+////                    user = it.creator,
+////                    email = it.admin
+////
+////                )
+//
+//
+//                homeEpoxyStreams.add(
+//                    HomeEpoxyStreamsModel(
+//                        link = it.hls,
+//                        title = it.title,
+//                        room = it.room,
+//                        admin = it.admin,
+//                        user = User(
+//                            channelName = homeFeedViewModel.channelName.toString(),
+//                            email = homeFeedViewModel.email.toString(),
+//                            id = homeFeedViewModel.userId.toString(),
+//                            name = homeFeedViewModel.username.toString(),
+//                            profilePicture = homeFeedViewModel.profilePicture.toString()
+//                        ),
+//                        email = homeFeedViewModel.email.toString()
+//                    )
+//                )
+//            }
+//            homeFeedViewModel.homeEpoxyStreamsList.value = homeEpoxyStreams
+////            controller.streams = homeFeedViewModel.homeEpoxyStreamsList.value!!
+////            controller.requestModelBuild()
+//        })
+//        if(!homeFeedViewModel.homeEpoxyStreamsList.value.isNullOrEmpty()) {
+//            controller.streams = homeFeedViewModel.homeEpoxyStreamsList.value!!
+//        } else {
+//            controller.streams = mutableListOf(DUMMY_DATA)
+//        }
+
+
 
         systemBarInsetsEnabled = false
 
 //        setUpNavIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_homeactive))
     }
+
+    fun setupEpoxy(){
+
+
+
+        socketFeedViewModel.fetchPages({ list ->
+
+            Log.d(TAG, "fetch page = $list")
+
+            socketFeedViewModel.controller!!.submitList(list)
+
+        }, { error ->
+            Log.e(TAG, "error: ${error}")
+        })
+
+
+
+    }
+
+    fun showLoader(){
+        binding.recyclerView.withModels {
+            homeLoading {
+             id("loading")
+            }
+        }
+    }
+
 
 
     private fun convertToJSONObject(joinRoomSocketEventPayload: JoinRoomSocketEventPayload):JSONObject {
@@ -236,10 +331,10 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             userJSONObject.put("id", joinRoomSocketEventPayload.user.id)
             userJSONObject.put("name", joinRoomSocketEventPayload.user.name)
             userJSONObject.put("profilePicture", joinRoomSocketEventPayload.user.profilePicture)
-            userJSONObject.put("email", joinRoomSocketEventPayload.user.email)
+//            userJSONObject.put("email", joinRoomSocketEventPayload.user.email)
             userJSONObject.put("channelName", joinRoomSocketEventPayload.user.channelName)
             jsonObject.put("user", userJSONObject)
-            jsonObject.put("email", joinRoomSocketEventPayload.user.email)
+//            jsonObject.put("email", joinRoomSocketEventPayload.user.email)
         } catch (e:JSONException) {
             e.printStackTrace()
         }

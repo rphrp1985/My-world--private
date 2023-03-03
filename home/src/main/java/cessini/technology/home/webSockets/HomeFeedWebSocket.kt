@@ -1,6 +1,8 @@
 package cessini.technology.home.webSockets
 
 import android.util.Log
+import androidx.paging.PageKeyedDataSource
+import cessini.technology.home.webSockets.model.DataResponse
 import cessini.technology.home.webSockets.model.HomeFeedSocketPayload
 import cessini.technology.home.webSockets.model.HomeFeedSocketResponse
 import com.google.gson.Gson
@@ -24,9 +26,15 @@ class HomeFeedWebSocket(private val block : (HomeFeedSocketResponse)->Unit) {
                 Log.d(TAG, "onOpen: ${response.body}")
             }
 
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                super.onFailure(webSocket, t, response)
+                Log.d(TAG, "onfailure: ${response?.body}  t= $t")
+            }
+
             override fun onMessage(webSocket: WebSocket, text: String) {
                 Log.d(TAG, "onMessage: $text")
                 getHomeFeedWebSocketResponse(text).run(block)
+
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
@@ -41,6 +49,10 @@ class HomeFeedWebSocket(private val block : (HomeFeedSocketResponse)->Unit) {
 
     fun close(reason:String) {
         homeFeedSocket.close(CLOSE_STATUS, reason)
+    }
+
+    fun sendInitial(homeFeedSocketPayload: HomeFeedSocketPayload, callback: PageKeyedDataSource.LoadInitialCallback<Int, DataResponse>) {
+        homeFeedSocket.send(Gson().toJson(homeFeedSocketPayload))
     }
 
 

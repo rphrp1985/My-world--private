@@ -13,7 +13,7 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
 class TimelineWebSocket(deviceId: String, private val block: (List<Video>) -> Unit) {
-    private val timelineSocketUrl = "ws://52.66.250.212/ws/feeds/?devId=$deviceId"
+    private val timelineSocketUrl = "http://timeline.joinmyword.in/ws/feeds/?devId=$deviceId"
 
     private val timelineSocket = OkHttpClient().newWebSocket(
         request = Request.Builder().url(timelineSocketUrl).build(),

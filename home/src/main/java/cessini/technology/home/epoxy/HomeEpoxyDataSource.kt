@@ -1,16 +1,16 @@
 package cessini.technology.home.epoxy
 
-import android.util.Log
 import androidx.paging.DataSource
 import androidx.paging.PageKeyedDataSource
-import cessini.technology.profile.`class`.ResponseJson
-import cessini.technology.profile.`class`.deliveredMessage
-import cessini.technology.profile.`class`.getMessage
-import cessini.technology.profile.fragment.publicProfile.ResponseMessageJson
-import com.google.gson.GsonBuilder
+import cessini.technology.home.viewmodel.SocketFeedViewModel
+import cessini.technology.home.webSockets.HomeFeedWebSocket
+import cessini.technology.home.webSockets.model.DataResponse
+import cessini.technology.home.webSockets.model.HomeFeedSocketPayload
+import cessini.technology.model.Profile
 import io.reactivex.disposables.CompositeDisposable
-import io.socket.client.Socket
-import io.socket.emitter.Emitter
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.runBlocking
 
 
 private const val TAG = "HomeEpoxyDataSource"
@@ -19,88 +19,56 @@ private const val TAG = "HomeEpoxyDataSource"
  class CanLoad(var canLoadMore: Boolean)
 
 
-class ChatDataSource(
-    val service: Socket,
+class HomeEpoxyDataSource(
+    val service: HomeFeedWebSocket,
     val compositeDisposable: CompositeDisposable,
-    val idMe: String,
-    val idOth: String
+    var userID: String,
+    val socketFeedViewModel: SocketFeedViewModel,
+    val profile: Flow<Profile>,
+    val uuid: String
 ) :
-    PageKeyedDataSource<Int, ResponseMessageJson>() {
-
-    val canLoadMore: CanLoad= CanLoad(true)
+    PageKeyedDataSource<Int, DataResponse>() {
 
 
-    override fun loadInitial(params: LoadInitialParams<Int>, callback: LoadInitialCallback<Int, ResponseMessageJson>) {
+    override fun loadInitial(params: LoadInitialParams<Int>, callback: LoadInitialCallback<Int, DataResponse>) {
 
-        Log.d("SOCKET","load initial ${service.connected()}")
-
-        service.emit("previous_messages", getMessage(1,idMe, idOth).getMessages())
-
-        val onUpdateChat = Emitter.Listener {
-//                Log.d(TAG,"inside emitter : ${it[0]}")
-            Log.d(TAG, "previous message repsonse ${it[0]}")
-            val gson = GsonBuilder().create()
-            val responseJson =
-                gson.fromJson(it[0].toString(), ResponseJson::class.java)
-
-
-            callback.onResult(responseJson.messages,0,responseJson.meta.page+1)
-
-            canLoadMore.canLoadMore= responseJson.meta.can_load_more
-
-            service.off("previous_messages");
-
-        }
-        service.on("previous_messages", onUpdateChat)
-    }
-
-    override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, ResponseMessageJson>) {
-
-        service.emit("previous_messages", getMessage(params.key,idMe, idOth).getMessages())
-
-        val onUpdateChat = Emitter.Listener {
-//                Log.d(TAG,"inside emitter : ${it[0]}")
-            Log.d(TAG, "previous message repsonse ${it[0]}")
-            val gson = GsonBuilder().create()
-            val responseJson =
-                gson.fromJson(it[0].toString(), ResponseJson::class.java)
-
-
-            callback.onResult(responseJson.messages,responseJson.meta.page+1)
-
-            for(message in responseJson.messages){
-                emitDelivered(message)
-            }
-
-            canLoadMore.canLoadMore= responseJson.meta.can_load_more
-
-            service.off("previous_messages");
-        }
-        service.on("previous_messages", onUpdateChat)
-    }
-
-    override fun loadBefore(params: LoadParams<Int>, callback: LoadCallback<Int, ResponseMessageJson>) {
-
-
-//        service.emit("previous_messages", getMessage(params.key,"ID626826540000000674", "ID709749170000000606").getMessages())
+        socketFeedViewModel.initialCallback(callback)
+        service.sendInitial(HomeFeedSocketPayload(
+            user_id = userID,
+            page = 1
+        ), callback)
+//        runBlockin0g {
+//            profile.collectLatest {
+//                if(it.id=="") {
+//                    userID=uuid
+//                }else
+//                {
+//                    userID= it.id
+//                }
+//                    service.sendInitial(HomeFeedSocketPayload(
+//                        user_id = userID,
+//                        page = 1
+//                    ), callback)
 //
-//        val onUpdateChat = Emitter.Listener {
-////                Log.d(TAG,"inside emitter : ${it[0]}")
-//            Log.d(TAG, "previous message repsonse ${it[0]}")
-//            val gson = GsonBuilder().create()
-//            val responseJson =
-//                gson.fromJson(it[0].toString(), ResponseJson::class.java)
-//
-//
-//            callback.onResult(responseJson.messages,responseJson.meta.page-1)
-//
-//            canLoadMore.canLoadMore= responseJson.meta.can_load_more
-//
-//            service.off("previous_messages");
+//            }
 //        }
-//        service.on("previous_messages", onUpdateChat)
 
 
+
+    }
+
+    override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, DataResponse>) {
+
+        socketFeedViewModel.afterCallback(callback)
+
+        service.send(HomeFeedSocketPayload(
+            user_id = userID ,
+            page = params.key
+        ))
+
+    }
+
+    override fun loadBefore(params: LoadParams<Int>, callback: LoadCallback<Int, DataResponse>) {
     }
 
     override fun addInvalidatedCallback(onInvalidatedCallback: InvalidatedCallback) {
@@ -110,26 +78,29 @@ class ChatDataSource(
 
         super.removeInvalidatedCallback(onInvalidatedCallback)
     }
-    fun emitDelivered(item:ResponseMessageJson){
-        if(!item.is_delivered){
-            service.emit("delivered", deliveredMessage(listOf(item._id)).getMessages())
-        }
-    }
 
 }
 
-class ChatDatasourceFactory(val service: Socket, val compositeDisposable: CompositeDisposable,val idMe:String,val idOth:String) :
-    DataSource.Factory<Int, ResponseMessageJson>() {
+class HomeDatasourceFactory(
+    val service: HomeFeedWebSocket,
+    val compositeDisposable: CompositeDisposable,
+    val idMe: String,
+    socketFeedViewModel: SocketFeedViewModel,
+    profile: Flow<Profile>,
+    uuid: String,
 
-    private val chatDataSource = ChatDataSource(service, compositeDisposable,idMe,idOth)
+    ) :
+    DataSource.Factory<Int, DataResponse>() {
+
+    private val chatDataSource = HomeEpoxyDataSource( service,compositeDisposable,idMe, socketFeedViewModel,profile,uuid)
 
 
 
-    override fun create(): DataSource<Int, ResponseMessageJson> {
+    override fun create(): DataSource<Int, DataResponse> {
         return chatDataSource
     }
 
-    fun getMessageState()= chatDataSource.canLoadMore
+
 
     fun invalidiate(){
 //        chatDataSource.invalidate()

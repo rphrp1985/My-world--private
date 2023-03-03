@@ -1,9 +1,11 @@
 package cessini.technology.home.model
 
+import com.google.gson.annotations.SerializedName
+
 data class User(
-    val channelName: String,
+    @SerializedName("channel_name")val channelName: String,
     val email: String,
-    val id: String,
-    val name: String,
-    val profilePicture: String
+    @SerializedName("_id")val id: String,
+    @SerializedName("name")val name: String,
+   @SerializedName("profile_picture") val profilePicture: String
 )

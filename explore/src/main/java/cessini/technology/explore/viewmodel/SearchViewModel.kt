@@ -236,7 +236,6 @@ class SearchViewModel @Inject constructor(
 
     fun fetchSuggestedRooms() {
         viewModelScope.launch {
-
             val response = exploreRepository.getsuggestedrooms()
             response.collectLatest { result ->
                 when (result) {
