@@ -315,20 +315,29 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     }
 
     fun hand(){
+        var status=true
         hubViewModel.hand= !hubViewModel.hand
         SignalingClient.get()?.sendHand(hubViewModel.hand)
         if(hubViewModel.hand){
             raiseHand.let {
                 it.setTextColor(R.color.quantum_black_100)
                 it.background = ContextCompat.getDrawable(this,R.drawable.circular_button_view_without_border)
+                status=true
             }
 
         }else{
             raiseHand.background=null
             raiseHand.background= ContextCompat.getDrawable(this,R.drawable.ic_hubaskwhite)
+            status=false
 
 
-
+        }
+        for(i in 0 until recyclerDataArrayList.size){
+            if(recyclerDataArrayList[i].socketId=="socket"){
+                recyclerDataArrayList[i].handSwitch = status
+                setUpEpoxy()
+                break
+            }
         }
     }
 
@@ -960,32 +969,52 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     // Handling the video switch
     fun switchVideo(it: ImageView) {
+        var status=true
         if(count%2 !=0) {
             it.setImage(R.drawable.ic_addvideo)
             count++
             hubViewModel.videoTrack?.setEnabled(true)
             SignalingClient.get()?.sendCamera(true)
+            status=true
         }else{
             it.setImage(R.drawable.ic_removevideo)
             count++
             hubViewModel.videoTrack?.setEnabled(false)
             SignalingClient.get()?.sendCamera(false)
+            status=false
+        }
+        for(i in 0 until recyclerDataArrayList.size){
+            if(recyclerDataArrayList[i].socketId=="socket"){
+                recyclerDataArrayList[i].videoSwitch = status
+                setUpEpoxy()
+                break
+            }
         }
 //        localView.isEnabled = !(localView.isEnabled)
     }
 
     //handling the audio switch
     fun switchAudio(it: ImageView) {
+        var status=true
         if (hubViewModel.localAudioTrack != null) {
             if (hubViewModel.localAudioTrack?.enabled() == true) {
                 hubViewModel.localAudioTrack?.setEnabled(false)
                 SignalingClient.get()?.sendMicrophone(false)
                 it.setImage(R.drawable.ic_removeaudio)
+                status=false
             }
             else {
                 hubViewModel.localAudioTrack?.setEnabled(true)
                 SignalingClient.get()?.sendMicrophone(true)
                 it.setImage(R.drawable.ic_addaudio)
+                status=true
+            }
+        }
+        for(i in 0 until recyclerDataArrayList.size){
+            if(recyclerDataArrayList[i].socketId=="socket"){
+                recyclerDataArrayList[i].microphoneSwitch = status
+                setUpEpoxy()
+                break
             }
         }
     }

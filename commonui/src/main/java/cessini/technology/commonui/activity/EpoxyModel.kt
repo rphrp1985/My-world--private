@@ -1,9 +1,14 @@
 package cessini.technology.commonui.activity
 
 import android.content.Context
+import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import cessini.technology.commonui.R
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyHolder
 import com.airbnb.epoxy.EpoxyModelClass
@@ -12,6 +17,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.CornerFamily
+import de.hdodenhof.circleimageview.CircleImageView
 import org.kurento.client.RecorderEndpoint
 import org.kurento.client.WebRtcEndpoint
 import org.webrtc.EglBase
@@ -39,6 +45,18 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
 
     @EpoxyAttribute
     lateinit var name1: String
+
+    @EpoxyAttribute
+    lateinit var profile_picture:String
+
+    @EpoxyAttribute
+    var videoSwitch:Boolean=true
+
+    @EpoxyAttribute
+    var handSwitch:Boolean=false
+
+    @EpoxyAttribute
+    var microphoneSwitch:Boolean=true
 
     @EpoxyAttribute
      var imageId: Int =-1
@@ -82,6 +100,31 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                 holder.cardView.layoutParams.height = height1.toInt()
                 holder.cardView.layoutParams.width = width1.toInt()
                 holder.name.text = name1
+                holder.profilePic.load(profile_picture){
+                    transformations(CircleCropTransformation())
+                }
+
+                if (!videoSwitch){
+                    holder.contraint_layout.visibility=View.VISIBLE
+
+                }
+                else{
+                    holder.contraint_layout.visibility=View.INVISIBLE
+                }
+
+                if (!microphoneSwitch){
+                    holder.audio.setImage(R.drawable.ic_removeaudio)
+                }
+                else{
+                    holder.audio.setImage(R.drawable.ic_addaudio)
+                }
+
+                if (!handSwitch){
+                    holder.handRaise.visibility=View.INVISIBLE
+                }
+                else{
+                    holder.handRaise.visibility=View.VISIBLE
+                }
 
                 holder.cardView.shapeAppearanceModel =
                     holder.cardView.shapeAppearanceModel.toBuilder()
@@ -107,11 +150,18 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
         lateinit var name: TextView
 //        lateinit var profession: SurfaceViewRenderer
         lateinit var cardView: MaterialCardView
-
+        lateinit var profilePic:CircleImageView
+        lateinit var audio:ImageView
+        lateinit var handRaise:ImageView
+        lateinit var contraint_layout:ConstraintLayout
         override fun bindView(itemView: View) {
             cardView = itemView.findViewById(R.id.cardView)
             imgPerson = itemView.findViewById(R.id.localView)
             name = itemView.findViewById(R.id.name)
+            profilePic=itemView.findViewById(R.id.profile_pic)
+            audio=itemView.findViewById(R.id.audio)
+            handRaise=itemView.findViewById(R.id.iv_hand)
+            contraint_layout=itemView.findViewById(R.id.layout)
 //          profession = itemView.findViewById(R.id.rView)
         }
     }
