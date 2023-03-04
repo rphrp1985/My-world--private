@@ -45,6 +45,10 @@ class EpoxyController(
           bR(br)
           context1(context)
           context(it.con)
+          profile_picture(it.profilepic)
+          videoSwitch(it.videoSwitch)
+          handSwitch(it.handSwitch)
+          microphoneSwitch(it.microphoneSwitch)
       }
             i++
         }
