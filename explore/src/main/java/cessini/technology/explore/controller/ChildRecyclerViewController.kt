@@ -317,9 +317,11 @@ class ChildRecyclerViewController(
                 time(room.time)
 
                 if (room.categories.isNotEmpty()) {
+                    var i=0
                     val category = StringBuilder()
                     room.categories.forEach {
-                        category.append(categories[it.toInt()] + "#")
+                        category.append(categories[i] + "#")
+                        i++
                     }
                     val fh = category.indexOf("#")
                     val sh = category.indexOf("#", fh + 1)
