@@ -106,8 +106,8 @@ internal class ManageRoomFragment :
 
 
 
-//        runCatching { fetchRooms() }
-//        runCatching { fetchRoomMessages() }
+        runCatching { fetchRooms() }
+        runCatching { fetchRoomMessages() }
 
 
 // mSocket.on("get-messages-response"){
@@ -190,19 +190,20 @@ internal class ManageRoomFragment :
 
 
     private fun fetchRooms() {
-//        Log.e(TAG, "Inside fetchRooms()")
-//        val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
-//            Log.e(
-//                TAG,
-//                "fetchRooms: ${profileRepository.getProfileRooms(userIdentifierPreferences.id)}"
-//            )
-//            runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
-//                .onFailure {
-//// toast(it.message.orEmpty())
-//                }
-//                .getOrDefault(emptyList())
-//        }
-//
+        Log.e(TAG, "Inside fetchRooms()")
+        val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
+            Log.e(
+                TAG,
+                "fetchRooms: ${profileRepository.getProfileRooms(userIdentifierPreferences.id)}"
+            )
+            runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
+                .onFailure {
+ toast(it.message.orEmpty())
+                }
+                .getOrDefault(emptyList())
+
+        }
+
 //        viewLifecycleOwner.lifecycleScope.launch {
 //            val rooms = roomsDeffered.await()
 //
@@ -229,7 +230,7 @@ internal class ManageRoomFragment :
 // }
 // viewLifecycleOwner.lifecycleScope.launch {
 // val messages = messageDeffered.await()
-//
+
 // buildMessageModel(messages)
 // }
     }

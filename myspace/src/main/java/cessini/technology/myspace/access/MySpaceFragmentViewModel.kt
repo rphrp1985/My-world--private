@@ -37,7 +37,8 @@ class MySpaceFragmentViewModel @Inject constructor(
                         temp.listeners = temp.listeners.toSet().toList()
                     _room.value = temp
                 Log.e("MySpaceFragmentVM","${temp}")}
-                .onFailure { ShowToast(it.message.orEmpty()).send() }
+                .onFailure { ShowToast("${it.message.orEmpty()}").send() }
+
         }
     }
 

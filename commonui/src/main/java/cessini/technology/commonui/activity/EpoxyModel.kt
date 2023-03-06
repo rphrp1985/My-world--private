@@ -1,6 +1,7 @@
 package cessini.technology.commonui.activity
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.view.View
 import android.widget.TextView
 import cessini.technology.commonui.R
@@ -8,16 +9,14 @@ import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyHolder
 import com.airbnb.epoxy.EpoxyModelClass
 import com.airbnb.epoxy.EpoxyModelWithHolder
-import com.bumptech.glide.Glide
+import com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.CornerFamily
-import org.kurento.client.RecorderEndpoint
-import org.kurento.client.WebRtcEndpoint
 import org.webrtc.EglBase
+import org.webrtc.EglRenderer
 import org.webrtc.SurfaceViewRenderer
-import org.webrtc.VideoFileRenderer
 import org.webrtc.VideoTrack
+
 
 @EpoxyModelClass
 abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
@@ -76,6 +75,38 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                     holder.imgPerson.setEnableHardwareScaler(true)
                     holder.imgPerson.setZOrderMediaOverlay(true)
                     track.addSink(holder.imgPerson)
+
+
+
+                        holder.imgPerson.addFrameListener(
+                            object :
+                                EglRenderer.FrameListener {
+                                override fun onFrame(p0: Bitmap?) {
+
+                                    runOnUiThread {
+
+                                     GridActivity.screenShot.value!!.add(p0)
+                                        GridActivity.screenShot.value= GridActivity.screenShot.value
+
+                                        holder.imgPerson.removeFrameListener(this)
+                                    }
+                                }
+
+                            }, 1.0f
+
+                        )
+
+//                    holder.imgPerson.addFrameListsner(object :
+//                        EglRenderer.FrameListener {
+//                        override fun onFrame(bitmap: Bitmap) {
+//                            runOnUiThread {
+//
+////            localVideoView.removeFrameListener(this)
+//
+//                            }
+//                        }
+//                    }, 1.0f)
+
                 } catch (e: Exception) {
                 }
 

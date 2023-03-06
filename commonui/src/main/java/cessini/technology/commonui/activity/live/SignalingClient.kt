@@ -91,8 +91,6 @@ class SignalingClient() {
 
                 val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
 
-//                 room_code= "Prianshu Prasad_vv_583149515846757_1677173321"
-//              val data = JoinRoom("Prianshu Prasad_vv_583149515846757_1677173321",sgcUser,"rpinformationhub@gmail.com").getJson()
                 val data = JoinRoom(rname,sgcUser,profile.email).getJson()
 
                 Log.d(TAG,"permission = ${data}")

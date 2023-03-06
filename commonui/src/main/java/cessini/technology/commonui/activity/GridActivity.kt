@@ -10,12 +10,14 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.util.Log
 import android.view.View
@@ -25,6 +27,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -66,6 +72,7 @@ import com.google.gson.JsonObject
 import dagger.hilt.android.AndroidEntryPoint
 import io.socket.client.Socket
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -73,6 +80,9 @@ import org.slf4j.helpers.Util.report
 import org.webrtc.*
 import org.webrtc.PeerConnectionFactory.InitializationOptions
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 
@@ -146,10 +156,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme_ActionBar)
         setContentView(R.layout.activity_grid)
-
-//        setupCustomSnackBar()
-
-
         (this@GridActivity).window.apply {
             clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
             addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
@@ -181,7 +187,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 startActivityForResult(sendIntent, hubViewModel.REQUEST_CODE_STREAM)
             }
 
-        },1000)
+        },3000)
+
+
+       screenShot.observe(this, androidx.lifecycle.Observer {
+           streamShort()
+       })
 
 
 //        val mediaProjectionManager = application.getSystemService(
@@ -539,6 +550,13 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode==hubViewModel.REQUEST_EXTERNAL_STORAGe && resultCode!=0)
+            streamShort()
+
+        if(requestCode==hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE && resultCode== RESULT_OK ){
+            showCamera()
+        }
         if (requestCode != hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE)
         {
 //            Toast.makeText(this,"permission not granted",Toast.LENGTH_SHORT).show()
@@ -553,7 +571,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 screenCast()
             }
         }
-        if ( requestCode == hubViewModel.REQUEST_CODE_STREAM) {
+        if ( requestCode == hubViewModel.REQUEST_CODE_STREAM && resultCode!=0  ) {
             Toast.makeText(this,"permission granted for stream",Toast.LENGTH_SHORT).show()
             mMediaProjectionPermissionResultCode = resultCode
             mMediaProjectionPermissionResultData = data
@@ -652,6 +670,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      */
 
     private fun setUpEpoxy() {
+
+//        screenShot.clear()
+
         epoxyset= true
         val layoutManager: GridLayoutManager
         if (recyclerDataArrayList.size == 1 || recyclerDataArrayList.size == 2) {
@@ -683,7 +704,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 //            epoxyRecyclerView.setController(controller)
             controller.requestModelBuild()
 
+
         }
+//        runOnUiThread { streamShort() }
     }
 
     fun createVideoPath(context: Context, fileName: String?): String? {
@@ -828,6 +851,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             val screen = obj.optBoolean("screen")
             Log.d("screen data","screen = $screen")
 
+
+
             val peerConnection = getOrCreatePeerConnection(socketId, screen,"offer")
             val jsonObject = Gson().fromJson(data.optString("sdp").toString(), JsonObject::class.java)
             val sdp = Gson().fromJson(jsonObject, SessionDescription::class.java)
@@ -922,7 +947,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         setUpEpoxy()
 
-        streamShort()
+
 //        if(data.optString("part")=="not ok")
 //        {
 //            recyclerDataArrayList.removeLast()
@@ -1021,6 +1046,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         super.onBackPressed()
 //        hubViewModel.endcall()
         SignalingClient.get()?.endcall()
+        stopService(Intent(baseContext, MediaProjectionService::class.java))
         overridePendingTransition(R.anim.slide_in_animation, R.anim.slide_out_animation)
 
     }
@@ -1054,7 +1080,11 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         private val CHOOSING_IMAGE_REQUEST = 1234
 
         private var fileUri: Uri? = null
-        private var bitmap: Bitmap? = null
+        var bitmap: Bitmap? = null
+
+        var modelProcessed=0
+        var screenShot =  MutableLiveData<MutableList<Bitmap?>>(mutableListOf())
+
     }
 
 
@@ -1336,14 +1366,100 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     fun streamShort(){
 
         val view= window.decorView.rootView
-        view.isDrawingCacheEnabled = true
-        val bitmap = Bitmap.createBitmap(view.drawingCache)
-        view.isDrawingCacheEnabled = false
+
+        verifystoragepermissions(this)
 
 
 
+        if( screenShot.value!!.size< recyclerDataArrayList.size )
+            return
+
+            val file= screenshot(view,System.currentTimeMillis().toString())
+
+            file?.let {
+                Log.d("SnapShot","stream short file success")
+
+                hubViewModel.sendSnapshot(hubViewModel.rname, it) }
+
+    }
+
+     fun screenshot(view: View, filename: String): File? {
+        val date = Date()
+         Log.d("SnapShot","insode screeenshot")
+        // Here we are initialising the format of our image name
+        val format = System.currentTimeMillis().toString()
+        try {
+//            // Initialising the directory of storage
+            val dirpath: String = Environment.getExternalStorageDirectory().toString()+"/"+ Environment.DIRECTORY_DOWNLOADS.toString()
+            val file = File(dirpath)
+            if (!file.exists()) {
+                val mkdir = file.mkdir()
+            }
+
+            // File name
+            val path = "$dirpath/$filename-$format.jpeg"
+
+            var bitmap:Bitmap?= null
+
+            runOnUiThread {
+                Toast.makeText(this@GridActivity,"soxd= ${screenShot.value?.size}",Toast.LENGTH_SHORT).show()
+            }
+
+            when(screenShot.value?.size){
+                0-> bitmap= null
+                1->bitmap= screenShot.value!![0]
+                2-> bitmap= combineBitmapTopDown(screenShot.value!![0]!!, screenShot.value!![1]!!)
+                3-> bitmap= combineBitmapTopDown(screenShot.value!![0]!!,combineBitmapLeftRight(screenShot.value!![1]!!, screenShot.value!![2]!!)!!)
+                else-> bitmap = combineBitmapTopDown(combineBitmapLeftRight(screenShot.value!![1]!!, screenShot.value!![0]!!)!!, combineBitmapLeftRight(screenShot.value!![2]!!, screenShot.value!![3]!!)!!)!!
+
+            }
+
+            val imageurl = File(path)
+            val outputStream = FileOutputStream(imageurl)
+            bitmap?.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
+            outputStream.flush()
+            outputStream.close()
+            Log.d("SnapShot","file success")
+            screenShot.value!!.clear()
+            return imageurl
+            return null
+        } catch (io: FileNotFoundException) {
+            io.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    fun verifystoragepermissions(activity: Activity?) {
+        val permissions = ActivityCompat.checkSelfPermission(activity!!,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val permissionstorage = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (permissions != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, permissionstorage, hubViewModel.REQUEST_EXTERNAL_STORAGe)
+        }
+    }
 
 
+    private fun combineBitmapLeftRight(left: Bitmap, right: Bitmap): Bitmap? {
+        val width = left.width + right.width
+        val height = if (left.height > right.height) left.height else right.height
+        val combined = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(combined)
+        canvas.drawBitmap(left, 0f, 0f, null)
+        canvas.drawBitmap(right, left.width.toFloat(), 0f, null)
+        return combined
+    }
+
+    private fun combineBitmapTopDown(top: Bitmap, bottom: Bitmap): Bitmap? {
+        val width = top.width.coerceAtMost(bottom.width)
+        val height = top.height+ bottom.height
+        val combined = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(combined)
+        canvas.drawBitmap(top, 0f, 0f, null)
+        canvas.drawBitmap(bottom, 0f, top.height.toFloat(), null)
+        return combined
     }
 
 

@@ -2,17 +2,21 @@ package cessini.technology.myspace.access
 
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Toast
+import android.widget.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import cessini.technology.commonui.adapter.RecAdapter
 import cessini.technology.commonui.common.BaseBottomSheet
 import cessini.technology.commonui.common.navigateToProfile
 
@@ -35,6 +39,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -45,6 +50,8 @@ internal class MySpaceFragment :
 
     private val viewModel by activityViewModels<MySpaceFragmentViewModel>()
     private val baseViewModel by activityViewModels<BaseViewModel>()
+
+    private var currentroom:Room?= null
 
     private var roomListeners = mutableListOf<Listener>()
 
@@ -179,6 +186,7 @@ internal class MySpaceFragment :
 
     private fun updateRoomUi(room: Room) {
         binding.room = room
+        currentroom= room
         roomListeners.clear()
         roomListeners.addAll(room.listeners)
         room.listeners.map {
@@ -248,11 +256,66 @@ internal class MySpaceFragment :
     private fun setupShareButton() {
         binding.share.setOnClickListener {
 
-            val bundle = Bundle()
-            bundle.putString("sharelink", "https://www.myworld.in/room_${myspaceArgs.roomName}")
-            findNavController().navigate(R.id.action_global_share,bundle)
+            createRoomLink()
+//            val bundle = Bundle()
+//
+//            bundle.putString("sharelink", "https://www.myworld.in/room_${myspaceArgs.roomName}")
+//            findNavController().navigate(R.id.action_global_share,bundle)
         }
     }
+
+    private fun createRoomLink() {
+        Log.d("Intent","The intent that I am looking at is called")
+        val shareBody="https://www.myworld.com/liveRoom?code=${myspaceArgs.roomName}"
+        val bottomSheetDialog=BottomSheetDialog(requireContext())
+        bottomSheetDialog.setContentView(cessini.technology.commonui.R.layout.fragment_share_myworld)
+        val link=bottomSheetDialog.findViewById<TextView>(cessini.technology.commonui.R.id.textView16)
+        link?.text = shareBody
+        val name= bottomSheetDialog.findViewById<TextView>(cessini.technology.commonui.R.id.textView14)
+        name?.text= currentroom?.name
+        val image= bottomSheetDialog.findViewById<ImageView>(cessini.technology.commonui.R.id.imageView9)
+//        image?.let {
+////            Glide.with(this)
+////                .load(profile.profilePicture)
+////                .into(it)
+//        };
+
+        val pm: PackageManager = requireActivity().packageManager
+        val finalLaunchables:MutableList<ResolveInfo> = ArrayList()
+        val recyclerView=bottomSheetDialog.findViewById<RecyclerView>(cessini.technology.commonui.R.id.myrecview)
+        val recAdapter= RecAdapter(pm,finalLaunchables,requireContext(),shareBody)
+        recyclerView?.adapter=recAdapter
+        val linearLayoutManager: LinearLayoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false)
+        recyclerView?.layoutManager = linearLayoutManager
+        val main = Intent(Intent.ACTION_MAIN,null)
+        main.addCategory(Intent.CATEGORY_LAUNCHER)
+        val launchables: List<ResolveInfo> = pm.queryIntentActivities(main, 0)
+        for (resolveInfo in launchables){
+            val packageName=resolveInfo.activityInfo.packageName
+            if (packageName.contains("om.viber.voip") ||
+                packageName.contains("com.twitter.android") ||
+                packageName.contains("com.google.android.gm") ||
+                packageName.contains("com.whatsapp") ||
+                packageName.contains("com.facebook.katana") ||
+                packageName.contains("com.instagram.android")
+            ) {
+                finalLaunchables.add(resolveInfo)
+            }
+        }
+        Collections.sort(
+            finalLaunchables,
+            ResolveInfo.DisplayNameComparator(pm)
+        )
+        requireActivity().runOnUiThread {
+            recAdapter.notifyDataSetChanged()
+        }
+//        if(recAdapter.)
+        bottomSheetDialog.show()
+    }
+
+
+
 
     private fun listenEvents() {
         viewModel.events.onEach {

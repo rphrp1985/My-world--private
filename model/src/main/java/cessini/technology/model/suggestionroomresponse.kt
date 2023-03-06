@@ -8,7 +8,7 @@ data class suggestionroomresponse(
     @SerializedName("status"  ) val status  : Boolean
 )
 data class SuggestionRoomMessage(
-    @SerializedName("Trending Technology")
+    @SerializedName("Technology")
     val TrendingTechnology :ArrayList<RoomResponse> = arrayListOf(),
     @SerializedName("Trending News")
     var TrendingNews :ArrayList<RoomResponse> =arrayListOf(),
@@ -20,7 +20,7 @@ data class SuggestionRoomMessage(
 )
 data class RoomResponse(
 
-    @SerializedName("_id"           ) var Id            : String?              = null,
+    @SerializedName("_id"           ) var Id            : ID?              = null,
     @SerializedName("creator"       ) var creator       : Creators,
     @SerializedName("title"         ) var title         : String,
     @SerializedName("schedule"      ) var schedule      : String?              = null,
@@ -36,6 +36,11 @@ data class RoomResponse(
     @SerializedName("category"      ) var category      : ArrayList<String>?= null
 
 )
+
+data class ID(
+    @SerializedName("\$oid") var oid:String?=null
+)
+
 data class Creators(
 
     @SerializedName("_id") val id: String,

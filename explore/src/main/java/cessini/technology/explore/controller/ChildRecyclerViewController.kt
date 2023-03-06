@@ -319,7 +319,12 @@ class ChildRecyclerViewController(
                 if (room.categories.isNotEmpty()) {
                     val category = StringBuilder()
                     room.categories.forEach {
-                        category.append(categories[it.toInt()] + "#")
+
+                        if(it.equals("")){
+                            category.append(categories[0] + "#")
+                        }else
+                            category.append(categories[it.toInt()] + "#")
+
                     }
                     val fh = category.indexOf("#")
                     val sh = category.indexOf("#", fh + 1)

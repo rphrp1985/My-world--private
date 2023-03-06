@@ -8,7 +8,7 @@ data class Component (
 )
 
 data class MessageD (
-    @SerializedName("Trending Technology")
+    @SerializedName("Technology")
     val trendingTechnology: List<HealthFitness>? = null,
 
     @SerializedName("Trending News")

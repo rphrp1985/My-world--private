@@ -147,6 +147,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         if(socketFeedViewModel.userID==""){
             lifecycleScope.launch {
                 profileRepository.profile.collectLatest {
+                    Log.d(TAG,"profile = $it")
                     if(it.id!="")
                     socketFeedViewModel.userID= it.id
                     else
@@ -155,7 +156,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
                     socketFeedViewModel.setPaging(profileRepository.profile, userIdentifierPreferences.uuid)
 
                     requireActivity().runOnUiThread {
-                        binding.recyclerView.adapter= socketFeedViewModel.controller!!.adapter
+
                         setupEpoxy() }
 
                 }
@@ -303,7 +304,12 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
             Log.d(TAG, "fetch page = $list")
 
-            socketFeedViewModel.controller!!.submitList(list)
+            if(list.size>0) {
+                socketFeedViewModel.controller!!.submitList(list)
+                if(binding.recyclerView.adapter!=socketFeedViewModel.controller!!.adapter)
+                binding.recyclerView.adapter= socketFeedViewModel.controller!!.adapter
+
+            }
 
         }, { error ->
             Log.e(TAG, "error: ${error}")

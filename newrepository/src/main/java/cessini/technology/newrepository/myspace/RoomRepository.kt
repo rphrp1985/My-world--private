@@ -13,6 +13,7 @@ import cessini.technology.newapi.services.myspace.model.body.RoomBody
 import cessini.technology.newapi.services.myspace.model.body.RoomNameBody
 import cessini.technology.newapi.services.myspace.model.body.UserLikeBody
 import cessini.technology.newapi.services.myworld.MyWorldService
+import cessini.technology.newrepository.extensions.createMultipartBody
 import cessini.technology.newrepository.mappers.toModel
 import cessini.technology.newrepository.mappers.toModels
 import cessini.technology.newrepository.utils.Resource
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import retrofit2.Response
+import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 
@@ -46,6 +48,19 @@ class RoomRepository @Inject constructor(
     suspend fun roomRequests(roomName: String): List<RequestProfile> {
         return roomApi.roomRequest(roomName).getOrThrow().data.firstOrNull()?.
             requests?.map { it.toModel() }.orEmpty()
+    }
+
+    suspend fun sendSnapShot(roomName: String,file: File): String {
+        file.createMultipartBody(
+            formName = "thumbnail",
+            contentType = "image/*"
+        )?.let {
+            return roomApi.sendSnapShot(roomName,
+                it
+            ).getOrThrow().message
+        }
+
+       return "Error in sendsnapshot"
     }
 
     suspend fun acceptRoomRequests(roomName: String, listenersid: List<String>) {

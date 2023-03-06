@@ -5,6 +5,7 @@ object MySpaceConstants {
     const val BASE_ENDPOINT = "http://rooms.joinmyworld.in/"
     const val CREATE_ROOM_ENDPOINT = "create_room/"
     const val GET_ROOM_ENDPOINT = "get_room/"
+    const val SEND_ROOM_SNAPSHOT = "roompic/"
     //const val JOIN_ROOM_ENDPOINT = "add/"
     const val JOIN_ROOM_ENDPOINT = "addPublic/"
     const val ACCEPT_JOIN_REQUEST_ENDPOINT = "accept/"

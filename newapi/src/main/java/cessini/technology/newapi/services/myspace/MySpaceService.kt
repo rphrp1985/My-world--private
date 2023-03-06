@@ -1,5 +1,6 @@
 package cessini.technology.newapi.services.myspace
 
+import android.service.controls.templates.ThumbnailTemplate
 import cessini.technology.model.search.UserLikes
 import cessini.technology.newapi.ApiParameters
 import cessini.technology.newapi.interceptors.AuthInterceptor
@@ -12,6 +13,7 @@ import cessini.technology.newapi.services.myspace.model.body.UserLikeBody
 import cessini.technology.newapi.services.myspace.model.response.ApiGetRoom
 import cessini.technology.newapi.services.myspace.model.response.ApiRoomName
 import cessini.technology.newapi.services.myspace.model.response.ApiRoomRequests
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -31,6 +33,15 @@ interface MySpaceService {
     suspend fun joinRoom(
         @Path(value = "roomNameBody") roomNameBody: String,
     ): ApiMessage
+
+//    @Headers(ApiParameters.AUTH_HEADER)
+    @Multipart
+    @POST(value = "${MySpaceConstants.SEND_ROOM_SNAPSHOT}{roomName}")
+    suspend fun sendSnapShot(
+        @Path(value = "roomName") roomName:String,
+        @Part thumbnail: MultipartBody.Part
+
+    ):Response<ApiMessage>
 
 //    @Headers(ApiParameters.AUTH_HEADER)
 //    @POST(MySpaceConstants.JOIN_ROOM_ENDPOINT)

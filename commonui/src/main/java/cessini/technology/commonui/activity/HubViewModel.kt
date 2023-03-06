@@ -7,8 +7,11 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import cessini.technology.newrepository.myspace.RoomRepository
 import com.amazonaws.util.IOUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import org.webrtc.*
 import java.io.File
 import java.io.FileOutputStream
@@ -18,23 +21,34 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HubViewModel @Inject constructor(
-    application: Application
+    application: Application,
+    private val roomRepository: RoomRepository
 ) :AndroidViewModel(application) {
-     var iceServers: List<PeerConnection.IceServer> = listOf(
-    PeerConnection.IceServer.builder("stun:stun.l.google.com:19302")
-        .setUsername("suraj@gmail.com")
-        .setPassword("98376683")
+    val REQUEST_EXTERNAL_STORAGe: Int= 205
+    var iceServers: List<PeerConnection.IceServer> = listOf(
+
+         PeerConnection.IceServer.builder("stun:coturn_server.joinmyworld.in:3478")
         .createIceServer(),
 
-    PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302")
-        .setUsername("diya@gmail.com")
-        .setPassword("98376683")
-    .createIceServer(),
+         PeerConnection.IceServer.builder("turn:coturn_server.joinmyworld.in:3478")
+        .setUsername("testguest")
+        .setPassword("secretpassword")
+        .createIceServer(),
 
-    PeerConnection.IceServer.builder("turn:rooms-api.joinmyworld.live")
-    .setUsername("Admin")
-    .setPassword("password")
-    .createIceServer(),
+//    PeerConnection.IceServer.builder("stun:stun.l.google.com:19302")
+//        .setUsername("suraj@gmail.com")
+//        .setPassword("98376683")
+//        .createIceServer(),
+//
+//    PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302")
+//        .setUsername("diya@gmail.com")
+//        .setPassword("98376683")
+//    .createIceServer(),
+//
+//    PeerConnection.IceServer.builder("turn:rooms-api.joinmyworld.live")
+//    .setUsername("Admin")
+//    .setPassword("password")
+//    .createIceServer(),
 
     )
 
@@ -138,6 +152,20 @@ class HubViewModel @Inject constructor(
         }
     }
 
+
+    fun sendSnapshot(room:String,file: File){
+        viewModelScope.launch {
+            runCatching {
+                roomRepository.sendSnapShot(
+                    room,file
+                )
+            }.onFailure {
+
+                Log.d("SnapShot","failed  ${it.message}")  }
+                .onSuccess { Log.d("SnapShot","success") }
+
+        }
+    }
 
 
 

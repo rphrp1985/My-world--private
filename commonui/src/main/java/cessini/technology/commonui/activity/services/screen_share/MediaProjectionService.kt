@@ -169,6 +169,8 @@ class MediaProjectionService : Service() {
         Log.d(TAG,"start streamer ${displayBase?.isStreaming}")
         if (displayBase?.isStreaming != true) {
             if (displayBase?.prepareVideo() == true && displayBase?.prepareAudio() == true) {
+
+                displayBase?.setLimitFPSOnFly(20)
                 displayBase?.startStream(endpoint)
 
                 showNotification("You are streaming ")

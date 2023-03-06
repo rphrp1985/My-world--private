@@ -67,7 +67,7 @@ class SearchViewModel @Inject constructor(
             fetchAllComponent()
             fetchAllInfo()
             //problems------
-//            fetchSuggestedRooms()
+            fetchSuggestedRooms()
             fetchAllTrendingRooms()
             fetchAllRecordedVideos()
             fetchAllCommonRecordedVideos()
@@ -178,7 +178,10 @@ class SearchViewModel @Inject constructor(
                 response.collectLatest { result ->
                     when (result) {
                         is Resource.Success -> {
+
                             allComponent.value = result.data
+
+
                             Log.e("ComponentRegister", result.data.toString())
                         }
 
@@ -250,34 +253,34 @@ class SearchViewModel @Inject constructor(
                                     it.listeners = array
                                 }
                             }
-
-                            temp.TrendingTechnology.forEach {
-                                if (it.listeners.isNotEmpty()) {
-                                    val array: ArrayList<Listeners> = arrayListOf()
-                                    val listen = it.listeners.toSet()
-                                    array.addAll(listen)
-                                    it.listeners = array
-
-                                }
-                            }
-                            temp.HealthFitness.forEach {
-                                if (it.listeners.isNotEmpty()) {
-                                    val array: ArrayList<Listeners> = arrayListOf()
-                                    val listen = it.listeners.toSet()
-                                    array.addAll(listen)
-                                    it.listeners = array
-
-                                }
-                            }
-                            temp.Knowledgecarrers.forEach {
-                                if (it.listeners.isNotEmpty()) {
-                                    val array: ArrayList<Listeners> = arrayListOf()
-                                    val listen = it.listeners.toSet()
-                                    array.addAll(listen)
-                                    it.listeners = array
-
-                                }
-                            }
+//
+//                            temp.TrendingTechnology.forEach {
+//                                if (it.listeners.isNotEmpty()) {
+//                                    val array: ArrayList<Listeners> = arrayListOf()
+//                                    val listen = it.listeners.toSet()
+//                                    array.addAll(listen)
+//                                    it.listeners = array
+//
+//                                }
+//                            }
+//                            temp.HealthFitness.forEach {
+//                                if (it.listeners.isNotEmpty()) {
+//                                    val array: ArrayList<Listeners> = arrayListOf()
+//                                    val listen = it.listeners.toSet()
+//                                    array.addAll(listen)
+//                                    it.listeners = array
+//
+//                                }
+//                            }
+//                            temp.Knowledgecarrers.forEach {
+//                                if (it.listeners.isNotEmpty()) {
+//                                    val array: ArrayList<Listeners> = arrayListOf()
+//                                    val listen = it.listeners.toSet()
+//                                    array.addAll(listen)
+//                                    it.listeners = array
+//
+//                                }
+//                            }
                             roomMessage.value = temp
                             addSuggestedRooms()
 
@@ -297,7 +300,7 @@ class SearchViewModel @Inject constructor(
         suggestedroomresponse.value = mutableListOf()
         roomMessage.value?.let {
             if (it.TrendingTechnology.size > 0) {
-                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.TrendingTechnology)
+                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.HealthFitness)
 
                 suggestedroomresponse.value.let {
                     if (it == null) {
