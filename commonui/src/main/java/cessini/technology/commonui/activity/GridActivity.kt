@@ -682,6 +682,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
 //        screenShot.clear()
 
+        modelProcessed=0
         epoxyset= true
         val layoutManager: GridLayoutManager
         if (recyclerDataArrayList.size == 1 || recyclerDataArrayList.size == 2) {
@@ -1430,9 +1431,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
             var bitmap:Bitmap?= null
 
-            runOnUiThread {
-                Toast.makeText(this@GridActivity,"soxd= ${screenShot.value?.size}",Toast.LENGTH_SHORT).show()
-            }
+//            runOnUiThread {
+//                Toast.makeText(this@GridActivity,"soxd= ${screenShot.value?.size}",Toast.LENGTH_SHORT).show()
+//            }
 
             when(screenShot.value?.size){
                 0-> bitmap= null
@@ -1440,7 +1441,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 2-> bitmap= combineBitmapTopDown(screenShot.value!![0]!!, screenShot.value!![1]!!)
                 3-> bitmap= combineBitmapTopDown(screenShot.value!![0]!!,combineBitmapLeftRight(screenShot.value!![1]!!, screenShot.value!![2]!!)!!)
                 else-> bitmap = combineBitmapTopDown(combineBitmapLeftRight(screenShot.value!![1]!!, screenShot.value!![0]!!)!!, combineBitmapLeftRight(screenShot.value!![2]!!, screenShot.value!![3]!!)!!)!!
-
             }
 
             val imageurl = File(path)

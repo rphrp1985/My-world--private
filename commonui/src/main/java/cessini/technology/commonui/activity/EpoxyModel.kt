@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.CornerFamily
+import de.hdodenhof.circleimageview.CircleImageView
 import org.kurento.client.RecorderEndpoint
 import org.kurento.client.WebRtcEndpoint
 import org.webrtc.*
@@ -91,6 +92,8 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                     holder.imgPerson.setEnableHardwareScaler(true)
                     holder.imgPerson.setZOrderMediaOverlay(true)
                     track.addSink(holder.imgPerson)
+
+                    GridActivity.modelProcessed++
 
                     holder.imgPerson.addFrameListener(
                         object :
@@ -169,7 +172,7 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
         lateinit var name: TextView
 //        lateinit var profession: SurfaceViewRenderer
         lateinit var cardView: MaterialCardView
-        lateinit var profilePic:CircleImageView
+        lateinit var profilePic: CircleImageView
         lateinit var audio:ImageView
         lateinit var handRaise:ImageView
         lateinit var contraint_layout:ConstraintLayout
