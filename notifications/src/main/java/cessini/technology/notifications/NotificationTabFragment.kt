@@ -73,8 +73,32 @@ class NotificationTabFragment : Fragment() {
         val notification = ArrayList<MyWorldNotification>()
         getData(notification)
     }
-    private fun getData(notification: ArrayList<MyWorldNotification>){
-        Firebase.firestore.collection("Notification")   
+
+    private fun getData(notification: ArrayList<MyWorldNotification>) {
+        if (userIdentifierPreferences.id.isNotEmpty()) {
+            Firebase.firestore.collection("GlobalNotifications")
+                .document("${userIdentifierPreferences.id}")
+                .collection("NotificationData")
+                .get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        Log.d(TAG, "${document.id} => ${document.data}")
+                        val id = document.getString("id").toString()
+                        val message = document.getString("message").toString()
+                        val profile_image = document.getString("profile_image").toString()
+                        val username = document.getString("username").toString()
+                        Log.e(TAG, id)
+                        Log.e(TAG, message)
+                        Log.e(TAG, profile_image)
+                        Log.e(TAG, username)
+                        notification.add(MyWorldNotification(id, message, username, profile_image))
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w(TAG, "Error getting documents.", exception)
+                }
+        }
+        Firebase.firestore.collection("Notification")
             .get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
@@ -89,35 +113,8 @@ class NotificationTabFragment : Fragment() {
                     Log.e(TAG, username)
                     notification.add(MyWorldNotification(id, message, username, profile_image))
                 }
-        Firebase.firestore.collection("GlobalNotifications")
-            .document("${userIdentifierPreferences.id}")
-            .collection("NotificationData")
-            .get()
-            .addOnSuccessListener { documents ->
-                for (document in documents){
-                    Log.d(TAG, "${document.id} => ${document.data}")
-                    val id=document.getString("id").toString()
-                    val message=document.getString("message").toString()
-                    val profile_image=document.getString("profile_image").toString()
-                    val username=document.getString("username").toString()
-                    Log.e(TAG,id)
-                    Log.e(TAG,message)
-                    Log.e(TAG,profile_image)
-                    Log.e(TAG,username)
-                    notification.add(MyWorldNotification(id,message,username,profile_image))
-                        }
-
-                        buildNotificationsModel(notification)
-                    }
-                    .addOnFailureListener { exception ->
-                        Log.w(TAG, "Error getting documents.", exception)
-                    }
-
+                buildNotificationsModel(notification)
             }
-            .addOnFailureListener { exception ->
-                Log.w(TAG, "Error getting documents.", exception)
-            }
-
     }
 
 //    private suspend fun getNotifications(token: String): ApiNotification {
