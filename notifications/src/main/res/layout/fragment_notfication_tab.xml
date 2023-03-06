@@ -27,7 +27,12 @@
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/list_item_notification" />
-
+        <View
+            android:id="@+id/translucent_background"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@drawable/bottom_nav_gradient"
+            app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>
