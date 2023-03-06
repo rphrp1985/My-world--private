@@ -144,9 +144,11 @@
             android:elevation="@dimen/dimen_5"
 
             />
-
-
-
-
+        <View
+            android:id="@+id/translucent_background"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@drawable/bottom_nav_gradient"
+            app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

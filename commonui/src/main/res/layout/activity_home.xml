@@ -49,12 +49,6 @@
 <!--            android:background="@drawable/bottom_nav_gradient"-->
 <!--            app:layout_constraintBottom_toTopOf="@id/translucent_background"/>-->
 
-        <View
-            android:id="@+id/translucent_background"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:background="@drawable/bottom_nav_gradient"
-            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
