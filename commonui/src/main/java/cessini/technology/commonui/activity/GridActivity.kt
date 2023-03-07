@@ -255,9 +255,10 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             profileRepository.profile.collectLatest {
                 profile= it
                 hubViewModel.isFront = true
-                setUpEpoxy()
-
+//                setUpEpoxy()
+                showCamera()
                 SignalingClient.get()?.init(this@GridActivity, hubViewModel.rname,profile,socketUserMap)
+
                 if(isCreated)
                 createRoomLink()
             }
@@ -487,8 +488,10 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 con = eglBaseContext,
                 fileRenderer = null)
             recyclerDataArrayList.add(userData!!)
-//        setUpEpoxy()
-        controller.requestModelBuild()
+        setUpEpoxy()
+//        controller.images = recyclerDataArrayList
+//
+//        controller.requestModelBuild()
 
     }
 
@@ -675,13 +678,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         runOnUiThread() {
             epoxyRecyclerView.layoutManager = layoutManager
-//            epoxyRecyclerView.setController(controller)
-            controller.requestModelBuild()
+            epoxyRecyclerView.setController(controller)
 
-            if(epoxyRecyclerView.adapter!= controller.adapter){
-                epoxyRecyclerView.adapter= controller.adapter
-                showCamera()
-            }
 
 
         }

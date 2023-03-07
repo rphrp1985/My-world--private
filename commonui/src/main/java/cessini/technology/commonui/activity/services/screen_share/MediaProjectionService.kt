@@ -69,25 +69,37 @@ class MediaProjectionService : Service() {
             createNotificationChannel(notificationManager)
         }
 
-        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setAutoCancel(false)
-            .setOngoing(false)
-            .setSmallIcon(R.drawable.ic_myworldintrologo)
-            .setContentTitle("ScreenShare")
-            .setContentText("Screen sharing running")
-            .setContentIntent(getMainActivityPendingIntent())
+//        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+//            .setAutoCancel(false)
+//            .setOngoing(false)
+//            .setSmallIcon(R.drawable.ic_myworldintrologo)
+//            .setContentTitle("ScreenShare")
+//            .setContentText("Screen sharing running")
+//            .setContentIntent(getMainActivityPendingIntent())
 
-        try {
+        keepAliveTrick()
 
-
-            startForeground(
-                NOTIFICATION_ID,
-                notificationBuilder.build(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-            )
-        }catch (e:Exception){}
+//        try {
+//
+//
+//            startForeground(
+//                NOTIFICATION_ID,
+//                notificationBuilder.build(),
+//                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+//            )
+//        }catch (e:Exception){}
 
     }
+
+    private fun keepAliveTrick() {
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_myworldintrologo)
+            .setSilent(true)
+            .setOngoing(false)
+            .build()
+        startForeground(1, notification)
+    }
+
 
     private fun getMainActivityPendingIntent() = PendingIntent.getActivity(
         this,
