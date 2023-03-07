@@ -16,7 +16,7 @@ class EpoxyController(
             field = value
             requestModelBuild()
         }
-    private val CORNER_RADIUS_MAX: Float = 0f
+    private val CORNER_RADIUS_MAX: Float = 1f
     override fun buildModels() {
         var i = 0;
         val size = images.size

@@ -248,7 +248,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         chatViewModel.user_id = hubViewModel.user_id
         chatViewModel.listenTo(hubViewModel.rname)
 
-        epoxyRecyclerView.setController(controller)
+        epoxyRecyclerView.adapter= controller.adapter
         setUpEpoxy()
         lifecycleScope.launch {
             profileRepository.profile.collectLatest {

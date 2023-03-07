@@ -95,25 +95,25 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                     holder.imgPerson.setZOrderMediaOverlay(true)
                     track.addSink(holder.imgPerson)
 
-                    GridActivity.modelProcessed++
+//                    GridActivity.modelProcessed++
 
-                    holder.imgPerson.addFrameListener(
-                        object :
-                            EglRenderer.FrameListener {
-                            override fun onFrame(p0: Bitmap?) {
-
-                                ThreadUtils.runOnUiThread {
-
-                                    GridActivity.screenShot.value!!.add(p0)
-                                    GridActivity.screenShot.value = GridActivity.screenShot.value
-
-                                    holder.imgPerson.removeFrameListener(this)
-                                }
-                            }
-
-                        }, 1.0f
-
-                    )
+//                    holder.imgPerson.addFrameListener(
+//                        object :
+//                            EglRenderer.FrameListener {
+//                            override fun onFrame(p0: Bitmap?) {
+//
+//                                ThreadUtils.runOnUiThread {
+//
+//                                    GridActivity.screenShot.value!!.add(p0)
+//                                    GridActivity.screenShot.value = GridActivity.screenShot.value
+//
+//                                    holder.imgPerson.removeFrameListener(this)
+//                                }
+//                            }
+//
+//                        }, 1.0f
+//
+//                    )
 
 
 
@@ -158,13 +158,6 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                         .setBottomRightCorner(CornerFamily.ROUNDED, bR)
                         .build()
 
-//        holder.imgPerson.sha =
-//            holde
-//                .setTopLeftCorner(CornerFamily.ROUNDED, tL)
-//                .setTopRightCorner(CornerFamily.ROUNDED, tR)
-//                .setBottomLeftCorner(CornerFamily.ROUNDED, bL)
-//                .setBottomRightCorner(CornerFamily.ROUNDED, bR)
-//                .build()
             }
 
     }
@@ -172,11 +165,11 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
 
 
 
-    override fun unbind(holder: Holder) {
-        track.removeSink(holder.imgPerson)
-        super.unbind(holder)
-
-    }
+//    override fun unbind(holder: Holder) {
+//        track.removeSink(holder.imgPerson)
+//        super.unbind(holder)
+//
+//    }
 
     class Holder() : EpoxyHolder() {
         lateinit var imgPerson: SurfaceViewRenderer
