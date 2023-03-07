@@ -248,15 +248,16 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         chatViewModel.user_id = hubViewModel.user_id
         chatViewModel.listenTo(hubViewModel.rname)
 
-        epoxyRecyclerView.adapter= controller.adapter
-        setUpEpoxy()
+//        epoxyRecyclerView.adapter= controller.adapter
+
+
         lifecycleScope.launch {
             profileRepository.profile.collectLatest {
                 profile= it
                 hubViewModel.isFront = true
-                showCamera()
-                SignalingClient.get()?.init(this@GridActivity, hubViewModel.rname,profile,socketUserMap)
+                setUpEpoxy()
 
+                SignalingClient.get()?.init(this@GridActivity, hubViewModel.rname,profile,socketUserMap)
                 if(isCreated)
                 createRoomLink()
             }
@@ -676,6 +677,11 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             epoxyRecyclerView.layoutManager = layoutManager
 //            epoxyRecyclerView.setController(controller)
             controller.requestModelBuild()
+
+            if(epoxyRecyclerView.adapter!= controller.adapter){
+                epoxyRecyclerView.adapter= controller.adapter
+                showCamera()
+            }
 
 
         }
