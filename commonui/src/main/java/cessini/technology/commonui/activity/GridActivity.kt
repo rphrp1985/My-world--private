@@ -172,7 +172,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         epoxyRecyclerView = findViewById<EpoxyRecyclerView>(R.id.idCourseRV)
 
-        epoxyRecyclerView.setController(controller)
+
 
         // Streaming video
         startService(Intent(baseContext, MediaProjectionService::class.java))
@@ -180,11 +180,13 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         Handler().postDelayed({
 
-            val mediaProjectionService: MediaProjectionService = MediaProjectionService.INSTANCE!!
-            val sendIntent = mediaProjectionService.sendIntent()
+            val mediaProjectionService: MediaProjectionService? = MediaProjectionService.INSTANCE
+            if(mediaProjectionService!=null) {
+                val sendIntent = mediaProjectionService.sendIntent()
 
-            if (sendIntent != null) {
-                startActivityForResult(sendIntent, hubViewModel.REQUEST_CODE_STREAM)
+                if (sendIntent != null) {
+                    startActivityForResult(sendIntent, hubViewModel.REQUEST_CODE_STREAM)
+                }
             }
 
         },3000)
@@ -193,18 +195,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
        screenShot.observe(this, androidx.lifecycle.Observer {
            streamShort()
        })
-
-
-//        val mediaProjectionManager = application.getSystemService(
-//            Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-
-        // Get Permission for screen Capturing
-//        Handler().postDelayed({
-//            if(mediaProjectionManager!=null){
-//                startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), hubViewModel.REQUEST_CODE_STREAM)
-//            }
-//
-//        },2000)
 
         Log.e("jsom",JSONObject(HubConstants.awsconfig).toString())
         /**
@@ -258,18 +248,15 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         chatViewModel.user_id = hubViewModel.user_id
         chatViewModel.listenTo(hubViewModel.rname)
 
+        epoxyRecyclerView.setController(controller)
+        setUpEpoxy()
         lifecycleScope.launch {
             profileRepository.profile.collectLatest {
                 profile= it
+                hubViewModel.isFront = true
+                showCamera()
                 SignalingClient.get()?.init(this@GridActivity, hubViewModel.rname,profile,socketUserMap)
 
-                if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    askPermission()
-                }else{
-//            localView.isEnabled = true
-                    hubViewModel.isFront = true
-                    showCamera()
-                }
                 if(isCreated)
                 createRoomLink()
             }
@@ -296,8 +283,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             switchVideo(camera)
 
         }
-
-
         share.setOnClickListener {
             createRoomLink()
         }
@@ -346,7 +331,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].socketId=="socket"){
                 recyclerDataArrayList[i].handSwitch = status
-                setUpEpoxy()
+                controller.requestModelBuild()
+//                setUpEpoxy()
                 break
             }
         }
@@ -441,45 +427,47 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                showCamera()
-            } else {
-                Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show()
+
+            for(permission in grantResults){
+                if(permission==PackageManager.PERMISSION_GRANTED) {
+                    showCamera()
+                    return
+                }
             }
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_LONG).show()
         }
     }
 
-
-
-    /**
-     * capturing the camera video stream and adding it to the mediaStream with peerConnectionFactory
-     */
     private fun showCamera() {
 
+        var cameraPermission= true
+        var micPermission= true;
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             askPermission()
-            return
+            cameraPermission= false
+            turnOffVideo()
+//            return
+        }else
+
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            askPermission()
+            micPermission= false
+            turnOffAudio()
+//            return
         }
         recyclerDataArrayList.remove(userData)
 
-        val surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext)
+        val surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread-${System.currentTimeMillis()}", eglBaseContext)
         // create VideoCapturer
         val videoCapturer = createCameraCapturer(hubViewModel.isFront)
-        val videoSource = peerConnectionFactory.createVideoSource(
-            false
-        )
+        val videoSource = peerConnectionFactory.createVideoSource(false)
         videoCapturer!!.initialize(
             surfaceTextureHelper,
             applicationContext,
-            videoSource.capturerObserver
-        )
+            videoSource.capturerObserver)
         videoCapturer.startCapture(480, 640, 30)
-
         hubViewModel.videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource)
-
-
         hubViewModel.localAudioTrack = peerConnectionFactory.createAudioTrack("100" + "_audio", audioSource)
-
         hubViewModel.mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
         hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrack)
         hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrack)
@@ -488,8 +476,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 //        if(!recyclerDataArrayList.contains(userData)){
             userData = data(profile.name, 0, hubViewModel.videoTrack!!,
                 creater = true,
-                microphoneSwitch = true,
-                videoSwitch = true,
+                microphoneSwitch = micPermission,
+                videoSwitch = cameraPermission,
                 profilepic = profile.profilePicture,
                 handSwitch = false,
                 userID = profile.id,
@@ -498,20 +486,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 con = eglBaseContext,
                 fileRenderer = null)
             recyclerDataArrayList.add(userData!!)
-            setUpEpoxy()
-//        }else
-//        {
-//            val temp= data("userLocal", 0, hubViewModel.videoTrack!!, true, eglBaseContext, null)
-//            val index= recyclerDataArrayList.indexOf(userData)
-//            recyclerDataArrayList[index]= temp
-//            userData= temp
-//            updateEpoxyAtPosition(index)
-//
-//        }
-
-
-
-
+//        setUpEpoxy()
+        controller.requestModelBuild()
 
     }
 
@@ -547,10 +523,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             val intent = Intent(this, MediaProjectionService::class.java)
             startForegroundService(intent)
         }
-
         val mediaProjectionManager = application.getSystemService(
             Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        // Get Permission for screen sharing
         startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE)
     }
 
@@ -563,13 +537,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         if(requestCode==hubViewModel.REQUEST_EXTERNAL_STORAGe && resultCode!=0)
             streamShort()
 
-        if(requestCode==hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE && resultCode== RESULT_OK ){
-            showCamera()
+        if(requestCode==hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE && resultCode!=0 ){
+
         }
         if (requestCode != hubViewModel.CAPTURE_PERMISSION_REQUEST_CODE)
         {
-//            Toast.makeText(this,"permission not granted",Toast.LENGTH_SHORT).show()
-//            return;
+
         }else {
 
             if(resultCode==0){
@@ -600,20 +573,15 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             recyclerDataArrayList.remove(userDataScreen)
 
         }
-//        recyclerDataArrayList.remove(userData)
         val videoCapturer = createScreenCapturer()
-
         val surfaceTextureHelper = SurfaceTextureHelper.create("ScreenThread", eglBaseContext)
-
         val videoSource = peerConnectionFactory.createVideoSource(
-            videoCapturer!!.isScreencast
-        )
+            videoCapturer!!.isScreencast  )
         videoCapturer.initialize(
             surfaceTextureHelper,
             applicationContext,
             videoSource.capturerObserver
         )
-
         videoCapturer.startCapture(480, 640, 30)
         val audioSource = peerConnectionFactory.createAudioSource(MediaConstraints())
         hubViewModel.videoTrackScreen = peerConnectionFactory.createVideoTrack("100", videoSource)
@@ -637,16 +605,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             isScreen = true
         )
         recyclerDataArrayList.add(userDataScreen!!)
-
-//        hubViewModel.peerConnectionMap.clear()
-
-
         for(x in socketUserMap){
             onPeerJoined(x.key,true)
         }
-
-
-
         setUpEpoxy()
 
 
@@ -677,6 +638,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      * of array size is small than the grid is with single span count
      * adding the data to the epoxy controller to display the videoTrack on UI thread
      */
+
+
 
     private fun setUpEpoxy() {
 
@@ -801,12 +764,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         return peerConnection
     }
-
-
-    /**
-     * Handling the peer connection
-     * Implementing the SignalClient Callback Interface functions
-     */
 
     override fun onCreateRoom(id: String) {
     }
@@ -993,10 +950,35 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
      */
 
 
+    fun turnOffVideo(){
+        val it = findViewById<ImageView>(R.id.iv_video)
+        it.setImage(R.drawable.ic_removevideo)
+        count++
+        hubViewModel.videoTrack?.setEnabled(false)
+        SignalingClient.get()?.sendCamera(false)
+        controller.requestModelBuild()
+//        for(i in 0 until recyclerDataArrayList.size){
+//            if(recyclerDataArrayList[i].socketId=="socket"){
+//                recyclerDataArrayList[i].videoSwitch = false
+//                setUpEpoxy()
+//                break
+//            }
+//        }
+    }
+
     // Handling the video switch
     fun switchVideo(it: ImageView) {
+
+
+
         var status=true
         if(count%2 !=0) {
+
+            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                askPermission()
+              return
+            }
+
             it.setImage(R.drawable.ic_addvideo)
             count++
             hubViewModel.videoTrack?.setEnabled(true)
@@ -1012,14 +994,32 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].socketId=="socket"){
                 recyclerDataArrayList[i].videoSwitch = status
-                setUpEpoxy()
+                controller.requestModelBuild()
+//                setUpEpoxy()
                 break
             }
+
         }
 //        localView.isEnabled = !(localView.isEnabled)
     }
 
     //handling the audio switch
+
+    fun turnOffAudio(){
+        hubViewModel.localAudioTrack?.setEnabled(false)
+        SignalingClient.get()?.sendMicrophone(false)
+        val it= findViewById<ImageView>(R.id.iv_audio)
+        it.setImage(R.drawable.ic_removeaudio)
+        controller.requestModelBuild()
+//        for(i in 0 until recyclerDataArrayList.size){
+//            if(recyclerDataArrayList[i].socketId=="socket"){
+//                recyclerDataArrayList[i].microphoneSwitch = false
+//                setUpEpoxy()
+//                break
+//            }
+//        }
+    }
+
     fun switchAudio(it: ImageView) {
         var status=true
         if (hubViewModel.localAudioTrack != null) {
@@ -1030,6 +1030,11 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 status=false
             }
             else {
+                if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    askPermission()
+                   return
+                }
+
                 hubViewModel.localAudioTrack?.setEnabled(true)
                 SignalingClient.get()?.sendMicrophone(true)
                 it.setImage(R.drawable.ic_addaudio)
@@ -1039,15 +1044,21 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].socketId=="socket"){
                 recyclerDataArrayList[i].microphoneSwitch = status
-                setUpEpoxy()
+                controller.requestModelBuild()
+//                setUpEpoxy()
                 break
             }
         }
     }
 
     // handling the camera used either front or back
+
     fun switchCamera(it: ImageView){
-        recyclerDataArrayList.remove(userData)
+        if(!userData?.videoSwitch!!){
+            Toast.makeText(this,"Video is Off",Toast.LENGTH_SHORT).show()
+            return
+        }
+//        recyclerDataArrayList.remove(userData)
         hubViewModel.isFront = !hubViewModel.isFront
         showCamera()
     }
@@ -1233,9 +1244,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         hubViewModel.showDeepLinkOffer(appLinkAction, appLinkData)
     }
 
-
-
-
     private fun uploadFile(){
         val upload=object:Thread(){
             override fun run() {
@@ -1302,8 +1310,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onCallerMicrophoneSwitch(data: JSONObject) {
       val status= data.optBoolean("muted")
         val socketid= data.optString("id")
-//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].socketId==socketid){
@@ -1313,7 +1319,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                         "${recyclerDataArrayList[i].title} ${status} mic",
                         Toast.LENGTH_LONG).show()
                 }
-                setUpEpoxy()
+                controller.requestModelBuild()
+//                setUpEpoxy()
                 break;
             }
         }
@@ -1322,8 +1329,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onCallerVideoSwitch(data: JSONObject) {
         val status= data.optBoolean("camera")
         val socketid= data.optString("id")
-//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].socketId==socketid){
@@ -1333,7 +1338,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                         "${recyclerDataArrayList[i].title} ${status} camera",
                         Toast.LENGTH_LONG).show()
                 }
-                setUpEpoxy()
+                controller.requestModelBuild()
+//                setUpEpoxy()
                 break
             }
         }
@@ -1344,9 +1350,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onCallerScreenShare(data: JSONObject) {
         val status= data.optBoolean("value")
         val socketid= data.optString("id")
-//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
-        runOnUiThread {
+       runOnUiThread {
             Toast.makeText(this,
                 " ${status} screen",
                 Toast.LENGTH_LONG).show()
@@ -1354,15 +1358,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         if(status==false) {
             for (i in 0 until recyclerDataArrayList.size) {
                 if (recyclerDataArrayList[i].socketId == socketid && recyclerDataArrayList[i].isScreen) {
-//                    runOnUiThread {
-//                        Toast.makeText(this,
-//                            "${recyclerDataArrayList[i].title} ${status} screen",
-//                            Toast.LENGTH_LONG).show()
-//
-//                    }
-                        recyclerDataArrayList.remove( recyclerDataArrayList[i])
-
-                    setUpEpoxy()
+                     recyclerDataArrayList.remove( recyclerDataArrayList[i])
+                    controller.requestModelBuild()
+//                    setUpEpoxy()
                     break;
                 }
             }
@@ -1374,8 +1372,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onCallerHandSwitch(data: JSONObject) {
         val status= data.optBoolean("muted")
         val socketid= data.optString("id")
-//        val jsonObject = Gson().fromJson(data.optString("user").toString(), JsonObject::class.java)
-//        val user = Gson().fromJson(jsonObject, SGCUser::class.java)
 
         for(i in 0 until recyclerDataArrayList.size){
             if(recyclerDataArrayList[i].socketId==socketid){
@@ -1385,7 +1381,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                         "${recyclerDataArrayList[i].title} ${status} hand",
                         Toast.LENGTH_LONG).show()
                 }
-                setUpEpoxy()
+                controller.requestModelBuild()
+//                setUpEpoxy()
                 break;
             }
         }
@@ -1394,103 +1391,10 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     }
 
     fun streamShort(){
-
-        val view= window.decorView.rootView
-
-        verifystoragepermissions(this)
-
-
-
-        if( screenShot.value!!.size< recyclerDataArrayList.size )
-            return
-
-            val file= screenshot(view,System.currentTimeMillis().toString())
-
-            file?.let {
-                Log.d("SnapShot","stream short file success")
-
-                hubViewModel.sendSnapshot(hubViewModel.rname, it) }
-
+//        lifecycleScope.launch {
+//            hubViewModel.streamShort(recyclerDataArrayList.size)
+//        }
     }
-
-     fun screenshot(view: View, filename: String): File? {
-        val date = Date()
-         Log.d("SnapShot","insode screeenshot")
-        // Here we are initialising the format of our image name
-        val format = System.currentTimeMillis().toString()
-        try {
-//            // Initialising the directory of storage
-            val dirpath: String = Environment.getExternalStorageDirectory().toString()+"/"+ Environment.DIRECTORY_DOWNLOADS.toString()
-            val file = File(dirpath)
-            if (!file.exists()) {
-                val mkdir = file.mkdir()
-            }
-
-            // File name
-            val path = "$dirpath/$filename-$format.jpeg"
-
-            var bitmap:Bitmap?= null
-
-//            runOnUiThread {
-//                Toast.makeText(this@GridActivity,"soxd= ${screenShot.value?.size}",Toast.LENGTH_SHORT).show()
-//            }
-
-            when(screenShot.value?.size){
-                0-> bitmap= null
-                1->bitmap= screenShot.value!![0]
-                2-> bitmap= combineBitmapTopDown(screenShot.value!![0]!!, screenShot.value!![1]!!)
-                3-> bitmap= combineBitmapTopDown(screenShot.value!![0]!!,combineBitmapLeftRight(screenShot.value!![1]!!, screenShot.value!![2]!!)!!)
-                else-> bitmap = combineBitmapTopDown(combineBitmapLeftRight(screenShot.value!![1]!!, screenShot.value!![0]!!)!!, combineBitmapLeftRight(screenShot.value!![2]!!, screenShot.value!![3]!!)!!)!!
-            }
-
-            val imageurl = File(path)
-            val outputStream = FileOutputStream(imageurl)
-            bitmap?.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
-            outputStream.flush()
-            outputStream.close()
-            Log.d("SnapShot","file success")
-            screenShot.value!!.clear()
-            return imageurl
-            return null
-        } catch (io: FileNotFoundException) {
-            io.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return null
-    }
-
-    fun verifystoragepermissions(activity: Activity?) {
-        val permissions = ActivityCompat.checkSelfPermission(activity!!,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        val permissionstorage = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE)
-        if (permissions != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, permissionstorage, hubViewModel.REQUEST_EXTERNAL_STORAGe)
-        }
-    }
-
-
-    private fun combineBitmapLeftRight(left: Bitmap, right: Bitmap): Bitmap? {
-        val width = left.width + right.width
-        val height = if (left.height > right.height) left.height else right.height
-        val combined = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(combined)
-        canvas.drawBitmap(left, 0f, 0f, null)
-        canvas.drawBitmap(right, left.width.toFloat(), 0f, null)
-        return combined
-    }
-
-    private fun combineBitmapTopDown(top: Bitmap, bottom: Bitmap): Bitmap? {
-        val width = top.width.coerceAtMost(bottom.width)
-        val height = top.height+ bottom.height
-        val combined = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(combined)
-        canvas.drawBitmap(top, 0f, 0f, null)
-        canvas.drawBitmap(bottom, 0f, top.height.toFloat(), null)
-        return combined
-    }
-
 
 
 

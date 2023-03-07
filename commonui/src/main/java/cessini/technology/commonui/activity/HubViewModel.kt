@@ -3,7 +3,10 @@ package cessini.technology.commonui.activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.net.Uri
+import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -14,9 +17,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.webrtc.*
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.HashMap
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,6 +28,11 @@ class HubViewModel @Inject constructor(
     application: Application,
     private val roomRepository: RoomRepository
 ) :AndroidViewModel(application) {
+
+    var peerConnectionMap: HashMap<String, PeerConnection> = HashMap()
+    var peerConnectionScreenMap: HashMap<String, PeerConnection> = HashMap()
+
+
     val REQUEST_EXTERNAL_STORAGe: Int= 205
     var iceServers: List<PeerConnection.IceServer> = listOf(
 
@@ -51,9 +60,6 @@ class HubViewModel @Inject constructor(
 //    .createIceServer(),
 
     )
-
-    var peerConnectionMap: HashMap<String, PeerConnection> = HashMap()
-    var peerConnectionScreenMap: HashMap<String, PeerConnection> = HashMap()
 
 
     var STREAM_NAME_PREFIX = "android_device_stream"
@@ -166,6 +172,91 @@ class HubViewModel @Inject constructor(
 
         }
     }
+
+
+    fun streamShort(size:Int){
+
+
+        Log.d("SnapShot","size = $size")
+        if( GridActivity.modelProcessed< size )
+            return
+
+        val file= screenshot("snapshot")
+
+        file?.let {
+            Log.d("SnapShot","stream short file success")
+
+            sendSnapshot(rname, it) }
+
+    }
+
+    fun screenshot( filename: String): File? {
+        val date = Date()
+        Log.d("SnapShot","insode screeenshot")
+        // Here we are initialising the format of our image name
+        val format = "snapshot"
+        try {
+//            // Initialising the directory of storage
+            val dirpath: String = Environment.getExternalStorageDirectory().toString()+"/"+ Environment.DIRECTORY_DOWNLOADS.toString()
+            val file = File(dirpath)
+            if (!file.exists()) {
+                val mkdir = file.mkdir()
+            }
+
+            // File name
+            val path = "$dirpath/$filename-$format.jpeg"
+
+            var bitmap: Bitmap?= null
+
+            when(GridActivity.screenShot.value?.size){
+                0-> bitmap= null
+                1->bitmap= GridActivity.screenShot.value!![0]
+                2-> bitmap= combineBitmapTopDown(GridActivity.screenShot.value!![0]!!, GridActivity.screenShot.value!![1]!!)
+                3-> bitmap= combineBitmapTopDown(GridActivity.screenShot.value!![0]!!,combineBitmapLeftRight(
+                    GridActivity.screenShot.value!![1]!!, GridActivity.screenShot.value!![2]!!)!!)
+                else-> bitmap = combineBitmapTopDown(combineBitmapLeftRight(GridActivity.screenShot.value!![1]!!, GridActivity.screenShot.value!![0]!!)!!, combineBitmapLeftRight(
+                    GridActivity.screenShot.value!![2]!!, GridActivity.screenShot.value!![3]!!)!!)!!
+            }
+
+            val imageurl = File(path)
+            val outputStream = FileOutputStream(imageurl)
+            bitmap?.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
+            outputStream.flush()
+            outputStream.close()
+            Log.d("SnapShot","file success")
+            GridActivity.screenShot.value!!.clear()
+            return imageurl
+            return null
+        } catch (io: FileNotFoundException) {
+            io.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+
+    private fun combineBitmapLeftRight(left: Bitmap, right: Bitmap): Bitmap? {
+        val width = left.width + right.width
+        val height = if (left.height > right.height) left.height else right.height
+        val combined = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(combined)
+        canvas.drawBitmap(left, 0f, 0f, null)
+        canvas.drawBitmap(right, left.width.toFloat(), 0f, null)
+        return combined
+    }
+
+    private fun combineBitmapTopDown(top: Bitmap, bottom: Bitmap): Bitmap? {
+        val width = top.width.coerceAtMost(bottom.width)
+        val height = top.height+ bottom.height
+        val combined = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(combined)
+        canvas.drawBitmap(top, 0f, 0f, null)
+        canvas.drawBitmap(bottom, 0f, top.height.toFloat(), null)
+        return combined
+    }
+
+
 
 
 

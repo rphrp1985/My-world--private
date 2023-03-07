@@ -24,7 +24,6 @@ class HomeEpoxyDataSource(
     val compositeDisposable: CompositeDisposable,
     var userID: String,
     val socketFeedViewModel: SocketFeedViewModel,
-    val profile: Flow<Profile>,
     val uuid: String
 ) :
     PageKeyedDataSource<Int, DataResponse>() {
@@ -86,13 +85,12 @@ class HomeDatasourceFactory(
     val compositeDisposable: CompositeDisposable,
     val idMe: String,
     socketFeedViewModel: SocketFeedViewModel,
-    profile: Flow<Profile>,
     uuid: String,
 
     ) :
     DataSource.Factory<Int, DataResponse>() {
 
-    private val chatDataSource = HomeEpoxyDataSource( service,compositeDisposable,idMe, socketFeedViewModel,profile,uuid)
+    private val chatDataSource = HomeEpoxyDataSource( service,compositeDisposable,idMe, socketFeedViewModel,uuid)
 
 
 

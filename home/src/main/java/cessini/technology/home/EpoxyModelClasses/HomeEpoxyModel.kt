@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import cessini.technology.home.R
+import cessini.technology.home.fragment.HomeFragment
 import cessini.technology.home.model.JoinRoomSocketEventPayload
 /*import cessini.technology.newrepository.preferences.main*/
 import com.airbnb.epoxy.EpoxyAttribute
@@ -50,6 +51,9 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
     lateinit var onJoinButtonClicked:(JoinRoomSocketEventPayload)->Unit
 
     @EpoxyAttribute
+    lateinit var warning: ()-> Unit
+
+    @EpoxyAttribute
     lateinit var signInStatus: () -> Boolean
 
     @EpoxyAttribute
@@ -60,6 +64,8 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
 
     @EpoxyAttribute
     lateinit var roomButtonClick: () -> Unit
+
+
 
     override fun getDefaultLayout(): Int = R.layout.common_video_adapter
 
@@ -77,9 +83,16 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
 
         holder.joinHub.setOnClickListener {
             if (signInStatus()) {
-                onJoinButtonClicked(joinRoomSocketEventPayload)
-                holder.joinHub.visibility = View.GONE
-                holder.joinHubRequestSent.visibility = View.VISIBLE
+
+                if(HomeFragment.canSendJoinReq) {
+                    onJoinButtonClicked(joinRoomSocketEventPayload)
+                    holder.joinHub.visibility = View.GONE
+                    holder.joinHubRequestSent.visibility = View.VISIBLE
+                }else
+                {
+                  warning()
+                }
+
             }
         }
 
@@ -138,7 +151,14 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
             override fun onPlayerError(error: ExoPlaybackException) {
                 super.onPlayerError(error)
                 Toast.makeText(context,"Exoplayer is not working",Toast.LENGTH_SHORT)
+
             }
         })
     }
+
+
+    interface JoinWarning {
+        fun onCanNotJoin()
+    }
+
 }

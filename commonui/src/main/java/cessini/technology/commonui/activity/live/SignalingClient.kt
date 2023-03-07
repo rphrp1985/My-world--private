@@ -21,18 +21,17 @@ import javax.net.ssl.*
 
 class SignalingClient() {
     var rname = "LiveMySpaceActivity"
-    private lateinit var socket: Socket
+//    private lateinit var socket: Socket
 
     private lateinit var callback: Callback
     var lastConnection = ""
     var room_code=""
 
-//    lateinit var profile: Profile
-
     // TODO: REPLACE WITH "https://rooms-api.joinmyworld.live"
     private val socketUrl = "https://socket.joinmyworld.in/"
-//    "https://socket.joinmyworld.in/"
-//        "http://172.17.0.156:8000/"
+
+    val opts = IO.Options()
+   val  socket = IO.socket(socketUrl, opts).connect()
 
 
     private val hostnameVerifier: HostnameVerifier = HostnameVerifier { hostname, session -> true }
@@ -69,20 +68,12 @@ class SignalingClient() {
 //            IO.setDefaultOkHttpCallFactory(okHttpClient);
 
             // set as an option
-            val opts = IO.Options()
-            socket = IO.socket(socketUrl, opts).connect()
 
 
              socket.on("connect"){
-
-              Log.d(TAG,"signalling client socket connected room = $rname")
-//              val data = JSONObject("""{"room":"$rname"}""")
-              val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
-
-//                 room_code= "Prianshu Prasad_vv_583149515846757_1677173321"
-//              val data = JoinRoom("Prianshu Prasad_vv_583149515846757_1677173321",sgcUser,"rpinformationhub@gmail.com").getJson()
-                 val data = JoinRoom(rname,sgcUser,profile.email).getJson()
-
+                 Log.d(TAG,"signalling client socket connected room = $rname")
+             val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
+              val data = JoinRoom(rname,sgcUser,profile.email).getJson()
                  Log.d(TAG,"join room = ${data}")
               socket.emit("join room", data )
           }
@@ -346,7 +337,37 @@ class SignalingClient() {
     }
 
 
+    fun requestJoinRoom(callback: SocketEventCallback, data: JSONObject) {
+//        this.callBack = callback
+        try {
+
+            if(socket.isActive) Log.d(TAG, "Connection is active ${socket.isActive}")
+            Log.d(TAG, "Inside requestJoinRoom()")
+
+            socket.emit("permission", data)
+
+            socket.on("allowed"){
+                callback.onJoinRequestAccepted(it.toString())
+            }
+            socket.on("denied"){
+                callback.onJoinRequestDenied(it.toString())
+            }
+
+
+        } catch (e:URISyntaxException) {
+            Log.e(TAG, e.message.toString())
+//            ocket.disconnect()
+        }
+    }
+
+
+
 
 }
 
+
+interface SocketEventCallback {
+    fun onJoinRequestAccepted(socketId: String)
+    fun onJoinRequestDenied(msg: String)
+}
 

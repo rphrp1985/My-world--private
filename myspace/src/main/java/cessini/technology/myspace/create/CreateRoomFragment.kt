@@ -1,15 +1,19 @@
 package cessini.technology.myspace.create
 
+import android.Manifest
 import android.app.Dialog
 import android.content.Context.MODE_PRIVATE
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -93,13 +97,7 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
             }
         }
 
-//        binding.constraintLayout3.progress = 0f
-//
-//        createRoomViewModel.bottomSheetDraggedState.observe(viewLifecycleOwner) { state->
-//            val shiftedState = (1+state)/2f;
-//            setMotionLevel(-shiftedState)
-//            binding.constraintLayout3.progress = shiftedState
-//        }
+
         binding.constraintLayout3.progress = 0f
 
         publicProfileRoomMoreInformationFragmentViewModel.moreInfoBottomSheetDraggedState.observe(viewLifecycleOwner) { state->
@@ -152,30 +150,17 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
                     } else {
 
 
-//                        val intent: Intent = Intent()
-//
-//                        intent.setClassName(
-//                            requireContext(),
-//                            "cessini.technology.commonui.activity.GridActivity"
-//                        )
-////            intent.setClassName(requireContext(),"cessini.technology.myspace.live.LiveMyspaceActivity")
-//
-//                        val putExtra = intent.putExtra("Room Name",
-//                            " ")
-//
-//                        viewLifecycleOwner.lifecycleScope.launch {
-//                            profileRepository.profile.collectLatest {
-//                                intent.putExtra("user_id", it.id)
-//
-//                                startActivity(intent)
-//                            }
-//                        }
+                        binding.btnNext.visibility= View.GONE
+                        binding.permissionProgress.visibility= View.VISIBLE
 
                         roomSharedViewModel.createInstantRoom()
 
 
                     }
                 } else {
+                    binding.btnNext.visibility= View.GONE
+                    binding.permissionProgress.visibility= View.VISIBLE
+
                     roomSharedViewModel.createRoom()
                 }
             }
@@ -290,6 +275,14 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
     }
     private fun handleInstantRoom(roomID: String) {
         Log.d("Live Room","roomID= $roomID")
+        startCall(roomID)
+    }
+
+    private fun startCall(roomID:String){
+
+
+
+        Toast.makeText(context,"starting call",Toast.LENGTH_LONG).show()
         val intent: Intent = Intent()
 
         intent.setClassName(
@@ -310,6 +303,9 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
                 startActivity(intent)
             }
         }
+
+        binding.btnNext.visibility= View.VISIBLE
+        binding.permissionProgress.visibility= View.GONE
 
     }
 
@@ -389,19 +385,32 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        listener?.onSheet1Dismissed()
+        try {
+
+
+            listener?.onSheet1Dismissed()
 //        btn_progress.isVisible=false
-        roomSharedViewModel.roomTitle.value = ""
-        roomSharedViewModel.time.value = 0
-        roomSharedViewModel.selectedRoomCategories.clear()
-        roomSharedViewModel.categorySet.clear()
-        roomSharedViewModel.subCategorySet.clear()
+            roomSharedViewModel.roomTitle.value = ""
+            roomSharedViewModel.time.value = 0
+            roomSharedViewModel.selectedRoomCategories.clear()
+            roomSharedViewModel.categorySet.clear()
+            roomSharedViewModel.subCategorySet.clear()
+        }catch (e:Exception){}
     }
 
     override fun onPause() {
         super.onPause()
         Log.e("Pauese","OnPauseCalled")
     }
+
+
+
+
+    companion object{
+        const val CAPTURE_PERMISSION_REQUEST_CODE = 160
+
+    }
+
 
 }
 //val categories = setOf(

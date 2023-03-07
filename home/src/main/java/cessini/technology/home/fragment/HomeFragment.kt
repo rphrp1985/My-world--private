@@ -1,9 +1,9 @@
 package cessini.technology.home.fragment
 
+import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -17,21 +17,27 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.PagerSnapHelper
 import cessini.technology.commonui.activity.HomeActivity
+import cessini.technology.commonui.activity.live.SignalingClient
+import cessini.technology.commonui.activity.live.SocketEventCallback
+import cessini.technology.commonui.activity.live.signallingserverData.JoinRoom
+import cessini.technology.commonui.activity.live.signallingserverData.SGCUser
 import cessini.technology.commonui.common.BaseFragment
 import cessini.technology.commonui.common.isInDarkTheme
 import cessini.technology.commonui.utils.ProfileConstants
 import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
+import cessini.technology.home.EpoxyModelClasses.HomeEpoxyModel
 import cessini.technology.home.R
 import cessini.technology.home.controller.HomeEpoxyController
 import cessini.technology.home.databinding.NewHomeFragmentBinding
+import cessini.technology.home.fragment.dialogs.JoinEvents
+import cessini.technology.home.fragment.dialogs.RoomWaitingFragment
 import cessini.technology.home.homeLoading
 import cessini.technology.home.model.HomeEpoxyStreamsModel
 import cessini.technology.home.model.JoinRoomSocketEventPayload
 import cessini.technology.home.model.User
 import cessini.technology.home.viewmodel.HomeFeedViewModel
 import cessini.technology.home.viewmodel.SocketFeedViewModel
-import cessini.technology.home.webSockets.HomeSignallingClient
-import cessini.technology.home.webSockets.SocketEventCallback
+import cessini.technology.model.Profile
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.ToFlowNavigable
 import cessini.technology.newapi.preferences.AuthPreferences
@@ -64,13 +70,17 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
     @Inject lateinit var profileRepository: ProfileRepository
 
+    lateinit var profile: Profile
+
 //    lateinit var blurLayout: BlurLayout
 
     private val galleryViewModel by activityViewModels<GalleryViewModel>()
 
 
+
     companion object {
         private const val TAG = "HomeFragment"
+        var canSendJoinReq=true
     }
 
     @Inject lateinit var videoRepository: VideoRepository
@@ -80,14 +90,10 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
     @Inject lateinit var authPreferences: AuthPreferences
 
     private var isUserSignedIn = false
+    private val roomWaitingFragment = RoomWaitingFragment()
 
     private val homeFeedViewModel: HomeFeedViewModel by viewModels()
     private val socketFeedViewModel: SocketFeedViewModel by viewModels()
-
-
-
-
-
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -102,7 +108,11 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         /**Setting a lifecycleOwner as this Fragment.*/
         binding.lifecycleOwner = viewLifecycleOwner
 
-
+        lifecycleScope.launch {
+            profileRepository.profile.collectLatest {
+                profile = it
+            }
+        }
         if(socketFeedViewModel.controller==null) {
             socketFeedViewModel.controller = HomeEpoxyController(
                 context = requireContext(),
@@ -110,7 +120,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
                     if (!isUserSignedIn)
                         showSignInBottomSheet()
                     else {
-                        joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload))
+                        joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload),joinRoomSocketEventPayload.room)
                     }
                 },
                 checkSignInStatus = {
@@ -119,7 +129,11 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
                         false
                     } else true
                 },
-                socketFeedViewModel.canLoadMore
+                canLoadMore = socketFeedViewModel.canLoadMore,
+
+           warningFunction =  {
+               onCanNotJoin()
+            }
             )
         }
 
@@ -129,39 +143,52 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         val snapHelper = PagerSnapHelper()
         snapHelper.attachToRecyclerView(binding.recyclerView)
 
-        showLoader()
 
-        binding.recyclerView.adapter = socketFeedViewModel.controller!!.adapter
+
 
         homeFeedViewModel.authFlag.observe(viewLifecycleOwner, Observer { isSignedIn->
             if (isSignedIn) {
                 isUserSignedIn = true
                 homeFeedViewModel.loadUserInfo()
 
+
             }else{
+
             }
 
         })
 
 
-        if(socketFeedViewModel.userID==""){
-            lifecycleScope.launch {
+        showLoader()
+
+        lifecycleScope.launch {
                 profileRepository.profile.collectLatest {
+
+                    var temp =""
                     Log.d(TAG,"profile = $it")
                     if(it.id!="")
-                    socketFeedViewModel.userID= it.id
+                        temp= it.id
                     else
-                        socketFeedViewModel.userID=userIdentifierPreferences.uuid
+                        temp=userIdentifierPreferences.uuid
 
-                    socketFeedViewModel.setPaging(profileRepository.profile, userIdentifierPreferences.uuid)
+                    if(temp!=socketFeedViewModel.userID) {
 
-                    requireActivity().runOnUiThread {
+                        socketFeedViewModel.userID= temp
+                        socketFeedViewModel.setPaging(
+                            userIdentifierPreferences.uuid)
 
-                        setupEpoxy() }
+                        requireActivity().runOnUiThread {
+                            setupEpoxy()
+                        }
+
+                    }else
+                    {
+                        binding.recyclerView.adapter = socketFeedViewModel.controller!!.adapter
+                    }
 
                 }
             }
-        }
+
 
 
 
@@ -210,13 +237,6 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         setUpHomeFeed()*/
 
         // TODO: To be replaced with Pagination
-
-
-
-
-
-
-
 
 
         /*TODO:
@@ -298,8 +318,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
     fun setupEpoxy(){
 
-
-
+        try{
         socketFeedViewModel.fetchPages({ list ->
 
             Log.d(TAG, "fetch page = $list")
@@ -314,6 +333,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         }, { error ->
             Log.e(TAG, "error: ${error}")
         })
+        }catch (e:Exception){}
 
 
 
@@ -330,36 +350,87 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
     private fun convertToJSONObject(joinRoomSocketEventPayload: JoinRoomSocketEventPayload):JSONObject {
-        val jsonObject = JSONObject()
+        var jsonObject = JSONObject()
         val userJSONObject = JSONObject()
         try {
-            jsonObject.put("room", joinRoomSocketEventPayload.room)
-            userJSONObject.put("id", joinRoomSocketEventPayload.user.id)
-            userJSONObject.put("name", joinRoomSocketEventPayload.user.name)
-            userJSONObject.put("profilePicture", joinRoomSocketEventPayload.user.profilePicture)
-//            userJSONObject.put("email", joinRoomSocketEventPayload.user.email)
-            userJSONObject.put("channelName", joinRoomSocketEventPayload.user.channelName)
-            jsonObject.put("user", userJSONObject)
-//            jsonObject.put("email", joinRoomSocketEventPayload.user.email)
+
+
+            val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
+
+            jsonObject = JoinRoom(joinRoomSocketEventPayload.room,sgcUser,profile.email).getJson()
+
         } catch (e:JSONException) {
             e.printStackTrace()
         }
         return jsonObject
     }
 
-    private fun joinRoomRequest(data:JSONObject) {
-        val homeSignallingClient = HomeSignallingClient()
-        Toast.makeText(context, "Join Room Request Sent", Toast.LENGTH_LONG).show()
+    private fun joinRoomRequest(data:JSONObject,roomName:String) {
+//        val homeSignallingClient = HomeSignallingClient()
 
-        homeSignallingClient.requestJoinRoom(object : SocketEventCallback {
+        Toast.makeText(context, "Join Room Request Sent", Toast.LENGTH_LONG).show()
+        showWaiting(data,roomName)
+       canSendJoinReq= false
+        SignalingClient.get()?.requestJoinRoom(object : SocketEventCallback {
             override fun onJoinRequestAccepted(socketId: String) {
                 Toast.makeText(context, "Room Joined: $socketId", Toast.LENGTH_LONG).show()
+                roomWaitingFragment.setApproved(roomName)
+                canSendJoinReq= true
+                roomWaitingFragment.setEventCallback(object :JoinEvents{
+                    override fun join() {
+
+                        enterRoom(roomName)
+                    }
+
+                    override fun hide() {
+                        hideWaiting()
+                    }
+
+                })
+
             }
 
             override fun onJoinRequestDenied(msg: String) {
                 Toast.makeText(context, "Join Request Denied: $msg", Toast.LENGTH_LONG).show()
+            roomWaitingFragment.setDenied(roomName)
+                canSendJoinReq= true
+
             }
         }, data)
+    }
+
+    fun showWaiting(data: JSONObject,roomName: String){
+        binding.frameLayout.visibility= View.VISIBLE
+        roomWaitingFragment.setWaiting(roomName)
+            childFragmentManager.beginTransaction()
+                .replace(R.id.frame_layout, roomWaitingFragment)
+                .commit()
+    }
+
+    fun enterRoom(roomName: String){
+        val intent: Intent = Intent()
+
+        intent.setClassName(
+            requireContext(),
+            "cessini.technology.commonui.activity.GridActivity"
+        )
+//            intent.setClassName(requireContext(),"cessini.technology.myspace.live.LiveMyspaceActivity")
+
+        intent.putExtra("Room Name", "${roomName}")
+
+        viewLifecycleOwner.lifecycleScope.launch {
+
+                intent.putExtra("user_id", profile.id)
+
+                startActivity(intent)
+
+        }
+
+    }
+
+
+    fun hideWaiting(){
+        binding.frameLayout.visibility= View.GONE
     }
 
     private fun showSignInBottomSheet() {
@@ -386,7 +457,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
     }
 
     /**Function to setup the HOME FEED into the UI Window.*/
-    @RequiresApi(Build.VERSION_CODES.M)
+//    @RequiresApi(Build.VERSION_CODES.M)
     /*private fun setUpHomeFeed() {
         val feedAdapter = getAdapter()
 
@@ -478,14 +549,22 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         }
     }
 
-    /**Function to Stop the Shimmer effect.*/
-    /*private fun hideShimmer() {
-        binding.homeFeedShimmer.visibility = View.GONE
+    fun onCanNotJoin() {
+        requireActivity().runOnUiThread {
+            Toast.makeText(context,
+                "A join Request is pending. Can not send another request",
+                Toast.LENGTH_LONG).show()
+        }
     }
 
-    private fun showShimmer() {
-        binding.homeFeedShimmer.visibility = View.VISIBLE
-    }*/
+    /**Function to Stop the Shimmer effect.*/
+//    private fun hideShimmer() {
+//        binding.homeFeedShimmer.visibility = View.GONE
+//    }
+//
+//    private fun showShimmer() {
+//        binding.homeFeedShimmer.visibility = View.VISIBLE
+//    }
 
 //    override fun onDestroyView() {
 //        super.onDestroyView()
@@ -515,4 +594,8 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 //        super.onStop()
 //        blurLayout.pauseBlur()
 //    }
+
+
+
+
 }

@@ -16,7 +16,8 @@ class HomeEpoxyController(
     private val context: Context,
     private val onJoinClicked: (JoinRoomSocketEventPayload) -> Unit,
     private val checkSignInStatus: () -> Boolean,
-    val canLoadMore: CanLoad
+    val canLoadMore: CanLoad,
+  private val warningFunction: () -> Unit,
 ): PagedListEpoxyController<DataResponse>(){
 
 //    private val DUMMY_HLS_FEED_LINK = "http://amssamples.streaming.mediaservices.windows.net/69fbaeba-8e92-4740-aedc-ce09ae945073/AzurePromo.ism/manifest(format=m3u8-aapl)"
@@ -46,11 +47,15 @@ class HomeEpoxyController(
             if (checkSignInStatus()) {
                 onJoinClicked(joinRoomSocketEventPayload)
             }
-        }.
+        }.warning{
+                    warningFunction()
+                }.
         likeButtonClick {}.
         commentButtonClick {}.
         roomButtonClick {}.
         id("HomeFeed$currentPosition")
+
+
 
         } ?: run {
             return HomeLoadingBindingModel_().id("HomeLoading$currentPosition")

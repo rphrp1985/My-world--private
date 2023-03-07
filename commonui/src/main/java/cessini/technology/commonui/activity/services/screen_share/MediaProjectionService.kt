@@ -77,11 +77,15 @@ class MediaProjectionService : Service() {
             .setContentText("Screen sharing running")
             .setContentIntent(getMainActivityPendingIntent())
 
-        startForeground(
-            NOTIFICATION_ID,
-            notificationBuilder.build(),
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-        )
+        try {
+
+
+            startForeground(
+                NOTIFICATION_ID,
+                notificationBuilder.build(),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+            )
+        }catch (e:Exception){}
 
     }
 

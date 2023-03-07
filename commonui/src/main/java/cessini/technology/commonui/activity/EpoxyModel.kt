@@ -3,6 +3,7 @@ package cessini.technology.commonui.activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -88,6 +89,7 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
             if (imageId != -1) {
                 holder.imgPerson.setMirror(true)
                 try {
+                    holder.imgPerson.release()
                     holder.imgPerson.init(context, null)
                     holder.imgPerson.setEnableHardwareScaler(true)
                     holder.imgPerson.setZOrderMediaOverlay(true)
@@ -156,14 +158,23 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                         .setBottomRightCorner(CornerFamily.ROUNDED, bR)
                         .build()
 
-//        holder.imgPerson.shapeAppearanceModel =
-//            holder.imgPerson.shapeAppearanceModel.toBuilder()
+//        holder.imgPerson.sha =
+//            holde
 //                .setTopLeftCorner(CornerFamily.ROUNDED, tL)
 //                .setTopRightCorner(CornerFamily.ROUNDED, tR)
 //                .setBottomLeftCorner(CornerFamily.ROUNDED, bL)
 //                .setBottomRightCorner(CornerFamily.ROUNDED, bR)
 //                .build()
             }
+
+    }
+
+
+
+
+    override fun unbind(holder: Holder) {
+        track.removeSink(holder.imgPerson)
+        super.unbind(holder)
 
     }
 

@@ -85,7 +85,7 @@ class SocketFeedViewModel @Inject constructor(
 
     }
 
-        fun setPaging(profile: Flow<Profile>, uuid: String) {
+        fun setPaging( uuid: String) {
             if(!isInitiated) {
                 isInitiated= true
                 compositeDisposable = CompositeDisposable()
@@ -94,7 +94,6 @@ class SocketFeedViewModel @Inject constructor(
                         compositeDisposable,
                         userID,
                         this,
-                        profile,
                         uuid)
                 rxPageList = RxPagedListBuilder(datasourceFactory, config).buildObservable()
             }

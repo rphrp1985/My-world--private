@@ -18,12 +18,7 @@ class RoomWaitingFragment : Fragment() {
 
     }
 
-//    lateinit var pgbar:ProgressBar
-//    lateinit var okButton:Button
-//    lateinit var enterButton:Button
-//    lateinit var roomTextView: TextView
-//    lateinit var status:TextView
-
+    var roomName=""
     lateinit var binding:HomeRoomTopPopupBinding
 
     override fun onCreateView(
@@ -31,18 +26,18 @@ class RoomWaitingFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.home_room_top_popup, container, false)
-        return binding.root
-
-    }
-
-    fun setWaiting(roomName:String){
-
         binding.waitingBar.visibility= View.VISIBLE
         binding.enterButton.visibility= View.GONE
         binding.okButton.visibility= View.GONE
         binding.roomName.text= roomName
         binding.joinStatus.text="Waiting for Accept"
 
+        return binding.root
+
+    }
+
+    fun setWaiting(roomName:String){
+        this.roomName= roomName
 
     }
 
@@ -62,11 +57,19 @@ class RoomWaitingFragment : Fragment() {
         binding.joinStatus.text="Request Denied"
     }
 
-    fun setshowanimation(){
+    fun setshowanimation(){}
 
+    fun setEventCallback(joinEvents: JoinEvents){
+
+        binding.okButton.setOnClickListener { joinEvents.hide() }
+
+        binding.enterButton.setOnClickListener {  joinEvents.join() }
 
     }
+}
 
+interface JoinEvents{
+    fun join()
 
-
+    fun hide()
 }
