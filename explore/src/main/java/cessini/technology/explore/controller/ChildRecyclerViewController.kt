@@ -323,7 +323,7 @@ class ChildRecyclerViewController(
                         if(it.equals("")){
                             category.append(categories[0] + "#")
                         }else
-                            category.append(categories[it.toInt()] + "#")
+                            category.append("$it#")
 
                     }
                     val fh = category.indexOf("#")

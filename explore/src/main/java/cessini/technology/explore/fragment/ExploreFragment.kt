@@ -240,6 +240,7 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
                 is ExploreOnClickEvents.ToGlobalProfileFlow -> {
                     /*  Click Event of Voices to Follow Profile Image */
                     /**we will navigate to the global public profile.*/
+
                     (requireActivity() as ToFlowNavigable).navigateToFlow(
                         NavigationFlow.GlobalProfileFlow
                     )

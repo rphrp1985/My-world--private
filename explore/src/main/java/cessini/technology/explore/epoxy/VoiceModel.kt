@@ -71,6 +71,9 @@ abstract class VoiceModel : EpoxyModelWithHolder<VoiceModel.Holder>() {
             Glide.with(this.image.context).load(img).into(this.image)
             this.title.text = title1
             image.setOnClickListener {
+                    ProfileConstants.creatorModel= SearchCreatorApiResponse(
+                        vid,title1,channelName,img
+                    )
                 onClickEvents(ExploreOnClickEvents.ToGlobalProfileFlow)
             }
             btn.setOnClickListener {

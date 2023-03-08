@@ -116,10 +116,10 @@ class PublicProfileFragment : BaseFragment<FragmentPublicProfileBinding>(R.layou
         ProfileConstants.public = true
         if (ProfileConstants.story) {
             publicProfileViewModel.loadProfile(true)
-            profileViewModel.loadProfile(true)
+//            profileViewModel.loadProfile(true)
         } else {
             publicProfileViewModel.loadProfile(false)
-            profileViewModel.loadProfile(false)
+//            profileViewModel.loadProfile(false)
         }
 
         /**Hide the keyboard.*/
@@ -182,13 +182,23 @@ class PublicProfileFragment : BaseFragment<FragmentPublicProfileBinding>(R.layou
 //            Log.e("PublicProfile","Outside ViewModelRoom")
 //            Log.e("currId","${publicProfileViewModel.currentId}")
 //            Log.e("channel","${publicProfileViewModel.channelName.value.toString()}")
-            findNavController().navigate(
-                PublicProfileFragmentDirections
-                    .actionPublicProfileFragmentToPublicProfileRoomMessage(publicProfileViewModel.currentId,publicProfileViewModel.channelName.value.toString())
-            )
-            return@setOnClickListener
 
-            ProfileConstants.story = false
+            if ((this.activity as HomeActivity).baseViewModel.authFlag.value == true) {
+
+
+                findNavController().navigate(
+                    PublicProfileFragmentDirections
+                        .actionPublicProfileFragmentToPublicProfileRoomMessage(
+                            publicProfileViewModel.currentId,
+                            publicProfileViewModel.channelName.value.toString())
+                )
+            }else
+            {
+                publicProfileViewModel.goToAuth()
+            }
+//            return@setOnClickListener
+
+//            ProfileConstants.story = false
 //            findNavController().navigate(R.id.action_publicProfileFragment_to_roomFragment3)
         }
         binding.addFriend.setOnClickListener {

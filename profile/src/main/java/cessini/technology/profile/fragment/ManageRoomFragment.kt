@@ -161,20 +161,20 @@ internal class ManageRoomFragment :
     private fun manageRoomDetails(){
         binding.viewPager2.visibility = View.VISIBLE
         binding.viewPager2.isSaveEnabled = false
-//        binding.viewPager2.adapter = ManageRoomAdapter(this.childFragmentManager, lifecycle)
-//        TabLayoutMediator(tabLayout!!, binding.viewPager2) { tab, position ->
-//            when (position) {
-//                0 -> {
-//                    tab.text = "Rooms"
-//                }
-//                1 -> {
-//                    tab.text = "Requests"
-//                }
-//                2 -> {
-//                    tab.text = "Create Room Request"
-//                }
-//            }
-//        }.attach()
+        binding.viewPager2.adapter = ManageRoomAdapter(this.childFragmentManager, lifecycle)
+        TabLayoutMediator(tabLayout!!, binding.viewPager2) { tab, position ->
+            when (position) {
+                0 -> {
+                    tab.text = "Rooms"
+                }
+                1 -> {
+                    tab.text = "Requests"
+                }
+                2 -> {
+                    tab.text = "Create Room Request"
+                }
+            }
+        }.attach()
     }
 
     private fun observeMySpaceFragment() {
