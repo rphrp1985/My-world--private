@@ -261,6 +261,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
                 if(isCreated)
                 createRoomLink()
+
+                return@collectLatest
             }
         }
 

@@ -1,5 +1,6 @@
 package cessini.technology.home.fragment
 
+//import kotlinx.android.synthetic.main.user_save_video.*
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Build
@@ -10,6 +11,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleObserver
@@ -25,7 +27,6 @@ import cessini.technology.commonui.common.BaseFragment
 import cessini.technology.commonui.common.isInDarkTheme
 import cessini.technology.commonui.utils.ProfileConstants
 import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
-import cessini.technology.home.EpoxyModelClasses.HomeEpoxyModel
 import cessini.technology.home.R
 import cessini.technology.home.controller.HomeEpoxyController
 import cessini.technology.home.databinding.NewHomeFragmentBinding
@@ -48,7 +49,6 @@ import cessini.technology.newrepository.websocket.video.VideoViewUpdaterWebSocke
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-//import kotlinx.android.synthetic.main.user_save_video.*
 import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
@@ -145,49 +145,71 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
 
+        showLoader()
 
         homeFeedViewModel.authFlag.observe(viewLifecycleOwner, Observer { isSignedIn->
+            var temp = ""
             if (isSignedIn) {
                 isUserSignedIn = true
                 homeFeedViewModel.loadUserInfo()
-
+                temp = userIdentifierPreferences.id
 
             }else{
-
+            temp = userIdentifierPreferences.uuid
             }
+
+            if(temp!=socketFeedViewModel.userID) {
+
+                socketFeedViewModel.userID= temp
+                socketFeedViewModel.setPaging(
+                    userIdentifierPreferences.uuid)
+
+                requireActivity().runOnUiThread {
+                    setupEpoxy()
+                }
+
+            }else
+            {
+                binding.recyclerView.adapter = socketFeedViewModel.controller!!.adapter
+            }
+
+            return@Observer
 
         })
 
+        if(!canSendJoinReq){
+            showFrag()
+        }
 
-        showLoader()
 
-        lifecycleScope.launch {
-                profileRepository.profile.collectLatest {
-
-                    var temp =""
-                    Log.d(TAG,"profile = $it")
-                    if(it.id!="")
-                        temp= it.id
-                    else
-                        temp=userIdentifierPreferences.uuid
-
-                    if(temp!=socketFeedViewModel.userID) {
-
-                        socketFeedViewModel.userID= temp
-                        socketFeedViewModel.setPaging(
-                            userIdentifierPreferences.uuid)
-
-                        requireActivity().runOnUiThread {
-                            setupEpoxy()
-                        }
-
-                    }else
-                    {
-                        binding.recyclerView.adapter = socketFeedViewModel.controller!!.adapter
-                    }
-
-                }
-            }
+//        lifecycleScope.launch {
+//                profileRepository.profile.collect {
+//
+//                    var temp =""
+//                    Log.d(TAG,"profile = $it")
+//                    if(it.id!="")
+//                        temp= it.id
+//                    else
+//                        temp=userIdentifierPreferences.uuid
+//
+//                    if(temp!=socketFeedViewModel.userID) {
+//
+//                        socketFeedViewModel.userID= temp
+//                        socketFeedViewModel.setPaging(
+//                            userIdentifierPreferences.uuid)
+//
+//                        requireActivity().runOnUiThread {
+//                            setupEpoxy()
+//                        }
+//
+//                    }else
+//                    {
+//                        binding.recyclerView.adapter = socketFeedViewModel.controller!!.adapter
+//                    }
+//
+//
+//                }
+//            }
 
 
 
@@ -399,6 +421,21 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         }, data)
     }
 
+    fun showFrag(){
+        binding.frameLayout.visibility= View.VISIBLE
+//        childFragmentManager.beginTransaction()
+//            .replace(R.id.frame_layout, roomWaitingFragment)
+//            .commit()
+    }
+    fun removeFragment() {
+        val transaction = childFragmentManager.beginTransaction()
+        if (roomWaitingFragment != null) {
+            transaction.remove(roomWaitingFragment)
+            transaction.commit()
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE)
+//            yourFragment = null
+        }
+    }
     fun showWaiting(data: JSONObject,roomName: String){
         binding.frameLayout.visibility= View.VISIBLE
         roomWaitingFragment.setWaiting(roomName)
@@ -430,6 +467,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
     fun hideWaiting(){
+        removeFragment()
         binding.frameLayout.visibility= View.GONE
     }
 
