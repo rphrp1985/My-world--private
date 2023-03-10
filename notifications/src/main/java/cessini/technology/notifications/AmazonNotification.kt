@@ -62,7 +62,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val body=remoteMessage.notification?.body.toString()
         val title=remoteMessage.notification?.title.toString()
         if (body.isNotEmpty() && title.isNotEmpty())
-            addData(MyWorldNotification("id",body,"Myworld","https://my-world-bucket-alpha.s3.ap-south-1.amazonaws.com/notification/72.png"))
+            addData(MyWorldNotification("id",body,"Myworld","https://myworld-bucket-alpha-new.s3.amazonaws.com/user_files/ID282625660000000114/profile/picture1678459569923.jpg"))
         showNotification(body,title)
     }
 
