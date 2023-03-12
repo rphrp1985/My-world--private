@@ -80,19 +80,19 @@
                     android:id="@+id/tab_rooms"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Rooms"/>
+                    android:text="Live"/>
 
                 <com.google.android.material.tabs.TabItem
                     android:id="@+id/tab_requests"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Requests" />
+                    android:text="Scheduled" />
 
                 <com.google.android.material.tabs.TabItem
                     android:id="@+id/tab_create_room_requests"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Create Room Requests" />
+                    android:text="Requests" />
 
             </com.google.android.material.tabs.TabLayout>
 
