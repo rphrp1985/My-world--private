@@ -6,6 +6,6 @@ import cessini.technology.newapi.services.myspace.model.response.ApiRequestProfi
 fun ApiRequestProfile.toModel() = RequestProfile(
     id = id,
     name = name,
-    channel = channel,
-    picture = picture,
+    channel = channelName,
+    picture = profilePicture,
 )

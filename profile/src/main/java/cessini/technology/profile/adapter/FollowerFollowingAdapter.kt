@@ -6,6 +6,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import cessini.technology.profile.fragment.FollowerTabFragment
 import cessini.technology.profile.fragment.FollowingTabFragment
+import cessini.technology.profile.fragment.RequestsFragment
 
 class FollowerFollowingAdapter(
     fragmentManager: FragmentManager,
@@ -19,13 +20,13 @@ class FollowerFollowingAdapter(
     override fun createFragment(position: Int): Fragment {
         return when (position) {
             0 -> {
-                FollowerTabFragment()
+                RequestsFragment()
             }
             1 -> {
                 FollowingTabFragment()
             }
             else -> {
-                FollowerTabFragment()
+                RequestsFragment()
             }
         }
     }
