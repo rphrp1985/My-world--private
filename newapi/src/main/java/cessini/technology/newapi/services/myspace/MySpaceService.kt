@@ -29,9 +29,9 @@ interface MySpaceService {
         @Path(value = "name") name: String,
     ): Response<ApiGetRoom>
 
-    @GET(value = "${MySpaceConstants.JOIN_ROOM_ENDPOINT}{roomNameBody}")
+    @POST(value = "${MySpaceConstants.JOIN_ROOM_ENDPOINT}")
     suspend fun joinRoom(
-        @Path(value = "roomNameBody") roomNameBody: String,
+        @Body roomNameBody: String,
     ): ApiMessage
 
 //    @Headers(ApiParameters.AUTH_HEADER)

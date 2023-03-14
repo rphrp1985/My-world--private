@@ -9,9 +9,12 @@ data class ApiRoomRequests(
 )
 
 data class RoomRequestData(
-    @SerializedName(value="_id") val _id:String,
+    @SerializedName(value="_id") val _id:ID,
     @SerializedName(value="id") val id:String,
     @SerializedName(value = "listeners_pending") val requests : List<ApiRequestProfile>,
+)
+data class ID(
+    @SerializedName(value = "\$oid") val id:String
 )
 
 data class ApiRequestProfile(
