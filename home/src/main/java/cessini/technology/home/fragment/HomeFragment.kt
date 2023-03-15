@@ -53,6 +53,8 @@ import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.newrepository.video.VideoRepository
 import cessini.technology.newrepository.websocket.video.VideoViewUpdaterWebSocket
+import com.airbnb.epoxy.EpoxyRecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
