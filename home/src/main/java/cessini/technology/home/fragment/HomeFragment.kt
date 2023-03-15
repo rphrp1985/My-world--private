@@ -2,6 +2,9 @@ package cessini.technology.home.fragment
 
 //import kotlinx.android.synthetic.main.user_save_video.*
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -50,7 +53,6 @@ import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.newrepository.video.VideoRepository
 import cessini.technology.newrepository.websocket.video.VideoViewUpdaterWebSocket
-import com.airbnb.epoxy.EpoxyRecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -58,6 +60,12 @@ import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
 
+
+/**
+ * A simple [Fragment] subclass.
+ * Use the [HomeFragment.newInstance] factory method to
+ * create an instance of this fragment.
+ */
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_fragment),
     LifecycleObserver,
@@ -96,11 +104,19 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
     var mode= true
     var recyclerView: EpoxyRecyclerView?= null
 
-
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.itemIconTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
+        bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "CREATED")
-
         authPreferences = AuthPreferences(requireContext())
         userIdentifierPreferences = UserIdentifierPreferences(requireContext(), authPreferences)
 
@@ -171,6 +187,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
         homeFeedViewModel.isUserSignedIn()
+        binding.recyclerView.setController(socketFeedViewModel.controller!!)
         val snapHelper = PagerSnapHelper()
         snapHelper.attachToRecyclerView(binding.recyclerView)
 
@@ -215,21 +232,10 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
                 }
 
-//                requireActivity().runOnUiThread {
-////                    Handler().postDelayed(
-////                        {
-//                            setupEpoxy()
-////                        },1000
-////                    )
-//
-////                    setupEpoxySuggestion()
-//                }
-
             }else
             {
                 binding.recyclerView.adapter = socketFeedViewModel.controller!!.adapter
             }
-
 
             return@Observer
 
@@ -470,8 +476,6 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
 
-
-
     private fun convertToJSONObject(joinRoomSocketEventPayload: JoinRoomSocketEventPayload):JSONObject {
         var jsonObject = JSONObject()
         val userJSONObject = JSONObject()
@@ -586,7 +590,6 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             galleryViewModel.setStoryPos(0)
         }
 
-
         ProfileConstants.story = false
 
 
@@ -696,8 +699,6 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
                 Toast.LENGTH_LONG).show()
         }
     }
-
-
 
     /**Function to Stop the Shimmer effect.*/
 //    private fun hideShimmer() {

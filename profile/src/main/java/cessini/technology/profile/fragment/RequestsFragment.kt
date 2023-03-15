@@ -9,6 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import cessini.technology.commonui.common.navigateToProfile
 import cessini.technology.commonui.common.toast
 import cessini.technology.commonui.viewmodel.BaseViewModel
@@ -71,8 +72,13 @@ class RequestsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        setupRecyclerView()
         fetchRequests()
+    }
+    private fun setupRecyclerView() {
+        binding.requestsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+        }
     }
 
     override fun onResume() {
@@ -152,7 +158,6 @@ class RequestsFragment : Fragment() {
                         acceptedRequets[roomName] = mutableListOf()
 
                         runCatching { fetchRequests() }
-
                         toast(message = "Request accepted.")
                     }.onFailure {
                         toast(message = it.message.orEmpty())
