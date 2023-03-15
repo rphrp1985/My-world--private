@@ -410,11 +410,9 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
     }
 
     override fun onDestroyView() {
-
-
-//        if(!mode)
-
-
+        val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.itemIconTintList = null
+        bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.drawable.bottom_nav_bar_item_color))
         super.onDestroyView()
     }
 
@@ -754,7 +752,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         }else
         {
             (activity as HomeActivity).binding.bottomNavigation.visibility = View.VISIBLE
-            binding.translucentBackground.visibility= View.VISIBLE
+            binding.translucentBackground.visibility= View.GONE
             binding.backButton.visibility=View.GONE
 
         }
