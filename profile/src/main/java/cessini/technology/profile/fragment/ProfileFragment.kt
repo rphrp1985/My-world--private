@@ -221,7 +221,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         binding.addStoryProfileFragment.setOnClickListener {
             val homeActivity = run { requireActivity() as HomeActivity }
 
-            if (!profileViewModel.rooms.value.isNullOrEmpty() && !profileViewModel.hasMessages) {
+            if (!profileViewModel.rooms.value.isNullOrEmpty() && profileViewModel.hasMessages) {
                 val createRoomFragment = CreateRoomFragment(null)
                 createRoomFragment.show(parentFragmentManager, createRoomFragment.tag)
                 return@setOnClickListener
