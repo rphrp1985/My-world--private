@@ -268,7 +268,7 @@ internal class MySpaceAreaFragment(val levelInterface: BottomSheetLevelInterface
                     ).show()
                     chip.isChecked = false
                 } else {
-                    selectedVideoCategories.add(categoryId)
+                    selectedVideoCategories.add(" $title")
                     selectedVideoSubcategories.add(subCategoryId)
                 }
 

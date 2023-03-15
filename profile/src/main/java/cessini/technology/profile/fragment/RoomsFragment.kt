@@ -79,7 +79,7 @@ class RoomsFragment : Fragment() {
             )
             runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
                 .onFailure {
-// toast(it.message.orEmpty())
+ toast(it.message.orEmpty())
                 }
                 .getOrDefault(emptyList())
         }

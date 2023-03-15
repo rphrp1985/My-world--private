@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.fragment.findNavController
+import cessini.technology.commonui.utils.Constant
 import cessini.technology.explore.fragment.ExploreFragmentDirections
+import cessini.technology.home.fragment.HomeFragmentDirections
 import cessini.technology.model.roomInfo
 import com.airbnb.epoxy.AsyncEpoxyController
 
@@ -26,17 +28,19 @@ class MultiGridController(var activity: FragmentActivity?,val fragment:Fragment,
             multiGridModelRecycler {
                 id("$allRooms $index")
                 controller(controller)
+                context(fragment.context)
               size(data.size)
                 roomTitle(roomInfo.title)
+                thumbnail(roomInfo.thumbnail)
                 clickListener{ _, ->
                     var t1=""
                     Log.e("MultiGridController","category rooms on click listener called")
                     fragment.let {
+                        Constant.home_fragment_live= false
+
+//                        it.findNavController().navigate("cessini.technology.home.fragment.homefragment")
                         it.findNavController().navigate(
-                            ExploreFragmentDirections.actionExploreFragmentToLiveFragment(
-                                "Suggestion Rooms",
-                                category
-                            )
+                            ExploreFragmentDirections.actionExploreFragmentToLiveFragment()
                         )
 
                     }

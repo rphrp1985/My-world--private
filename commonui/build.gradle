@@ -171,6 +171,7 @@ dependencies {
     api socket
     api shimmer
     implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
+    implementation 'com.squareup.retrofit2:converter-scalars:2.9.0'
 
     api project(":cvo")
     api project(":model")

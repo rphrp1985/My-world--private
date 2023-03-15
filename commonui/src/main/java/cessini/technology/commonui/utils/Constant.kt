@@ -30,6 +30,9 @@ class Constant {
             toast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 0)
             toast.show()
         }
+
+        var home_fragment_live= true
+
     }
 
     /**

@@ -31,8 +31,8 @@ abstract class SuggestedLiveMyspaceModelRecycler: EpoxyModelWithHolder<Suggested
             maincontroller.fragment.let {
                 it.findNavController().navigate(
                     ExploreFragmentDirections.actionExploreFragmentToLiveFragment(
-                        "Suggestion Rooms",
-                        maincontroller.category
+//                        "Suggestion Rooms",
+//                        maincontroller.category
                     )
                 )
 

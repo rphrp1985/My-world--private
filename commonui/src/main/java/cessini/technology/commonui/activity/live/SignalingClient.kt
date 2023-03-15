@@ -31,7 +31,8 @@ class SignalingClient() {
     private val socketUrl = "https://socket.joinmyworld.in/"
 
     val opts = IO.Options()
-   val  socket = IO.socket(socketUrl, opts).connect()
+   var socket = IO.socket(socketUrl, opts).connect()
+    var profile:Profile?= null
 
 
     private val hostnameVerifier: HostnameVerifier = HostnameVerifier { hostname, session -> true }
@@ -52,6 +53,7 @@ class SignalingClient() {
     ) {
         room_code= rname
         this.callback = callback
+        this.profile= profile
 //        this.profile= profile
         try {
 
@@ -69,6 +71,16 @@ class SignalingClient() {
 
             // set as an option
 
+            if(!socket.connected()){
+              socket = IO.socket(socketUrl, opts).connect()
+            }else
+            {
+                Log.d(TAG,"signalling server already connected= $rname")
+                val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
+                val data = JoinRoom(rname,sgcUser,profile.email).getJson()
+                Log.d(TAG,"join room = ${data}")
+                socket.emit("join room", data )
+            }
 
              socket.on("connect"){
                  Log.d(TAG,"signalling client socket connected room = $rname")
@@ -76,6 +88,7 @@ class SignalingClient() {
               val data = JoinRoom(rname,sgcUser,profile.email).getJson()
                  Log.d(TAG,"join room = ${data}")
               socket.emit("join room", data )
+                 socket.off("connect")
           }
 
             socket.on("denied"){
@@ -88,12 +101,20 @@ class SignalingClient() {
                 socket.emit("permission", data )
                 callback.onPermissionWaiting()
 
+//                socket.off("denied")
+                socket.off("permit?")
+
             }
 
             var temp=0;
 
             socket.on("all users", Emitter.Listener { args: Array<Any>? ->
 
+                socket.off("allowed")
+                socket.off("denied")
+
+                callback.hidefragment()
+                ListenOnCallEvents()
                 Log.d(TAG, "data= ${Arrays.toString(args)} socket id= ${socket.id()}")
                 var x= args!![0].toString()
                 val array = JSONArray(x)
@@ -118,79 +139,20 @@ class SignalingClient() {
             })
             socket.on("allowed"){
                 Log.d(TAG,"allowed $rname")
-//              val data = JSONObject("""{"room":"$rname"}""")
-                val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
-
-//                 room_code= "Prianshu Prasad_vv_583149515846757_1677173321"
-//              val data = JoinRoom("Prianshu Prasad_vv_583149515846757_1677173321",sgcUser,"rpinformationhub@gmail.com").getJson()
-                val data = JoinRoom(rname,sgcUser,profile.email).getJson()
-                callback.hidefragment()
-                Log.d(TAG,"join room = ${data}")
-                socket.emit("join room", data )
-
-            }
-            socket.on("new-ice-candidate"){
-
                 val sgcUser= SGCUser(profile.id,profile.name,profile.email,profile.channelName,profile.profilePicture)
                 val data = JoinRoom(rname,sgcUser,profile.email).getJson()
-                callback.hidefragment()
+
                 Log.d(TAG,"join room = ${data}")
-
                 socket.emit("join room", data )
-
-                Log.d(TAG,"ice candidate recived")
-                val json= JSONObject(it!![0].toString())
-
-                Log.d(TAG,"ice candidate recived = $json")
-                callback.onIceCandidateReceived(json)
+                socket.off("allowed")
+                socket.off("denied")
 
             }
 
-            socket.on("offer"){
-                val json= JSONObject(it!![0].toString())
-
-                if( json.get("type").toString()== "ans"){
-                    Log.d(TAG,"ans recived = $json")
-                    callback.onAnswerReceived(json)
-                }else{
-                Log.d(TAG,"offer recived = $json")
-                callback.onOfferReceived(json)
-                }
-            }
-
-            socket.on("mic"){
-                val json= JSONObject(it!![0].toString())
-                Log.d(TAG,"mic = $json")
-                callback.onCallerMicrophoneSwitch(json)
-            }
-
-            socket.on("camera"){
-                val json= JSONObject(it!![0].toString())
-                Log.d(TAG,"camera = $json")
-                callback.onCallerVideoSwitch(json)
-            }
-
-            socket.on("hand"){
-                val json= JSONObject(it!![0].toString())
-                Log.d(TAG,"hand = $json")
-                callback.onCallerHandSwitch(json)
-            }
-
-            socket.on("screen"){
-                val json= JSONObject(it!![0].toString())
-                Log.d(TAG,"screen = $json")
-                callback.onCallerScreenShare(json)
-            }
             socket.on("permit?"){
                 val json= JSONObject(it!![0].toString())
                 Log.d("permt?",json.toString())
                 callback.onJoinPermission(json,socket)
-            }
-            socket.on("user left"){
-                val json= JSONObject(it!![0].toString())
-                Log.d("leave",json.toString())
-                callback.onPeerLeave(json.optString("id"))
-
             }
 
 
@@ -203,6 +165,71 @@ class SignalingClient() {
         } catch (e: KeyManagementException) {
             throw RuntimeException(e)
         }
+    }
+
+    fun ListenOnCallEvents(){
+
+        socket.on("new-ice-candidate"){
+
+            val sgcUser= profile?.id?.let { it1 -> SGCUser(it1,profile!!.name,profile!!.email,profile!!.channelName,profile!!.profilePicture) }
+            val data = sgcUser?.let { it1 -> JoinRoom(rname, it1,profile!!.email).getJson() }
+//            callback.hidefragment()
+            Log.d(TAG,"join room = ${data}")
+
+            socket.emit("join room", data )
+
+            Log.d(TAG,"ice candidate recived")
+            val json= JSONObject(it!![0].toString())
+
+            Log.d(TAG,"ice candidate recived = $json")
+            callback.onIceCandidateReceived(json)
+
+        }
+
+        socket.on("offer"){
+            val json= JSONObject(it!![0].toString())
+            
+            if( json.get("type").toString()== "ans"){
+                Log.d(TAG,"ans recived = $json")
+                callback.onAnswerReceived(json)
+            }
+            else{
+                Log.d(TAG,"offer recived = $json")
+                callback.onOfferReceived(json)
+            }
+        }
+
+        socket.on("mic"){
+            val json= JSONObject(it!![0].toString())
+            Log.d(TAG,"mic = $json")
+            callback.onCallerMicrophoneSwitch(json)
+        }
+
+        socket.on("camera"){
+            val json= JSONObject(it!![0].toString())
+            Log.d(TAG,"camera = $json")
+            callback.onCallerVideoSwitch(json)
+        }
+
+        socket.on("hand"){
+            val json= JSONObject(it!![0].toString())
+            Log.d(TAG,"hand = $json")
+            callback.onCallerHandSwitch(json)
+        }
+
+        socket.on("screen"){
+            val json= JSONObject(it!![0].toString())
+            Log.d(TAG,"screen = $json")
+            callback.onCallerScreenShare(json)
+        }
+
+        socket.on("user left"){
+            val json= JSONObject(it!![0].toString())
+            Log.d("leave",json.toString())
+            callback.onPeerLeave(json.optString("id"))
+
+        }
+
     }
 
     fun destroy() {

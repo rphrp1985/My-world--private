@@ -129,6 +129,8 @@ buildscript {
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
         classpath 'com.jakewharton:butterknife-gradle-plugin:10.1.0'
         classpath 'com.amplifyframework:amplify-tools-gradle-plugin:1.0.2'
+        classpath 'com.squareup.retrofit2:converter-scalars:2.9.0'
+
     }
 }
 

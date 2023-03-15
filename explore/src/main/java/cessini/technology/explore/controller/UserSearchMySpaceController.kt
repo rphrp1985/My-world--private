@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import cessini.technology.commonui.utils.Constant
 //import cessini.technology.commonui.fragment.suggestion.categories
 import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
 import cessini.technology.cvo.exploremodels.CategoryModel
@@ -106,7 +107,7 @@ class   UserSearchMySpaceController(
                 if (room.categories.isNotEmpty()) {
                     val category = StringBuilder()
                     room.categories.forEach {
-                        category.append(categories[it.toInt()] + "#")
+                        category.append("$it#")
                     }
                     val fh = category.indexOf("#")
                     val sh = category.indexOf("#", fh + 1)
@@ -127,7 +128,9 @@ class   UserSearchMySpaceController(
                 onClick { _ ->
                     if(room.live)
                     {
-                        fragment.findNavController().navigate(ExploreSearchFragmentDirections.actionExploreSearchFragmentToLiveFragment("Trending Rooms",""))
+
+                        Constant.home_fragment_live= false
+                        fragment.findNavController().navigate(ExploreSearchFragmentDirections.actionExploreSearchFragmentToLiveFragment())
                     }
                     else {
                         (activity as ToFlowNavigable).navigateToFlow(

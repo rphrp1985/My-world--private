@@ -3,6 +3,7 @@ package cessini.technology.newapi.services.myspace.model.response
 import com.google.gson.annotations.SerializedName
 
 data class ApiRoomRequests(
+
     val data: List<RoomRequestData> = emptyList(),
 )
 

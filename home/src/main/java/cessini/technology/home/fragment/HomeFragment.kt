@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -17,7 +18,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.PagerSnapHelper
+import androidx.recyclerview.widget.RecyclerView
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.activity.live.SignalingClient
 import cessini.technology.commonui.activity.live.SocketEventCallback
@@ -25,6 +28,7 @@ import cessini.technology.commonui.activity.live.signallingserverData.JoinRoom
 import cessini.technology.commonui.activity.live.signallingserverData.SGCUser
 import cessini.technology.commonui.common.BaseFragment
 import cessini.technology.commonui.common.isInDarkTheme
+import cessini.technology.commonui.utils.Constant
 import cessini.technology.commonui.utils.ProfileConstants
 import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
 import cessini.technology.home.R
@@ -46,6 +50,7 @@ import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.newrepository.video.VideoRepository
 import cessini.technology.newrepository.websocket.video.VideoViewUpdaterWebSocket
+import com.airbnb.epoxy.EpoxyRecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -53,12 +58,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import javax.inject.Inject
 
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_fragment),
     LifecycleObserver,
@@ -93,12 +92,15 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
     private val roomWaitingFragment = RoomWaitingFragment()
 
     private val homeFeedViewModel: HomeFeedViewModel by viewModels()
-    private val socketFeedViewModel: SocketFeedViewModel by viewModels()
+    private val socketFeedViewModel: SocketFeedViewModel by activityViewModels()
+    var mode= true
+    var recyclerView: EpoxyRecyclerView?= null
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "CREATED")
+
         authPreferences = AuthPreferences(requireContext())
         userIdentifierPreferences = UserIdentifierPreferences(requireContext(), authPreferences)
 
@@ -113,7 +115,11 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
                 profile = it
             }
         }
-        if(socketFeedViewModel.controller==null) {
+
+        mode= Constant.home_fragment_live
+        recyclerView= binding.recyclerView
+
+        if(socketFeedViewModel.controller==null && mode ) {
             socketFeedViewModel.controller = HomeEpoxyController(
                 context = requireContext(),
                 onJoinClicked = { joinRoomSocketEventPayload ->
@@ -137,15 +143,44 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             )
         }
 
+        if( !mode ) {
+            socketFeedViewModel.controllerSuggestion = HomeEpoxyController(
+                context = requireContext(),
+                onJoinClicked = { joinRoomSocketEventPayload ->
+                    if (!isUserSignedIn)
+                        showSignInBottomSheet()
+                    else {
+                        joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload),joinRoomSocketEventPayload.room)
+                    }
+                },
+                checkSignInStatus = {
+                    if (!isUserSignedIn) {
+                        showSignInBottomSheet()
+                        false
+                    } else true
+                },
+                canLoadMore = socketFeedViewModel.canLoadMore,
+
+                warningFunction =  {
+                    onCanNotJoin()
+                }
+            )
+        }
+
+
+
 
         homeFeedViewModel.isUserSignedIn()
-        binding.recyclerView.setController(socketFeedViewModel.controller!!)
         val snapHelper = PagerSnapHelper()
         snapHelper.attachToRecyclerView(binding.recyclerView)
 
 
 
-        showLoader()
+        if(mode) {
+            showLoader()
+
+            binding.recyclerView.setController(socketFeedViewModel.controller!!)
+        }
 
         homeFeedViewModel.authFlag.observe(viewLifecycleOwner, Observer { isSignedIn->
             var temp = ""
@@ -161,21 +196,46 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             if(temp!=socketFeedViewModel.userID) {
 
                 socketFeedViewModel.userID= temp
-                socketFeedViewModel.setPaging(
-                    userIdentifierPreferences.uuid)
+                if(mode) {
+                    socketFeedViewModel.setPaging(userIdentifierPreferences.uuid)
+                    requireActivity().runOnUiThread {
 
-                requireActivity().runOnUiThread {
-                    setupEpoxy()
+                        setupEpoxy()
+
+                    }
+                }else {
+                    socketFeedViewModel.setPagingSuggestion()
+                    Toast.makeText(context,"suggestion created",Toast.LENGTH_LONG).show()
+
+                    requireActivity().runOnUiThread {
+
+                        setupEpoxySuggestion()
+
+                    }
+
                 }
+
+//                requireActivity().runOnUiThread {
+////                    Handler().postDelayed(
+////                        {
+//                            setupEpoxy()
+////                        },1000
+////                    )
+//
+////                    setupEpoxySuggestion()
+//                }
 
             }else
             {
                 binding.recyclerView.adapter = socketFeedViewModel.controller!!.adapter
             }
 
+
             return@Observer
 
         })
+
+        setup()
 
         if(!canSendJoinReq){
             showFrag()
@@ -270,21 +330,21 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
 
-        val DUMMY_HLS_FEED_LINK = "http://amssamples.streaming.mediaservices.windows.net/69fbaeba-8e92-4740-aedc-ce09ae945073/AzurePromo.ism/manifest(format=m3u8-aapl)"
-        val DUMMY_DATA = HomeEpoxyStreamsModel(
-            link = DUMMY_HLS_FEED_LINK,
-            title = "Nothing to display in feeds!",
-            room = "",
-            admin = "MyWorld",
-            user = User(
-                channelName = "",
-                email = "",
-                id = "",
-                name = "",
-                profilePicture = ""
-            ),
-            email = ""
-        )
+//        val DUMMY_HLS_FEED_LINK = "http://amssamples.streaming.mediaservices.windows.net/69fbaeba-8e92-4740-aedc-ce09ae945073/AzurePromo.ism/manifest(format=m3u8-aapl)"
+//        val DUMMY_DATA = HomeEpoxyStreamsModel(
+//            link = DUMMY_HLS_FEED_LINK,
+//            title = "Nothing to display in feeds!",
+//            room = "",
+//            admin = "MyWorld",
+//            user = User(
+//                channelName = "",
+//                email = "",
+//                id = "",
+//                name = "",
+//                profilePicture = ""
+//            ),
+//            email = ""
+//        )
 
 
 //        socketFeedViewModel.homeFeeds.observe(viewLifecycleOwner, Observer { homeFeedSocketResponse->
@@ -332,10 +392,27 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 //        }
 
 
+        binding.backButton.setOnClickListener {
+            (activity)?.onBackPressed()
+        }
 
         systemBarInsetsEnabled = false
 
 //        setUpNavIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_homeactive))
+    }
+
+    override fun onDestroyView() {
+
+
+//        if(!mode)
+
+
+        super.onDestroyView()
+    }
+
+    override fun onDestroy() {
+        Constant.home_fragment_live= true
+        super.onDestroy()
     }
 
     fun setupEpoxy(){
@@ -345,16 +422,38 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
             Log.d(TAG, "fetch page = $list")
 
-            if(list.size>0) {
+            if(recyclerView!=null) {
                 socketFeedViewModel.controller!!.submitList(list)
-                if(binding.recyclerView.adapter!=socketFeedViewModel.controller!!.adapter)
-                binding.recyclerView.adapter= socketFeedViewModel.controller!!.adapter
+                if(recyclerView?.adapter!=socketFeedViewModel.controller!!.adapter)
+                recyclerView?.adapter= socketFeedViewModel.controller!!.adapter
 
             }
 
         }, { error ->
             Log.e(TAG, "error: ${error}")
         })
+        }catch (e:Exception){}
+
+
+
+    }
+    fun setupEpoxySuggestion(){
+
+        try{
+            socketFeedViewModel.fetchPagesSuggestion({ list ->
+
+                Log.d(TAG, "fetch page = $list")
+
+                if(recyclerView!=null) {
+                    socketFeedViewModel.controllerSuggestion!!.submitList(list)
+                    if(recyclerView?.adapter!=socketFeedViewModel.controllerSuggestion!!.adapter)
+                        recyclerView?.adapter= socketFeedViewModel.controllerSuggestion!!.adapter
+
+                }
+
+            }, { error ->
+                Log.e(TAG, "error: ${error}")
+            })
         }catch (e:Exception){}
 
 
@@ -368,6 +467,8 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             }
         }
     }
+
+
 
 
 
@@ -485,6 +586,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             galleryViewModel.setStoryPos(0)
         }
 
+
         ProfileConstants.story = false
 
 
@@ -595,6 +697,8 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         }
     }
 
+
+
     /**Function to Stop the Shimmer effect.*/
 //    private fun hideShimmer() {
 //        binding.homeFeedShimmer.visibility = View.GONE
@@ -632,6 +736,28 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 //        super.onStop()
 //        blurLayout.pauseBlur()
 //    }
+
+    fun setup(){
+
+//        Toast.makeText(context,"user ID = ${socketFeedViewModel.userID}",Toast.LENGTH_LONG).show()
+        if(!Constant.home_fragment_live){
+//            Constant.home_fragment_live= true
+            (activity as HomeActivity).binding.bottomNavigation.visibility = View.GONE
+            binding.translucentBackground.visibility= View.GONE
+            binding.backButton.visibility=View.VISIBLE
+//            socketFeedViewModel.setPagingSuggestion()
+//            setupEpoxySuggestion()
+
+        }else
+        {
+            (activity as HomeActivity).binding.bottomNavigation.visibility = View.VISIBLE
+            binding.translucentBackground.visibility= View.VISIBLE
+            binding.backButton.visibility=View.GONE
+
+        }
+    }
+
+
 
 
 

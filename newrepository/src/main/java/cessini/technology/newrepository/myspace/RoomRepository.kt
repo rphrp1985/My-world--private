@@ -2,15 +2,13 @@ package cessini.technology.newrepository.myspace
 
 import cessini.technology.model.RequestProfile
 import cessini.technology.model.Room
-import cessini.technology.model.Subcategory
 import cessini.technology.model.UserUpiData
 import cessini.technology.model.search.UserLikes
 import cessini.technology.newapi.extensions.getOrThrow
-import cessini.technology.newapi.services.explore.model.body.TokenBody
 import cessini.technology.newapi.services.myspace.MySpaceService
+import cessini.technology.newapi.services.myspace.RoomSocket
 import cessini.technology.newapi.services.myspace.model.body.AcceptRoomRequestBody
 import cessini.technology.newapi.services.myspace.model.body.RoomBody
-import cessini.technology.newapi.services.myspace.model.body.RoomNameBody
 import cessini.technology.newapi.services.myspace.model.body.UserLikeBody
 import cessini.technology.newapi.services.myworld.MyWorldService
 import cessini.technology.newrepository.extensions.createMultipartBody
@@ -27,15 +25,16 @@ import javax.inject.Inject
 
 class RoomRepository @Inject constructor(
     private val roomApi: MySpaceService,
-    private val profileApi: MyWorldService
+    private val profileApi: MyWorldService,
+    private val Roomsocket: RoomSocket
     ) {
     suspend fun createRoom(
         title: String,
         time: Long,
         private: Boolean = false,
 
-        categories: List<Int>
-    ) = roomApi.createRoom(RoomBody(title=title, schedule = time, private = private, category = categories))
+        categories: MutableSet<String>
+    ) = roomApi.createRoom(RoomBody(title =title, schedule = time, private = private, category = categories))
         .getOrThrow().data.name
 
     suspend fun getRoom(name: String): Room =
@@ -62,6 +61,10 @@ class RoomRepository @Inject constructor(
 
        return "Error in sendsnapshot"
     }
+
+    suspend fun getStreamKey(room: String, email: String): Response<String> = Roomsocket.getKey(room,email).execute()
+
+
 
     suspend fun acceptRoomRequests(roomName: String, listenersid: List<String>) {
         roomApi.acceptRequest(AcceptRoomRequestBody(roomName, listenersid))

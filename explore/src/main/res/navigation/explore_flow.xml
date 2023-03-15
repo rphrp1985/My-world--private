@@ -33,13 +33,22 @@
 
     <fragment
         android:id="@+id/liveFragment"
-        android:name="cessini.technology.explore.LiveFragment"
+        android:name="cessini.technology.home.fragment.HomeFragment"
         android:label="LiveFragment" >
-        <argument
-            android:name="type"
-            app:argType="string" />
-        <argument
-            android:name="type1"
-            app:argType="string" />
+
+<!--        <argument-->
+<!--            android:name="@string/nav_arg_hide_bottom_nav"-->
+<!--            app:argType="boolean"-->
+<!--            android:defaultValue="true" />-->
+<!--        <argument-->
+<!--            android:name="@string/nav_arg_force_dark_status_bar"-->
+<!--            app:argType="boolean"-->
+<!--            android:defaultValue="true" />-->
+<!--        <argument-->
+<!--            android:name="type"-->
+<!--            app:argType="string" />-->
+<!--        <argument-->
+<!--            android:name="type1"-->
+<!--            app:argType="string" />-->
     </fragment>
 </navigation>

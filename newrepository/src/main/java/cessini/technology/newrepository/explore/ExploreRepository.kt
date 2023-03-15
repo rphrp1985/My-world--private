@@ -67,7 +67,7 @@ class ExploreRepository @Inject constructor(
 
                 val response = if (userIdentifierPreferences.loggedIn) {
                     //If user is Signed In (get data for signed in user)
-                    exploreService.explore(userIdentifierPreferences.id).toModel()
+                    exploreService.explore().toModel()
                 } else {
 
                     //If user is not Signed In (get data for not signed in user)

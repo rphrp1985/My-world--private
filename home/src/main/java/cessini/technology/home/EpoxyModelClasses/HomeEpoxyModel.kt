@@ -30,7 +30,7 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
     private var playWhenReady=false
 
     @EpoxyAttribute
-    lateinit var link:String
+    var link:String?=null
 
     @EpoxyAttribute
     lateinit var title:String
@@ -138,6 +138,9 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
         screen.player = player
         val defaultBandwidthMeter=DefaultBandwidthMeter()
         val dataSourceFactory=DefaultDataSourceFactory(context,Util.getUserAgent(context,"Exo2"),defaultBandwidthMeter)
+
+        if(link==null)
+            return
         val uri= Uri.parse(link)
         val mediaSource=HlsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
         player.prepare(mediaSource)

@@ -12,6 +12,7 @@ import cessini.technology.commonui.common.navigateToProfile
 import cessini.technology.commonui.common.toast
 import cessini.technology.commonui.utils.Constant.Companion.settingBottomSheetHeight
 import cessini.technology.commonui.viewmodel.BaseViewModel
+import cessini.technology.model.CreateRoomRequest
 import cessini.technology.model.RequestProfile
 import cessini.technology.model.Room
 import cessini.technology.myspace.access.MySpaceFragmentViewModel
@@ -103,11 +104,8 @@ internal class ManageRoomFragment :
 
         observeMySpaceFragment()
 
-
-
-
-        runCatching { fetchRooms() }
-        runCatching { fetchRoomMessages() }
+//        runCatching { fetchRooms() }
+//        runCatching { fetchRoomMessages() }
 
 
 // mSocket.on("get-messages-response"){
@@ -159,8 +157,8 @@ internal class ManageRoomFragment :
     }
 
     private fun manageRoomDetails(){
-        binding.viewPager2.visibility = View.VISIBLE
-        binding.viewPager2.isSaveEnabled = false
+//        binding.viewPager2.visibility = View.VISIBLE
+//        binding.viewPager2.isSaveEnabled = false
 //        binding.viewPager2.adapter = ManageRoomAdapter(this.childFragmentManager, lifecycle)
 //        TabLayoutMediator(tabLayout!!, binding.viewPager2) { tab, position ->
 //            when (position) {
@@ -220,7 +218,7 @@ internal class ManageRoomFragment :
     }
 
     private fun fetchRoomMessages() {
-        Log.e(TAG, "Inside fetchRoomMessages()")
+//        Log.e(TAG, "Inside fetchRoomMessages()")
 // val messageDeffered = viewLifecycleOwner.lifecycleScope.async {
 // Log.e(TAG,"fetchRoomMessages: ${profileRepository.getMessageForRoom() }")
 //
@@ -230,8 +228,8 @@ internal class ManageRoomFragment :
 // }
 // viewLifecycleOwner.lifecycleScope.launch {
 // val messages = messageDeffered.await()
-
-// buildMessageModel(messages)
+//
+//// buildMessageModel(messages)
 // }
     }
 
@@ -252,7 +250,7 @@ internal class ManageRoomFragment :
 // }
 // }
 // }
-
+//
 // private fun buildMessageListModel(messages: List<UserRoomMessageList>) {
 // binding.newepoxy.withModels {
 // messages.forEach { userRoomMessageList ->

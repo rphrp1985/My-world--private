@@ -9,12 +9,14 @@ import android.net.Uri
 import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cessini.technology.newapi.extensions.getOrThrow
 import cessini.technology.newrepository.myspace.RoomRepository
 import com.amazonaws.util.IOUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import okhttp3.Response
+import okhttp3.ResponseBody
 import org.webrtc.*
 import java.io.File
 import java.io.FileNotFoundException
@@ -89,6 +91,7 @@ class HubViewModel @Inject constructor(
      var mediaStream: MediaStream?= null
     var rname="RoomLive"
     var user_id="user"
+    var stream_key=""
 
 
 
@@ -157,7 +160,6 @@ class HubViewModel @Inject constructor(
         } else {
         }
     }
-
 
     fun sendSnapshot(room:String,file: File){
         viewModelScope.launch {
@@ -254,6 +256,15 @@ class HubViewModel @Inject constructor(
         canvas.drawBitmap(top, 0f, 0f, null)
         canvas.drawBitmap(bottom, 0f, top.height.toFloat(), null)
         return combined
+    }
+
+
+    suspend fun getStreamKey(room: String, email: String): String? {
+     val x= roomRepository.getStreamKey(room,email).body()
+//    Log.d("HUBVM","res = ${}")
+
+        return x
+
     }
 
 

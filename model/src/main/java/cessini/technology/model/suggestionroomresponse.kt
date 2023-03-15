@@ -33,7 +33,8 @@ data class RoomResponse(
     @SerializedName("sdpMid"        ) var sdpMid        : String?              = null,
     @SerializedName("serverUrl"     ) var serverUrl     : String?              = null,
     @SerializedName("start_time"    ) var startTime     : String?              = null,
-    @SerializedName("category"      ) var category      : ArrayList<String>?= null
+    @SerializedName("category"      ) var category      : ArrayList<String>?= null,
+    @SerializedName("thumbnail") var thumbnail:String?= null
 
 )
 

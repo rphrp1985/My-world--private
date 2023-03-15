@@ -3,7 +3,8 @@ package cessini.technology.model
 data class roomInfo(
     val title:String,
     val roomCode: String?,
-    val datas :MutableList<RoomUsers>
+    val datas :MutableList<RoomUsers>,
+    var thumbnail:String?= null
 )
 
 data class RoomUsers(

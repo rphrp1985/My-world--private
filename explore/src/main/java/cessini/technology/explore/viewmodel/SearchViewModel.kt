@@ -299,9 +299,12 @@ class SearchViewModel @Inject constructor(
     private fun addSuggestedRooms() {
         suggestedroomresponse.value = mutableListOf()
         roomMessage.value?.let {
-            if (it.TrendingTechnology.size > 0) {
-                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.HealthFitness)
 
+            Log.d(TAG,"trending room size = ${it.TrendingTechnology.size}")
+
+            if (it.TrendingTechnology.size > 0) {
+                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.TrendingTechnology)
+//                suggestedroomresponse.value=  SuggestionCategoryRooms("Trending Technology", catrooms)
                 suggestedroomresponse.value.let {
                     if (it == null) {
                         Log.d("Hemlo", "fails here")
@@ -312,47 +315,50 @@ class SearchViewModel @Inject constructor(
                 }
 
             }
-            if (it.TrendingNews.size > 0) {
-                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.TrendingNews)
-
-                suggestedroomresponse.value.let {
-                    if (it == null) {
-                        Log.d("Hemlo", "fails here")
-                    } else {
-                        Log.d("Hemlo", "not failing")
-                        it.add(SuggestionCategoryRooms("Trending News", catrooms))
-                    }
-                }
-
-            }
-            if (it.HealthFitness.size > 0) {
-                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.HealthFitness)
-
-                suggestedroomresponse.value.let {
-                    if (it == null) {
-                        Log.d("Hemlo", "fails here")
-                    } else {
-                        Log.d("Hemlo", "not failing")
-                        it.add(SuggestionCategoryRooms("Health & Fitness", catrooms))
-                    }
-                }
-
-            }
-            if (it.Knowledgecarrers.size > 0) {
-                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.Knowledgecarrers)
-
-                suggestedroomresponse.value.let {
-                    if (it == null) {
-                        Log.d("Hemlo", "fails here")
-                    } else {
-                        Log.d("Hemlo", "not failing")
-                        it.add(SuggestionCategoryRooms("Knowldege and Carrers", catrooms))
-                    }
-                }
-
-            }
+            Log.d(TAG,"suggested room size = ${suggestedroomresponse.value}")
+//            if (it.TrendingNews.size > 0) {
+//                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.TrendingNews)
+//
+//                suggestedroomresponse.value.let {
+//                    if (it == null) {
+//                        Log.d("Hemlo", "fails here")
+//                    } else {
+//                        Log.d("Hemlo", "not failing")
+//                        it.add(SuggestionCategoryRooms("Trending News", catrooms))
+//                    }
+//                }
+//
+//            }
+//            if (it.HealthFitness.size > 0) {
+//                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.HealthFitness)
+//
+//                suggestedroomresponse.value.let {
+//                    if (it == null) {
+//                        Log.d("Hemlo", "fails here")
+//                    } else {
+//                        Log.d("Hemlo", "not failing")
+//                        it.add(SuggestionCategoryRooms("Health & Fitness", catrooms))
+//                    }
+//                }
+//
+//            }
+//            if (it.Knowledgecarrers.size > 0) {
+//                val catrooms: MutableList<roomInfo> = getSuggestionInfo(it.Knowledgecarrers)
+//
+//                suggestedroomresponse.value.let {
+//                    if (it == null) {
+//                        Log.d("Hemlo", "fails here")
+//                    } else {
+//                        Log.d("Hemlo", "not failing")
+//                        it.add(SuggestionCategoryRooms("Knowldege and Carrers", catrooms))
+//                    }
+//                }
+//
+//            }
 
             allCategory.value?.categoryRooms = suggestedroomresponse.value!!
+//            allCategory.value= allCategory.value
+
         }
     }
 
@@ -371,18 +377,19 @@ class SearchViewModel @Inject constructor(
                     )
                 )
             }
-            room.listeners.forEach { list ->
-                currList.add(
-                    RoomUsers(
-                        list.Id,
-                        room.title,
-                        list.name,
-                        list.profilePicture,
-                        list.channelName
-                    )
-                )
-            }
-            catrooms.add(roomInfo(room.title, room.roomCode, currList))
+            //TODO Uncomment these lines
+//            room.listeners?.forEach { list ->
+//                currList.add(
+//                    RoomUsers(
+//                        list.Id,
+//                        room.title,
+//                        list.name,
+//                        list.profilePicture,
+//                        list.channelName
+//                    )
+//                )
+//            }
+            catrooms.add(roomInfo(room.title, room.roomCode, currList,room.thumbnail))
 
         }
         return catrooms

@@ -1,14 +1,14 @@
 package cessine.technology.app.di
 
-import android.content.Context
+//import dagger.hilt.internal.aggregatedroot.codegen._cessine_technology_app_MainApplication
 import cessini.technology.newapi.interceptors.AuthInterceptor
-import cessini.technology.newapi.preferences.AuthPreferences
 import cessini.technology.newapi.services.explore.ExploreConstants
 import cessini.technology.newapi.services.explore.ExploreInfoService
 import cessini.technology.newapi.services.explore.ExploreRecordService
 import cessini.technology.newapi.services.explore.ExploreService
 import cessini.technology.newapi.services.myspace.MySpaceConstants
 import cessini.technology.newapi.services.myspace.MySpaceService
+import cessini.technology.newapi.services.myspace.RoomSocket
 import cessini.technology.newapi.services.myworld.MyWorldConstants
 import cessini.technology.newapi.services.myworld.MyWorldService
 import cessini.technology.newapi.services.story.StoryConstants
@@ -19,19 +19,19 @@ import cessini.technology.newapi.services.timeline_room.RoomConstants
 import cessini.technology.newapi.services.timeline_room.RoomTimelineService
 import cessini.technology.newapi.services.video.VideoConstants
 import cessini.technology.newapi.services.video.VideoService
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-//import dagger.hilt.internal.aggregatedroot.codegen._cessine_technology_app_MainApplication
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import javax.inject.Singleton
 import javax.net.ssl.*
 
@@ -70,7 +70,7 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideExploreApi(
-        retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
+        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient,
     ): ExploreService = retrofit
         .baseUrl(ExploreConstants.BASE_ENDPOINT)
         .client(okHttpClient)
@@ -80,7 +80,7 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideExploreInfoApi(
-        retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
+        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient,
     ): ExploreInfoService = retrofit
         .client(okHttpClient)
         .baseUrl(ExploreConstants.BASE_ENDPOINT_INFO)
@@ -90,7 +90,7 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideExploreRecordApi(
-        retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
+        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient,
     ): ExploreRecordService=retrofit
         .client(okHttpClient)
         .baseUrl(ExploreConstants.BASE_ENDPOINT_RECORDED)
@@ -100,7 +100,7 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideMySpaceApi(
-        retrofit: Retrofit.Builder,okHttpClient: OkHttpClient
+        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient,
     ): MySpaceService = retrofit
         .baseUrl(MySpaceConstants.BASE_ENDPOINT)
         .client(okHttpClient)
@@ -113,7 +113,7 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideMyWorldApi(
-        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient
+        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient,
     ): MyWorldService {
         return retrofit
             .baseUrl(MyWorldConstants.BASE_ENDPOINT)
@@ -124,7 +124,8 @@ object ApiModule {
 
     @Provides
     @Singleton
-    fun provideRoomTimelineApi( okHttpClient: OkHttpClient
+    fun provideRoomTimelineApi(
+        okHttpClient: OkHttpClient,
     ): RoomTimelineService {
         return Retrofit.Builder().baseUrl(RoomConstants.ROOM_TIMELINE_BASE_ENDPOINT)
             .addConverterFactory(GsonConverterFactory.create())
@@ -144,11 +145,29 @@ object ApiModule {
     @Provides
     @Singleton
     fun provideLiveRoomApi(
-        retrofit: Retrofit.Builder,
+        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient,
     ): LiveRoomService = retrofit
         .baseUrl(RoomConstants.LIVE_ROOM_BASE_ENDPOINT)
+        .client(okHttpClient)
         .build()
         .create(LiveRoomService::class.java)
+
+
+    var gson: Gson = GsonBuilder()
+        .setLenient()
+        .create()
+    @Provides
+    @Singleton
+    fun provideSocketRoomApi(
+        retrofit: Retrofit.Builder, okHttpClient: OkHttpClient,
+    ): RoomSocket = retrofit
+        .baseUrl(RoomConstants.SOCKET_ROOM_BASE_ENDPOINT)
+        .client(okHttpClient)
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .addConverterFactory(GsonConverterFactory.create(gson))
+        .build()
+        .create(RoomSocket::class.java)
+
 
 
     @Provides
@@ -191,3 +210,4 @@ object ApiModule {
         return okhttpclient
     }
 }
+

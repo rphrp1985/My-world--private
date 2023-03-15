@@ -28,7 +28,7 @@ class ExplorePagination constructor(
                         nextKey = null
                     )
                 }else{
-                    val response = exploreService.explore(userIdentifierPreferences.uuid).toModel().liveRooms
+                    val response = exploreService.explore().toModel().liveRooms
                     //val response = exploreService.explore("asdf").toModel().liveRooms
                     LoadResult.Page(
                         data = response,

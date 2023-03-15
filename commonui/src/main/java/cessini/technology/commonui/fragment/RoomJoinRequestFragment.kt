@@ -43,23 +43,23 @@ class RoomJoinRequestFragment(val listner:GridActivity) : Fragment() {
                 .into(binding.profileImage);
         }catch (e:Exception){}
 
-        binding.answerButton.setOnClickListener {
-            val jo = JSONObject()
-            jo.put("allowed",true)
-            jo.put("id",idI)
-            Log.d("RoomJoin","answere =$jo")
-            socketI.emit("permit status",jo)
-            listner.hidefragment()
-        }
-
-        binding.declineButton.setOnClickListener {
-            val jo = JSONObject()
-            jo.put("allowed",false)
-            jo.put("id",idI)
-            Log.d("RoomJoin","decline =$jo")
-            socketI.emit("permit status",jo)
-            listner.hidefragment()
-        }
+//        binding.answerButton.setOnClickListener {
+//            val jo = JSONObject()
+//            jo.put("allowed",true)
+//            jo.put("id",idI)
+//            Log.d("RoomJoin","answere =$jo")
+//            socketI.emit("permit status",jo)
+//            listner.hidefragment()
+//        }
+//
+//        binding.declineButton.setOnClickListener {
+//            val jo = JSONObject()
+//            jo.put("allowed",false)
+//            jo.put("id",idI)
+//            Log.d("RoomJoin","decline =$jo")
+//            socketI.emit("permit status",jo)
+//            listner.hidefragment()
+//        }
 
 
 

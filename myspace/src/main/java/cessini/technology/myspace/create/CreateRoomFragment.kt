@@ -1,19 +1,16 @@
 package cessini.technology.myspace.create
 
-import android.Manifest
 import android.app.Dialog
 import android.content.Context.MODE_PRIVATE
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -76,7 +73,6 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
                 bottomSheet.show(parentFragmentManager,bottomSheet.tag)
             }
             button2.setOnClickListener{
-
                 button2.isSelected = !button2.isSelected
                 if(it.isSelected) {
                     it.setBackground(resources.getDrawable(R.drawable.button_golive))
@@ -150,10 +146,9 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
                     } else {
 
 
-                        binding.btnNext.visibility= View.GONE
-                        binding.permissionProgress.visibility= View.VISIBLE
 
-                        roomSharedViewModel.createInstantRoom()
+
+                        roomSharedViewModel.createInstantRoom(binding)
 
 
                     }

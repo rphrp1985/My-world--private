@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.paging.PageKeyedDataSource
 import cessini.technology.home.webSockets.model.DataResponse
 import cessini.technology.home.webSockets.model.HomeFeedSocketPayload
+import cessini.technology.home.webSockets.model.HomeFeedSocketPayloadSuggestion
 import cessini.technology.home.webSockets.model.HomeFeedSocketResponse
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -40,12 +41,18 @@ class HomeFeedWebSocket(private val block : (HomeFeedSocketResponse)->Unit) {
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 Log.d(TAG, "onClosed: +$reason")
             }
+
         }
     )
 
     fun send(homeFeedSocketPayload: HomeFeedSocketPayload) {
         homeFeedSocket.send(Gson().toJson(homeFeedSocketPayload))
     }
+
+    fun sendSuggestion(homeFeedSocketPayloadSuggestion: HomeFeedSocketPayloadSuggestion) {
+        homeFeedSocket.send(Gson().toJson(homeFeedSocketPayloadSuggestion))
+    }
+
 
     fun close(reason:String) {
         homeFeedSocket.close(CLOSE_STATUS, reason)
@@ -54,6 +61,14 @@ class HomeFeedWebSocket(private val block : (HomeFeedSocketResponse)->Unit) {
     fun sendInitial(homeFeedSocketPayload: HomeFeedSocketPayload, callback: PageKeyedDataSource.LoadInitialCallback<Int, DataResponse>) {
         homeFeedSocket.send(Gson().toJson(homeFeedSocketPayload))
     }
+
+    fun sendInitialSuggestion(homeFeedSocketPayload: HomeFeedSocketPayloadSuggestion, callback: PageKeyedDataSource.LoadInitialCallback<Int, DataResponse>) {
+        homeFeedSocket.send(Gson().toJson(homeFeedSocketPayload))
+    }
+
+//    fun sendSuggestion(homeFeedSocketPayloadSuggestion: HomeFeedSocketPayloadSuggestion) {
+//
+//    }
 
 
 }

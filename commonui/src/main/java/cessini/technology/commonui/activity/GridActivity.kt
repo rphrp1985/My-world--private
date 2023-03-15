@@ -4,51 +4,52 @@ package cessini.technology.commonui.activity
 import android.Manifest
 import android.annotation.TargetApi
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Color
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.os.Handler
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cessini.technology.commonui.R
+//import cessini.technology.commonui.R2.id.room_join_framelayout2
 import cessini.technology.commonui.activity.live.PeerConnectionAdapter
 import cessini.technology.commonui.activity.live.SdpAdapter
 import cessini.technology.commonui.activity.live.SignalingClient
 import cessini.technology.commonui.activity.services.screen_share.MediaProjectionService
 import cessini.technology.commonui.adapter.RecAdapter
 import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
-import cessini.technology.commonui.fragment.RoomJoinRequestFragment
-import cessini.technology.commonui.fragment.RoomJoinWaiting
+//import cessini.technology.commonui.fragment.RoomJoinRequestFragment
+//import cessini.technology.commonui.fragment.RoomJoinWaiting
 import cessini.technology.commonui.fragment.commonChat.CommonChatFragment
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatPayload
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatViewModel
 import cessini.technology.model.Profile
 import cessini.technology.newapi.services.commonChat.CommonChatSocketHandler
+import cessini.technology.newapi.services.myspace.RoomSocket
 import cessini.technology.newrepository.myworld.ProfileRepository
 import com.airbnb.epoxy.EpoxyRecyclerView
 import com.amazonaws.ClientConfiguration
@@ -64,6 +65,9 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3Client
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
@@ -72,7 +76,6 @@ import com.google.gson.JsonObject
 import dagger.hilt.android.AndroidEntryPoint
 import io.socket.client.Socket
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -80,9 +83,6 @@ import org.slf4j.helpers.Util.report
 import org.webrtc.*
 import org.webrtc.PeerConnectionFactory.InitializationOptions
 import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 
@@ -96,6 +96,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
 
     @Inject
+    lateinit var roomScoket: RoomSocket
+
+    @Inject
     lateinit var credentials: BasicAWSCredentials
 
     @Inject
@@ -107,8 +110,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     private var mMediaProjectionPermissionResultData: Intent? = null
     private var mMediaProjectionPermissionResultCode = 0
-    private var requestjoinfrag= RoomJoinRequestFragment(this)
-    private var joinwaitingfrag = RoomJoinWaiting()
+
 
     val KEY = true
     var epoxyset=false;
@@ -177,19 +179,11 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         // Streaming video
         startService(Intent(baseContext, MediaProjectionService::class.java))
 
-
-        Handler().postDelayed({
-
-            val mediaProjectionService: MediaProjectionService? = MediaProjectionService.INSTANCE
-            if(mediaProjectionService!=null) {
-                val sendIntent = mediaProjectionService.sendIntent()
-
-                if (sendIntent != null) {
-                    startActivityForResult(sendIntent, hubViewModel.REQUEST_CODE_STREAM)
-                }
-            }
-
-        },3000)
+//        Handler().postDelayed({
+//
+//
+//
+//        },3000)
 
 
        screenShot.observe(this, androidx.lifecycle.Observer {
@@ -261,6 +255,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
                 if(isCreated)
                 createRoomLink()
+
+
+                    startStream(hubViewModel.rname,profile.email)
 
                 return@collectLatest
             }
@@ -346,37 +343,99 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     override fun onJoinPermission(data: JSONObject, socket: Socket) {
 
         runOnUiThread {
-            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout2)
-            layout.visibility = View.VISIBLE
-
             val useralias = data.getJSONObject("userAlias")
-            requestjoinfrag.showRequest(
-                useralias.optString("name"),
-                useralias.optString("profilePicture"), socket, data.optString("id") )
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.room_join_framelayout2, requestjoinfrag)
-                .commit()
+            val name = useralias.optString("name")
+            val profile = useralias.optString("profilePicture")
+            val id = data.optString("id")
+            val li = LayoutInflater.from(this@GridActivity)
+            val promptsView: View = li.inflate(R.layout.room_join_request, null)
+            val image: ImageView = promptsView.findViewById(R.id.profile_image)
+            val textView: TextView = promptsView.findViewById(R.id.caller_name)
+            val allow:Button = promptsView.findViewById(R.id.answer_button)
+            val decline : Button = promptsView.findViewById(R.id.decline_button)
+
+            textView.text = name
+
+            try {
+                Glide.with(this)
+                    .load(profile).centerCrop()
+                    .into(image);
+            } catch (e: Exception) {
+            }
+
+            val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this@GridActivity)
+
+            alertDialogBuilder.setView(promptsView)
+            alertDialogBuilder
+                .setCancelable(true)
+
+
+            val alertDialog: AlertDialog = alertDialogBuilder.create()
+
+            allow.setOnClickListener {
+                val jo = JSONObject()
+                    jo.put("allowed", true)
+                    jo.put("id", id)
+                    Log.d("RoomJoin", "answere =$jo")
+                    socket.emit("permit status", jo)
+                alertDialog.cancel()
+            }
+
+            decline.setOnClickListener {
+                val jo = JSONObject()
+                    jo.put("allowed", false)
+                    jo.put("id", id)
+                    Log.d("RoomJoin", "decline =$jo")
+                    socket.emit("permit status", jo)
+                alertDialog.cancel()
+            }
+            alertDialog.show()
 
         }
+
+//        var requestjoinfrag= RoomJoinRequestFragment(this)
+//        runOnUiThread {
+//            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout2)
+//            layout.visibility = View.VISIBLE
+//
+//            val useralias = data.getJSONObject("userAlias")
+//            requestjoinfrag.showRequest(
+//                useralias.optString("name"),
+//                useralias.optString("profilePicture"), socket, data.optString("id") )
+//            supportFragmentManager.beginTransaction()
+//                .replace(R.id.room_join_framelayout2, requestjoinfrag)
+//                .commit()
+//
+//        }
     }
 
     override fun onPermissionWaiting() {
+
         runOnUiThread {
-            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
+            val layout = findViewById<View>(R.id.included)
+            val text = layout.findViewById<TextView>(R.id.room_name)
+            text.text = hubViewModel.rname
             layout.visibility = View.VISIBLE
-            joinwaitingfrag.update(hubViewModel.rname, hubViewModel.videoTrack)
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.room_join_framelayout, joinwaitingfrag)
-                .commit()
+
         }
+//        var joinwaitingfrag = RoomJoinWaiting()
+
+//        runOnUiThread {
+//            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
+//            layout.visibility = View.VISIBLE
+//            joinwaitingfrag.update(hubViewModel.rname, hubViewModel.videoTrack)
+//            supportFragmentManager.beginTransaction()
+//                .replace(R.id.room_join_framelayout, joinwaitingfrag)
+//                .commit()
+//        }
     }
 
     override fun hidefragment() {
         runOnUiThread {
-            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
+            val layout = findViewById<View>(R.id.included)
             layout.visibility = View.GONE
-            val layout2 = findViewById<FrameLayout>(R.id.room_join_framelayout2)
-            layout2.visibility = View.GONE
+//            val layout2 = findViewById<FrameLayout>(R.id.room_join_framelayout2)
+//            layout2.visibility = View.GONE
         }
     }
 
@@ -564,7 +623,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             mMediaProjectionPermissionResultCode = resultCode
             mMediaProjectionPermissionResultData = data
             val displayService: MediaProjectionService = MediaProjectionService.INSTANCE!!
-            val endpoint: String = "rtmp://43.204.130.148/live/test?key=supersecret"
+            val endpoint: String = "rtmp://live.joinmyworld.in/live/${hubViewModel.stream_key}"
              displayService.prepareStreamRtp(endpoint, resultCode, data!!)
             displayService.startStreamRtp(endpoint)
         }
@@ -1400,6 +1459,71 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 //        lifecycleScope.launch {
 //            hubViewModel.streamShort(recyclerDataArrayList.size)
 //        }
+    }
+
+    fun startStream(room:String, email:String){
+//        lifecycleScope.launch {
+//            runCatching { hubViewModel.getStreamKey(room,email) }
+//                .onSuccess {
+//
+//
+//                    hubViewModel.stream_key = it.toString()
+//                    val mediaProjectionService: MediaProjectionService? = MediaProjectionService.INSTANCE
+//                    if(mediaProjectionService!=null) {
+//                        val sendIntent = mediaProjectionService.sendIntent()
+//
+//                        if (sendIntent != null) {
+//                            startActivityForResult(sendIntent, hubViewModel.REQUEST_CODE_STREAM)
+//                        }
+//                    }
+//
+//                }
+//                .onFailure {
+//                    runOnUiThread {
+//                        Log.e("GRIDACT","stream error = ${it.message}")
+//                        Toast.makeText(this@GridActivity,"Can not start stream ${it.message}",Toast.LENGTH_LONG).show()
+//                    }
+//                }
+//        }
+
+        lifecycleScope.launch {
+            val url = "https://socket.joinmyworld.in/stream_key?room_code=$room&email=$email"
+
+            val queue = Volley.newRequestQueue(this@GridActivity)
+            val request = StringRequest(Request.Method.GET, url,
+                {
+
+
+                    val obj: JSONObject = JSONObject(it)
+
+
+
+
+                    hubViewModel.stream_key = obj.optString("data")
+
+                    Log.d("Stream Key","${it.toString()}")
+
+                    val mediaProjectionService: MediaProjectionService? = MediaProjectionService.INSTANCE
+                    if(mediaProjectionService!=null) {
+                        val sendIntent = mediaProjectionService.sendIntent()
+
+                        if (sendIntent != null) {
+                            startActivityForResult(sendIntent, hubViewModel.REQUEST_CODE_STREAM)
+                        }
+                    }
+
+//                Toast.makeText(this@GridActivity,"$it",Toast.LENGTH_LONG).show()
+                }) { error -> Log.d("error", error.toString()) }
+            queue.add(request)
+
+        }
+
+
+
+
+
+
+
     }
 
 

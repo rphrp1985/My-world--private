@@ -94,7 +94,7 @@ class UserHubController(
                 if (room.categories.isNotEmpty()) {
                     val category = StringBuilder()
                     room.categories.forEach {
-                        category.append(categories[it.toInt()] + "@")
+                        category.append("$it@")
                     }
                     val fh = category.indexOf("@")
                     val sh = category.indexOf("@", fh + 1)

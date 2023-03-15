@@ -62,8 +62,8 @@ class EpoxyController(
                  _, ->
                  fragment.findNavController().navigate(
                      ExploreFragmentDirections.actionExploreFragmentToLiveFragment(
-                         "Suggestion Rooms",
-                         category
+//                         "Suggestion Rooms",
+//                         category
                      )
                  )
              }

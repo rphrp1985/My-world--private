@@ -4,3 +4,8 @@ data class HomeFeedSocketPayload(
     val user_id:String,
     val page:Int
 )
+data class HomeFeedSocketPayloadSuggestion(
+    val user_id:String,
+    val page:Int,
+    val keyword:String
+)

@@ -8,6 +8,23 @@
     android:theme="@style/Platform.MaterialComponents.Light"
     >
 
+      <com.google.android.material.card.MaterialCardView
+          android:id="@+id/cardview"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          >
+          <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              >
+          <com.google.android.material.imageview.ShapeableImageView
+              android:id="@+id/samplepoxyview"
+              android:layout_width="95dp"
+              android:layout_height="150dp"
+              android:overScrollMode="never"
+              app:layout_constraintStart_toStartOf="parent"
+              app:layout_constraintTop_toTopOf="parent"/>
     <TextView
         android:id="@+id/roomtitle"
         android:layout_width="95dp"
@@ -22,14 +39,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/samplepoxyview" />
 
-    <com.airbnb.epoxy.EpoxyRecyclerView
-        android:id="@+id/samplepoxyview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:overScrollMode="never"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
 
+          </LinearLayout>
+
+      </com.google.android.material.card.MaterialCardView>
 
 
 

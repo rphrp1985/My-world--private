@@ -12,6 +12,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import cessini.technology.commonui.activity.HomeActivity
+import cessini.technology.commonui.utils.Constant
+import cessini.technology.commonui.utils.networkutil.TAG
 import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
 import cessini.technology.cvo.exploremodels.CategoryModel
 import cessini.technology.cvo.exploremodels.ProfileModel
@@ -19,6 +21,7 @@ import cessini.technology.explore.R
 import cessini.technology.explore.childItem2
 import cessini.technology.explore.childItemRoom
 import cessini.technology.explore.epoxy.voice
+import cessini.technology.explore.fragment.ExploreSearchFragmentDirections
 import cessini.technology.explore.states.ExploreOnClickEvents
 import cessini.technology.explore.upcomingMyspace
 import cessini.technology.explore.viewmodel.SearchViewModel
@@ -95,6 +98,7 @@ class ChildRecyclerViewController(
             }
             2 -> {
                 /*TODO: setupLiveRoom()*/
+                setupLiveRoom()
                 Unit
             }
             5 -> {
@@ -220,6 +224,7 @@ class ChildRecyclerViewController(
     }
 
     private fun setupLiveRoom() {
+        Log.d(TAG, "Trending room = $trendingRooms")
         trendingRooms.forEach { room ->
             childItemRoom {
                 id(room[0].room)
@@ -267,6 +272,8 @@ class ChildRecyclerViewController(
 //                                        )
 
                             onClickListener(
+
+//                                openLive()
                                 ExploreOnClickEvents.ExploreFragmentToLiveFragment(
                                     "Trending Rooms",
                                     "abc"
@@ -283,6 +290,12 @@ class ChildRecyclerViewController(
             }
 
         }
+    }
+
+    fun openLive(){
+        Constant.home_fragment_live= false
+        fragment.findNavController().navigate(ExploreSearchFragmentDirections.actionExploreSearchFragmentToLiveFragment())
+
     }
 
     private fun setupUpcomingHub() {
@@ -320,15 +333,14 @@ class ChildRecyclerViewController(
                     val category = StringBuilder()
                     room.categories.forEach {
 
-                        if(it.equals("")){
-                            category.append(categories[0] + "#")
-                        }else
+                        if(it.isNotEmpty())
                             category.append("$it#")
 
                     }
                     val fh = category.indexOf("#")
                     val sh = category.indexOf("#", fh + 1)
                     val th = category.indexOf("#", sh + 1)
+                    if(fh>1)
                     categorytext += "#" + category.substring(1, fh) + " "
                     if (sh != -1) {
                         categorytext += "#" + category.substring(fh + 2, sh) + " "

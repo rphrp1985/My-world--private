@@ -13,6 +13,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.common.BaseFragment
+import cessini.technology.commonui.utils.Constant
 import cessini.technology.explore.R
 import cessini.technology.explore.controller.MainRecyclerViewController
 import cessini.technology.explore.databinding.FragmentSearchBinding
@@ -230,12 +232,16 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
                     )
                 }
                 is ExploreOnClickEvents.ExploreFragmentToLiveFragment -> {
-                    findNavController().navigate(
-                        ExploreFragmentDirections.actionExploreFragmentToLiveFragment(
-                            onItemClick.type,
-                            onItemClick.type1
-                        )
-                    )
+                    Constant.home_fragment_live= false
+
+                    this.findNavController().navigate(ExploreFragmentDirections.actionExploreFragmentToLiveFragment())
+
+//                    findNavController().navigate(
+//                        ExploreFragmentDirections.actionExploreFragmentToLiveFragment(
+////                            onItemClick.type,
+////                            onItemClick.type1
+//                        )
+//                    )
                 }
                 is ExploreOnClickEvents.ToGlobalProfileFlow -> {
                     /*  Click Event of Voices to Follow Profile Image */
@@ -285,35 +291,41 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
         addTrendingRooms()
 
 
+//        viewModel.allCategory.value= Explore()
 
         viewModel.allCategory.observe(viewLifecycleOwner, Observer {
             Log.d(TAG, "setMainCategoryRecycler AllCategory: $it")
+            if(it!=null)
+            {
+                allCategory = it
+                if (allCategory.categoryRooms.isEmpty()) {
+                    addSuggestedRooms()
 
-            allCategory = it
-            if (allCategory.categoryRooms.isEmpty()) {
-                addSuggestedRooms()
-                allCategory.categoryRooms = suggestedRooms
-            }
-            if (allCategory.recordMyspcaeGrid.isEmpty()) {
-                addrecordMySpaceItems()
-                allCategory.recordMyspcaeGrid = recordMyspaceRooms
-            }
-            if (allCategory.recordCommonMyspcaeGrid.isEmpty()) {
-                addrecordCommonMySpaceItems()
-                allCategory.recordCommonMyspcaeGrid = recordCommonMyspaceRooms
-            }
-            // Labeling items which is first and which is last
-            it.videos.forEachIndexed { _, pair ->
-                pair.second.forEachIndexed { index, video ->
-                    when (index) {
-                        0 -> video.positionType = 0
-                        pair.second.size - 1 -> video.positionType = 2
-                        else -> video.positionType = 1
+                    allCategory.categoryRooms = suggestedRooms
+
+                    Log.d(TAG,"suggested room  = ${suggestedRooms}")
+
+                }
+                if (allCategory.recordMyspcaeGrid.isEmpty()) {
+                    addrecordMySpaceItems()
+                    allCategory.recordMyspcaeGrid = recordMyspaceRooms
+                }
+                if (allCategory.recordCommonMyspcaeGrid.isEmpty()) {
+                    addrecordCommonMySpaceItems()
+                    allCategory.recordCommonMyspcaeGrid = recordCommonMyspaceRooms
+                }
+                // Labeling items which is first and which is last
+                it.videos.forEachIndexed { _, pair ->
+                    pair.second.forEachIndexed { index, video ->
+                        when (index) {
+                            0 -> video.positionType = 0
+                            pair.second.size - 1 -> video.positionType = 2
+                            else -> video.positionType = 1
+                        }
                     }
                 }
+                //hideShimmer()
             }
-            //hideShimmer()
-
         })
 
 

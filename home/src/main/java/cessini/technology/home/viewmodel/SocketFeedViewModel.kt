@@ -46,6 +46,7 @@ class SocketFeedViewModel @Inject constructor(
     private val _suggestedVideos = MutableStateFlow(emptyList<Video>())
     val suggestedVideos = _suggestedVideos.asStateFlow()
     var controller: HomeEpoxyController? = null
+    var controllerSuggestion: HomeEpoxyController?=null
 
     private val timelineSocketBlock: (List<Video>) -> Unit = {
         _videos.value += it
@@ -57,22 +58,22 @@ class SocketFeedViewModel @Inject constructor(
     private val suggestionWebSocket = SuggestionWebSocket { _suggestedVideos.value = it }
 
     var userID=""
-    var isInitiated= false
+//    var isInitiated= false
 
 
     lateinit var rxPageList: Observable<PagedList<DataResponse>>
+    lateinit var rxPageListSuggestion: Observable<PagedList<DataResponse>>
 
     lateinit var compositeDisposable : CompositeDisposable
+     var compositeDisposableSuggestion : CompositeDisposable?=null
 
     val webResponce: MutableLiveData<HomeFeedSocketResponse> = MutableLiveData()
 
-    private val config = PagedList.Config.Builder()
-        .setPageSize(2)
-        .setInitialLoadSizeHint(15)
-        .setEnablePlaceholders(true)
-        .build()
+    lateinit var  config  :PagedList.Config
+    lateinit var  configSuggestion  :PagedList.Config
     lateinit var  datasourceFactory: HomeDatasourceFactory
 
+    lateinit var  datasourceFactorySuggestion: HomeDatasourceFactory
    var callbackIni: PageKeyedDataSource.LoadInitialCallback<Int, DataResponse>? = null
     var callbackAfter: PageKeyedDataSource.LoadCallback<Int, DataResponse>? = null
 
@@ -82,27 +83,64 @@ class SocketFeedViewModel @Inject constructor(
         callbackAfter?.onResult(it.data,it.meta.page+1)
         canLoadMore.canLoadMore = it.data.isNotEmpty()
 
+        callbackAfter=null
+        callbackAfter=null
+
 
     }
 
         fun setPaging( uuid: String) {
-            if(!isInitiated) {
-                isInitiated= true
+            config= PagedList.Config.Builder()
+                .setPageSize(2)
+                .setInitialLoadSizeHint(15)
+                .setEnablePlaceholders(true)
+                .build()
+//            if(!isInitiated) {
+//                isInitiated= true
                 compositeDisposable = CompositeDisposable()
                 datasourceFactory =
                     HomeDatasourceFactory(homeFeedWebSocket,
                         compositeDisposable,
                         userID,
                         this,
-                        uuid)
+                        false)
                 rxPageList = RxPagedListBuilder(datasourceFactory, config).buildObservable()
-            }
+//            }
+
+
+        }
+
+    fun invalidiate(){
+        datasourceFactory.invalidiate()
     }
+
+    fun setPagingSuggestion( ) {
+        configSuggestion= PagedList.Config.Builder()
+            .setPageSize(2)
+            .setInitialLoadSizeHint(15)
+            .setEnablePlaceholders(true)
+            .build()
+        if(compositeDisposableSuggestion==null)
+        compositeDisposableSuggestion = CompositeDisposable()
+        else
+            compositeDisposable.clear()
+
+        datasourceFactorySuggestion =
+            HomeDatasourceFactory(homeFeedWebSocket,
+                compositeDisposableSuggestion!!,
+                userID,
+                this, false)
+        rxPageListSuggestion = RxPagedListBuilder(datasourceFactorySuggestion, configSuggestion).buildObservable()
+
+    }
+
+
 
     fun fetchPages(
         onPageReady: (PagedList<DataResponse>) -> Unit,
         onPageLoadFailed: (Throwable) -> Unit
     ) {
+
         compositeDisposable.add(
             rxPageList
                 .subscribeWith(object : DisposableObserver<PagedList<DataResponse>>() {
@@ -121,8 +159,27 @@ class SocketFeedViewModel @Inject constructor(
         )
     }
 
+    fun fetchPagesSuggestion(
+        onPageReady: (PagedList<DataResponse>) -> Unit,
+        onPageLoadFailed: (Throwable) -> Unit
+    ) {
+        compositeDisposableSuggestion!!.add(
+            rxPageListSuggestion
+                .subscribeWith(object : DisposableObserver<PagedList<DataResponse>>() {
+                    override fun onComplete() {
 
+                    }
+                    override fun onNext(pagedList: PagedList<DataResponse>) {
+                        onPageReady(pagedList)
+                    }
+                    override fun onError(e: Throwable) {
+                        Log.e("Home WebSocket", "error: ${e}")
+                        onPageLoadFailed(e)
+                    }
 
+                })
+        )
+    }
 
 
 //    fun sendUserPayload(payload: HomeFeedSocketPayload) {

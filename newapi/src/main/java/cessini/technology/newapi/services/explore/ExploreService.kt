@@ -29,9 +29,10 @@ interface ExploreService {
         @Path(value = "id") id: String
     ): ApiExplore
 
-    @GET(value = "${ExploreConstants.EXPLORE_ENDPOINT_AUTH}{id}")
+//    @Headers(ApiParameters.AUTH_HEADER)
+    @GET(value = "${ExploreConstants.EXPLORE_ENDPOINT_AUTH}")
     suspend fun explore(
-        @Path(value = "id") id: String,
+//        @Path(value = "id") id: String,
     ): ApiExplore
 
     @GET(value = "${ExploreConstants.SUGGESTION_CAT_ROOMS}{id}")

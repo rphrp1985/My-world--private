@@ -13,7 +13,7 @@
         app:cardElevation="@dimen/dimen_15"
         android:layout_marginRight="@dimen/dimen_15"
         android:layout_marginLeft="@dimen/dimen_15"
-        app:cardCornerRadius="@dimen/dimen_30"
+
         android:padding="10dp">
 
 
@@ -67,6 +67,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 >
+                <Button
+                    android:id="@+id/decline_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Decline"
+                    android:textSize="14sp"
+                    android:textColor="@color/quantum_black_text"
+                    android:background="@color/cpTransparent"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toStartOf="@id/answer_button"/>
 
             <Button
                 android:id="@+id/answer_button"
@@ -78,16 +88,7 @@
                 android:background="@color/cpTransparent"
                 android:layout_alignParentBottom="true"/>
 
-            <Button
-                android:id="@+id/decline_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Decline"
-                android:textSize="14sp"
-                android:textColor="@color/quantum_black_text"
-                android:background="@color/cpTransparent"
-                android:layout_alignParentBottom="true"
-                android:layout_toStartOf="@id/answer_button"/>
+
 
         </LinearLayout>
 
