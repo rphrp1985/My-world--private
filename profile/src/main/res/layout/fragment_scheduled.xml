@@ -9,7 +9,7 @@
         tools:context=".activity.HomeActivity">
 
         <TextView
-            android:id="@+id/room_requests_text"
+            android:id="@+id/manage_room_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -24,7 +24,7 @@
             tools:visibility="visible" />
 
         <TextView
-            android:id="@+id/no_room_requests_label"
+            android:id="@+id/no_rooms_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -41,7 +41,7 @@
             tools:visibility="visible" />
 
         <com.airbnb.epoxy.EpoxyRecyclerView
-            android:id="@+id/room_requests_recycler_view"
+            android:id="@+id/manage_rooms_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dimen_5"
@@ -52,7 +52,6 @@
             android:overScrollMode="never"
             android:fadingEdgeLength="@dimen/dimen_50"
             android:orientation="vertical"
-            android:visibility="gone"
             app:spanCount="3" />
     </FrameLayout>
 </layout>
