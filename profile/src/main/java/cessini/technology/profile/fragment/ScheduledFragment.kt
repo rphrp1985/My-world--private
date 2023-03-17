@@ -22,21 +22,23 @@ import cessini.technology.newrepository.myspace.RoomRepository
 import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.profile.R
-import cessini.technology.profile.databinding.FragmentCreateRoomRequestsBinding
+import cessini.technology.profile.databinding.FragmentRoomsBinding
+import cessini.technology.profile.databinding.FragmentScheduledBinding
 import cessini.technology.profile.listItemRoom
-import kotlinx.android.synthetic.main.fragment_create_room_requests.*
-import kotlinx.android.synthetic.main.fragment_rooms.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class CreateRoomRequestsFragment : Fragment() {
-
+@AndroidEntryPoint
+class ScheduledFragment : Fragment() {
     companion object {
-        private const val TAG = "CreateRoomRequestsFragment"
+        private const val TAG = "ScheduledFragment"
     }
+
     private val baseViewModel by activityViewModels<BaseViewModel>()
-    private var _binding: FragmentCreateRoomRequestsBinding? = null
+
+    private var _binding: FragmentScheduledBinding? = null
     val binding get() = _binding!!
 
     @Inject
@@ -55,19 +57,20 @@ class CreateRoomRequestsFragment : Fragment() {
 // Inflate the layout for this fragment
         _binding = DataBindingUtil.inflate(
             inflater,
-            R.layout.fragment_create_room_requests,
+            R.layout.fragment_scheduled,
             container,
             false
         )
         return binding.root
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         runCatching { fetchRooms() }
     }
     private fun setupRecyclerView() {
-        binding.roomRequestsRecyclerView.apply {
+        binding.manageRoomsRecyclerView.apply {
             layoutManager = LinearLayoutManager(context)
         }
     }
@@ -93,9 +96,9 @@ class CreateRoomRequestsFragment : Fragment() {
                     buildRoomModels(rooms)
                 } else {
                     binding.apply {
-                        roomRequestsText.visibility = View.VISIBLE
-                        no_room_requests_label.visibility = View.VISIBLE
-                        roomRequestsRecyclerView.visibility = View.GONE
+                        manageRoomText.visibility = View.VISIBLE
+                        noRoomsLabel.visibility = View.VISIBLE
+                        manageRoomsRecyclerView.visibility = View.GONE
                     }
                 }
             }
@@ -104,7 +107,7 @@ class CreateRoomRequestsFragment : Fragment() {
 
     private fun buildRoomModels(rooms: List<Room>) {
         Log.e("buildModelRoomsFunc", rooms.toString())
-        binding.roomRequestsRecyclerView.withModels {
+        binding.manageRoomsRecyclerView.withModels {
             rooms.forEach { room ->
                 listItemRoom {
                     id(room.id)
@@ -121,9 +124,9 @@ class CreateRoomRequestsFragment : Fragment() {
                             runCatching { roomRepository.startRoom(room.name) }.onSuccess {
                                 navigator.navigateToFlow(NavigationFlow.AccessRoomFlow(room.name))
                                 binding.apply {
-                                    roomRequestsText.visibility = View.GONE
-                                    no_room_requests_label.visibility = View.GONE
-                                    roomRequestsRecyclerView.visibility = View.VISIBLE
+                                    manageRoomText.visibility = View.GONE
+                                    noRoomsLabel.visibility = View.GONE
+                                    manageRoomsRecyclerView.visibility = View.VISIBLE
                                 }
 /////////////////////////////////////////////////////////
                                 toast(message = "You are Live.")
@@ -131,9 +134,9 @@ class CreateRoomRequestsFragment : Fragment() {
                             }.onFailure {
                                 toast(message = "Unable to go live.")
                                 binding.apply {
-                                    roomRequestsText.visibility = View.VISIBLE
-                                    no_room_requests_label.visibility = View.VISIBLE
-                                    roomRequestsRecyclerView.visibility = View.GONE
+                                    manageRoomText.visibility = View.VISIBLE
+                                    noRoomsLabel.visibility = View.VISIBLE
+                                    manageRoomsRecyclerView.visibility = View.GONE
                                 }
                             }
                         }
@@ -154,4 +157,5 @@ class CreateRoomRequestsFragment : Fragment() {
             }
         }
     }
+
 }

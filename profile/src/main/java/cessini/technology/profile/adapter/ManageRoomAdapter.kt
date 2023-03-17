@@ -20,7 +20,7 @@ class ManageRoomAdapter(
                 RoomsFragment()
             }
             1 -> {
-                CreateRoomRequestsFragment()
+                ScheduledFragment()
             }
             2 -> {
                 RequestsFragment()
