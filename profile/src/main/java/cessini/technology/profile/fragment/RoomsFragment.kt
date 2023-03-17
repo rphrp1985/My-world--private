@@ -10,6 +10,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import cessini.technology.commonui.common.dateTime
 import cessini.technology.commonui.common.navigateToProfile
 import cessini.technology.commonui.common.toast
@@ -66,8 +67,13 @@ class RoomsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        setupRecyclerView()
         runCatching { fetchRooms() }
+    }
+    private fun setupRecyclerView() {
+        binding.manageRoomsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+        }
     }
 
     private fun fetchRooms() {
@@ -75,9 +81,9 @@ class RoomsFragment : Fragment() {
         val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
             Log.e(
                 TAG,
-                "fetchRooms: ${profileRepository.getProfileRooms(userIdentifierPreferences.id)}"
+                "fetchRooms: ${profileRepository.getLiveRooms(userIdentifierPreferences.id)}"
             )
-            runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
+            runCatching { profileRepository.getLiveRooms(userIdentifierPreferences.id) }
                 .onFailure {
  toast(it.message.orEmpty())
                 }

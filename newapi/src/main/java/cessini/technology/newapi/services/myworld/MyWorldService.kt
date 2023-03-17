@@ -76,6 +76,18 @@ interface MyWorldService {
         @Query(MyWorldParameters.ID) id: String,
     ): ApiProfileMedia
 
+    @Headers(ApiParameters.NO_AUTH_HEADER)
+    @GET(MyWorldConstants.LIVE_ROOMS)
+    suspend fun getLiveRooms(
+        @Query(MyWorldParameters.ID) id: String,
+    ) : ApiProfileMedia
+
+    @Headers(ApiParameters.NO_AUTH_HEADER)
+    @GET(MyWorldConstants.SCHEDULED_ROOMS)
+    suspend fun getScheduledRooms(
+        @Query(MyWorldParameters.ID) id: String,
+    ) : ApiProfileMedia
+
     @POST(MyWorldConstants.PROFILE_UPI_DATA)
     suspend fun saveUpiData(
         @Body upiData: UPIData,
