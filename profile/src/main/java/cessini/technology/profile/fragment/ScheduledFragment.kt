@@ -3,11 +3,11 @@ package cessini.technology.profile.fragment
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,7 +16,6 @@ import cessini.technology.commonui.common.navigateToProfile
 import cessini.technology.commonui.common.toast
 import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.model.Room
-import cessini.technology.myspace.create.CreateRoomSharedViewModel
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.Navigator
 import cessini.technology.newrepository.myspace.RoomRepository
@@ -24,6 +23,7 @@ import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.profile.R
 import cessini.technology.profile.databinding.FragmentRoomsBinding
+import cessini.technology.profile.databinding.FragmentScheduledBinding
 import cessini.technology.profile.listItemRoom
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.async
@@ -31,15 +31,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class RoomsFragment : Fragment() {
-
+class ScheduledFragment : Fragment() {
     companion object {
-        private const val TAG = "ManageRoomFragment"
+        private const val TAG = "ScheduledFragment"
     }
 
     private val baseViewModel by activityViewModels<BaseViewModel>()
 
-    private var _binding: FragmentRoomsBinding? = null
+    private var _binding: FragmentScheduledBinding? = null
     val binding get() = _binding!!
 
     @Inject
@@ -58,7 +57,7 @@ class RoomsFragment : Fragment() {
 // Inflate the layout for this fragment
         _binding = DataBindingUtil.inflate(
             inflater,
-            R.layout.fragment_rooms,
+            R.layout.fragment_scheduled,
             container,
             false
         )
@@ -81,11 +80,11 @@ class RoomsFragment : Fragment() {
         val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
             Log.e(
                 TAG,
-                "fetchRooms: ${profileRepository.getLiveRooms(userIdentifierPreferences.id)}"
+                "fetchRooms: ${profileRepository.getScheduledRooms(userIdentifierPreferences.id)}"
             )
-            runCatching { profileRepository.getLiveRooms(userIdentifierPreferences.id) }
+            runCatching { profileRepository.getScheduledRooms(userIdentifierPreferences.id) }
                 .onFailure {
- toast(it.message.orEmpty())
+                    toast(it.message.orEmpty())
                 }
                 .getOrDefault(emptyList())
         }
@@ -158,4 +157,5 @@ class RoomsFragment : Fragment() {
             }
         }
     }
+
 }

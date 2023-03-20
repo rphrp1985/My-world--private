@@ -11,6 +11,8 @@ object MyWorldConstants {
     const val FOLLOWER_ENDPOINT = "api/follower/"
     const val PROFILE_ENDPOINT = "api/profile/"
     const val PROFILE_MEDIA_ENDPOINT = "api/profile/media/"
+    const val LIVE_ROOMS= "api/profile/media/live"
+    const val SCHEDULED_ROOMS= "api/profile/media/upcoming"
     const val PUBLIC_PROFILE_ENDPOINT = "api/public/"
     const val PROFILE_UPI_DATA = "api/upi/"
     const val MESSAGE_USER = "api/message/"

@@ -30,6 +30,14 @@ class ProfileRepository @Inject constructor(
         return myWorldService.getProfileMedia(id).toModel().rooms
     }
 
+    suspend fun getLiveRooms(id: String): List<Room>? {
+        return myWorldService.getLiveRooms(id).toModel().rooms
+    }
+
+    suspend fun getScheduledRooms(id: String): List<Room>? {
+        return myWorldService.getScheduledRooms(id).toModel().rooms
+    }
+
     suspend fun getProfile(): Profile {
         val profile = myWorldService.getProfile().getOrThrow().data.toModel()
         profileStore.storeProfile(profile)

@@ -65,6 +65,11 @@ import org.json.JSONObject
 import javax.inject.Inject
 
 
+/**
+ * A simple [Fragment] subclass.
+ * Use the [HomeFragment.newInstance] factory method to
+ * create an instance of this fragment.
+ */
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_fragment),
     LifecycleObserver,
@@ -407,12 +412,9 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
     }
 
     override fun onDestroyView() {
-
-
-//        canSendJoinReq= true
-//        if(!mode)
-
-
+        val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.itemIconTintList = null
+        bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.drawable.bottom_nav_bar_item_color))
         super.onDestroyView()
     }
 
@@ -628,6 +630,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
             }
         }
+
     }
 
 

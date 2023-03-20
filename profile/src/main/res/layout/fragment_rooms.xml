@@ -52,7 +52,6 @@
             android:overScrollMode="never"
             android:fadingEdgeLength="@dimen/dimen_50"
             android:orientation="vertical"
-            android:visibility="gone"
             app:spanCount="3" />
     </FrameLayout>
 </layout>
