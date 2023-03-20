@@ -154,6 +154,9 @@ class SignalingClient() {
                 Log.d("permt?",json.toString())
                 callback.onJoinPermission(json,socket)
             }
+            socket.on("disconnect"){
+                socket = IO.socket(socketUrl, opts).connect()
+            }
 
 
 
@@ -171,13 +174,6 @@ class SignalingClient() {
 
         socket.on("new-ice-candidate"){
 
-            val sgcUser= profile?.id?.let { it1 -> SGCUser(it1,profile!!.name,profile!!.email,profile!!.channelName,profile!!.profilePicture) }
-            val data = sgcUser?.let { it1 -> JoinRoom(rname, it1,profile!!.email).getJson() }
-//            callback.hidefragment()
-            Log.d(TAG,"join room = ${data}")
-
-            socket.emit("join room", data )
-
             Log.d(TAG,"ice candidate recived")
             val json= JSONObject(it!![0].toString())
 
@@ -187,6 +183,15 @@ class SignalingClient() {
         }
 
         socket.on("offer"){
+
+            val sgcUser= profile?.id?.let { it1 -> SGCUser(it1,profile!!.name,profile!!.email,profile!!.channelName,profile!!.profilePicture) }
+            val data = sgcUser?.let { it1 -> JoinRoom(rname, it1,profile!!.email).getJson() }
+//            callback.hidefragment()
+            Log.d(TAG,"join room = ${data}")
+
+//            socket.emit("join room", data )
+
+
             val json= JSONObject(it!![0].toString())
             
             if( json.get("type").toString()== "ans"){
@@ -368,15 +373,22 @@ class SignalingClient() {
 //        this.callBack = callback
         try {
 
-            if(socket.isActive) Log.d(TAG, "Connection is active ${socket.isActive}")
-            Log.d(TAG, "Inside requestJoinRoom()")
+            if(socket.isActive)
+                Log.d(TAG, "Connection is active ${socket.isActive}")
+//            Log.d(TAG, "Inside requestJoinRoom()")
+            else
+                socket = IO.socket(socketUrl, opts).connect()
 
             socket.emit("permission", data)
 
             socket.on("allowed"){
+
+                Log.d("Signalling event","allowed")
                 callback.onJoinRequestAccepted(it.toString())
             }
             socket.on("denied"){
+
+                Log.d("Signalling event","denied")
                 callback.onJoinRequestDenied(it.toString())
             }
 

@@ -45,6 +45,7 @@ import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
 //import cessini.technology.commonui.fragment.RoomJoinRequestFragment
 //import cessini.technology.commonui.fragment.RoomJoinWaiting
 import cessini.technology.commonui.fragment.commonChat.CommonChatFragment
+import cessini.technology.commonui.utils.networkutil.TAG
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatPayload
 import cessini.technology.commonui.viewmodel.commonChat.CommonChatViewModel
 import cessini.technology.model.Profile
@@ -130,7 +131,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     private lateinit var raiseHand:Button
     private lateinit var audio: ImageView
     private lateinit var recAdapter: RecAdapter
-    private var count = 0
+    private var IsCameraOn= true
     private var isCreated=false
     lateinit var controller:EpoxyController
     lateinit var epoxyRecyclerView: EpoxyRecyclerView
@@ -153,6 +154,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     lateinit var profile: Profile
     val socketUserMap = mutableMapOf<String,JSONObject>()
+    private var isMic=true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -174,17 +176,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         epoxyRecyclerView = findViewById<EpoxyRecyclerView>(R.id.idCourseRV)
 
-
-
-        // Streaming video
         startService(Intent(baseContext, MediaProjectionService::class.java))
-
-//        Handler().postDelayed({
-//
-//
-//
-//        },3000)
-
 
        screenShot.observe(this, androidx.lifecycle.Observer {
            streamShort()
@@ -194,6 +186,10 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         /**
          * AWS Config
          */
+
+
+
+
         AWSMobileClient.getInstance().initialize(applicationContext,AWSConfiguration(JSONObject(HubConstants.awsconfig)),object : Callback<UserStateDetails?> {
             override fun onResult(result: UserStateDetails?) {
                 Log.e("aws",result.toString())
@@ -215,6 +211,15 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         raiseHand = findViewById(R.id.btnShareScreen)
 //        localView = findViewById(R.id.localView)
         handleIntent(intent)
+
+        if(!IsCameraOn)
+            camera.setImage(R.drawable.ic_removevideo)
+
+        if(!isMic)
+            audio.setImage(R.drawable.ic_removeaudio)
+
+
+
         if(hubViewModel.rname=="RoomLive") {
             try {
                 hubViewModel.rname = intent.getStringExtra("Room Name").toString()
@@ -237,17 +242,11 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             }
         }
         isCreated= intent.getBooleanExtra("created",false);
-        chatViewModel.setSocket(hubViewModel.rname)
-        chatViewModel.roomID= hubViewModel.rname
-        chatViewModel.user_id = hubViewModel.user_id
-        chatViewModel.listenTo(hubViewModel.rname)
-
-//        epoxyRecyclerView.adapter= controller.adapter
-
 
         lifecycleScope.launch {
             profileRepository.profile.collectLatest {
                 profile= it
+                hubViewModel.user_id= it.id
                 hubViewModel.isFront = true
 //                setUpEpoxy()
                 showCamera()
@@ -256,8 +255,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 if(isCreated)
                 createRoomLink()
 
+                chatViewModel.setSocket(hubViewModel.rname)
+                chatViewModel.roomID= hubViewModel.rname
+                chatViewModel.user_id = hubViewModel.user_id
+                chatViewModel.listenTo(hubViewModel.rname)
 
-                    startStream(hubViewModel.rname,profile.email)
+                startStream(hubViewModel.rname,profile.email)
 
                 return@collectLatest
             }
@@ -308,7 +311,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         }
 
 
-
     }
 
     fun hand(){
@@ -329,15 +331,16 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
 
         }
-        for(i in 0 until recyclerDataArrayList.size){
-            if(recyclerDataArrayList[i].socketId=="socket"){
-                recyclerDataArrayList[i].handSwitch = status
-                controller.requestModelBuild()
-//                setUpEpoxy()
-                break
-            }
-        }
+//        for(i in 0 until recyclerDataArrayList.size){
+//            if(recyclerDataArrayList[i].socketId=="socket"){
+//                recyclerDataArrayList[i].handSwitch = status
+//                controller.requestModelBuild()
+////                setUpEpoxy()
+//                break
+//            }
+//        }
     }
+
 
 
     override fun onJoinPermission(data: JSONObject, socket: Socket) {
@@ -347,15 +350,15 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             val name = useralias.optString("name")
             val profile = useralias.optString("profilePicture")
             val id = data.optString("id")
-            val li = LayoutInflater.from(this@GridActivity)
-            val promptsView: View = li.inflate(R.layout.room_join_request, null)
+
+            val promptsView = findViewById<View>(R.id.request_permission)
+            promptsView.visibility= View.VISIBLE
             val image: ImageView = promptsView.findViewById(R.id.profile_image)
             val textView: TextView = promptsView.findViewById(R.id.caller_name)
             val allow:Button = promptsView.findViewById(R.id.answer_button)
             val decline : Button = promptsView.findViewById(R.id.decline_button)
-
             textView.text = name
-
+//
             try {
                 Glide.with(this)
                     .load(profile).centerCrop()
@@ -363,22 +366,15 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             } catch (e: Exception) {
             }
 
-            val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this@GridActivity)
-
-            alertDialogBuilder.setView(promptsView)
-            alertDialogBuilder
-                .setCancelable(true)
-
-
-            val alertDialog: AlertDialog = alertDialogBuilder.create()
-
             allow.setOnClickListener {
                 val jo = JSONObject()
                     jo.put("allowed", true)
                     jo.put("id", id)
                     Log.d("RoomJoin", "answere =$jo")
                     socket.emit("permit status", jo)
-                alertDialog.cancel()
+
+                promptsView.visibility= View.GONE
+                return@setOnClickListener
             }
 
             decline.setOnClickListener {
@@ -387,26 +383,12 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                     jo.put("id", id)
                     Log.d("RoomJoin", "decline =$jo")
                     socket.emit("permit status", jo)
-                alertDialog.cancel()
+                promptsView.visibility= View.GONE
+                return@setOnClickListener
             }
-            alertDialog.show()
-
         }
 
-//        var requestjoinfrag= RoomJoinRequestFragment(this)
-//        runOnUiThread {
-//            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout2)
-//            layout.visibility = View.VISIBLE
-//
-//            val useralias = data.getJSONObject("userAlias")
-//            requestjoinfrag.showRequest(
-//                useralias.optString("name"),
-//                useralias.optString("profilePicture"), socket, data.optString("id") )
-//            supportFragmentManager.beginTransaction()
-//                .replace(R.id.room_join_framelayout2, requestjoinfrag)
-//                .commit()
-//
-//        }
+
     }
 
     override fun onPermissionWaiting() {
@@ -418,16 +400,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             layout.visibility = View.VISIBLE
 
         }
-//        var joinwaitingfrag = RoomJoinWaiting()
-
-//        runOnUiThread {
-//            val layout = findViewById<FrameLayout>(R.id.room_join_framelayout)
-//            layout.visibility = View.VISIBLE
-//            joinwaitingfrag.update(hubViewModel.rname, hubViewModel.videoTrack)
-//            supportFragmentManager.beginTransaction()
-//                .replace(R.id.room_join_framelayout, joinwaitingfrag)
-//                .commit()
-//        }
     }
 
     override fun hidefragment() {
@@ -534,6 +506,18 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         hubViewModel.mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
         hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrack)
         hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrack)
+
+        if(!isMic) {
+            micPermission = false
+
+            hubViewModel.localAudioTrack?.setEnabled(false)
+
+        }
+
+        if(!IsCameraOn){
+            hubViewModel.videoTrack?.setEnabled(false)
+            cameraPermission= false
+        }
 
 
 //        if(!recyclerDataArrayList.contains(userData)){
@@ -741,6 +725,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             epoxyRecyclerView.layoutManager = layoutManager
             epoxyRecyclerView.setController(controller)
 
+            controller.requestModelBuild()
 
 
         }
@@ -798,15 +783,40 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                             createVideoPath(applicationContext, hubViewModel.fileName)
                         hubViewModel.remoteVideoTrack = mediaStream.videoTracks[0]
 
+                    var name= "user"
+                    var profile=""
+                    var ishandraised= false;
+                    var iscamera= true;
+                    var ismic = true;
+
+                    val remoteUser=socketUserMap[socketId]
+
+                    if(remoteUser!=null){
+
+                        profile=      remoteUser.optString("profilePicture")
+                        name= remoteUser!!.optString("name")
+                        ishandraised=  remoteUser.optBoolean("isHandRaised")
+                        iscamera=  remoteUser.optBoolean("isNotCamera")
+                        ismic=   remoteUser!!.optBoolean("isMuted")
+
+                    }
+
+
                         recyclerDataArrayList.add(
                             data(
-                                "user",
+                                name,
                                 hubViewModel.remoteViewsIndex++,
                                 mediaStream.videoTracks[0],
                                 false,
-                                false, false, "", false, "", screeni, socketId,
-                                eglBaseContext,
-                                null
+                                microphoneSwitch = ismic,
+                                videoSwitch = iscamera,
+                                profilepic = profile,
+                                handSwitch = ishandraised,
+                                userID = "",
+                                isScreen = screeni,
+                                socketId = socketId,
+                                con = eglBaseContext,
+                                fileRenderer = null
                             )
                         )
                         setUpEpoxy()
@@ -855,7 +865,6 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     }
 
     override fun onSelfJoined() {
-
     }
 
     override fun onPeerLeave(data: String) {
@@ -926,7 +935,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 //                    runOnUiThread {
 ////                        Toast.makeText(this@GridActivity, "undefined user", Toast.LENGTH_SHORT)
 //                            .show()
-//                    }
+//                    }fU
                 } else {
 
 //                    runOnUiThread {
@@ -941,7 +950,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 //                            }
                             recyclerDataArrayList[i].title = remoteUser!!.optString("name")
                             recyclerDataArrayList[i].microphoneSwitch =
-                                !remoteUser!!.optBoolean("isMuted")
+                                remoteUser!!.optBoolean("isMuted")
                             recyclerDataArrayList[i].videoSwitch =
                                 remoteUser.optBoolean("isNotCamera")
                             recyclerDataArrayList[i].profilepic =
@@ -954,7 +963,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                     }
                 }
             }
-            runOnUiThread { setUpEpoxy() }
+            runOnUiThread { controller.requestModelBuild() }
         }
     }
 
@@ -1018,7 +1027,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     fun turnOffVideo(){
         val it = findViewById<ImageView>(R.id.iv_video)
         it.setImage(R.drawable.ic_removevideo)
-        count++
+        IsCameraOn= false
         hubViewModel.videoTrack?.setEnabled(false)
         SignalingClient.get()?.sendCamera(false)
         controller.requestModelBuild()
@@ -1034,10 +1043,8 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     // Handling the video switch
     fun switchVideo(it: ImageView) {
 
-
-
         var status=true
-        if(count%2 !=0) {
+        if(!IsCameraOn) {
 
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 askPermission()
@@ -1045,19 +1052,19 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             }
 
             it.setImage(R.drawable.ic_addvideo)
-            count++
+            IsCameraOn= true
             hubViewModel.videoTrack?.setEnabled(true)
             SignalingClient.get()?.sendCamera(true)
             status=true
         }else{
             it.setImage(R.drawable.ic_removevideo)
-            count++
+            IsCameraOn= false
             hubViewModel.videoTrack?.setEnabled(false)
             SignalingClient.get()?.sendCamera(false)
             status=false
         }
         for(i in 0 until recyclerDataArrayList.size){
-            if(recyclerDataArrayList[i].socketId=="socket"){
+            if(recyclerDataArrayList[i].socketId=="socket" && !recyclerDataArrayList[i].isScreen){
                 recyclerDataArrayList[i].videoSwitch = status
                 controller.requestModelBuild()
 //                setUpEpoxy()
@@ -1119,11 +1126,10 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     // handling the camera used either front or back
 
     fun switchCamera(it: ImageView){
-        if(!userData?.videoSwitch!!){
+        if(!IsCameraOn){
             Toast.makeText(this,"Video is Off",Toast.LENGTH_SHORT).show()
             return
         }
-//        recyclerDataArrayList.remove(userData)
         hubViewModel.isFront = !hubViewModel.isFront
         showCamera()
     }
@@ -1149,11 +1155,20 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
     // ending the call
     override fun onBackPressed() {
-        super.onBackPressed()
-//        hubViewModel.endcall()
+
+        hubViewModel.endcall()
         SignalingClient.get()?.endcall()
-        stopService(Intent(baseContext, MediaProjectionService::class.java))
         overridePendingTransition(R.anim.slide_in_animation, R.anim.slide_out_animation)
+        CommonChatSocketHandler.closeConnection()
+        CommonChatSocketHandler.mSocket.close()
+        if (hubViewModel.isScreenShare){
+            hubViewModel.endcall()
+            SignalingClient.get()?.destroy()
+        }
+        stopService(Intent(baseContext, MediaProjectionService::class.java))
+
+//        finish()
+        super.onBackPressed()
 
     }
 
@@ -1161,17 +1176,21 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     // on activity destroyed
     override fun onDestroy() {
         super.onDestroy()
+        hubViewModel.endcall()
+        SignalingClient.get()?.endcall()
+        overridePendingTransition(R.anim.slide_in_animation, R.anim.slide_out_animation)
         CommonChatSocketHandler.closeConnection()
         CommonChatSocketHandler.mSocket.close()
         if (hubViewModel.isScreenShare){
             hubViewModel.endcall()
             SignalingClient.get()?.destroy()
         }
-        val displayService: MediaProjectionService? = MediaProjectionService.INSTANCE
-        if (displayService != null && !displayService.isStreaming() && !displayService.isRecording()) {
-            //stop service only if no streaming or recording
-            stopService(Intent(this, MediaProjectionService::class.java))
-        }
+        stopService(Intent(baseContext, MediaProjectionService::class.java))
+//        val displayService: MediaProjectionService? = MediaProjectionService.INSTANCE
+//        if (displayService != null && !displayService.isStreaming() && !displayService.isRecording()) {
+//            //stop service only if no streaming or recording
+//            stopService(Intent(this, MediaProjectionService::class.java))
+//        }
     }
 
 
@@ -1420,22 +1439,22 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                 " ${status} screen",
                 Toast.LENGTH_LONG).show()
         }
-        if(status==false) {
+        if(!status) {
             for (i in 0 until recyclerDataArrayList.size) {
                 if (recyclerDataArrayList[i].socketId == socketid && recyclerDataArrayList[i].isScreen) {
                      recyclerDataArrayList.remove( recyclerDataArrayList[i])
-                    controller.requestModelBuild()
+
 //                    setUpEpoxy()
-                    break;
                 }
             }
+            runOnUiThread { setUpEpoxy() }
         }
 
 
     }
 
     override fun onCallerHandSwitch(data: JSONObject) {
-        val status= data.optBoolean("muted")
+        val status= data.optBoolean("hand")
         val socketid= data.optString("id")
 
         for(i in 0 until recyclerDataArrayList.size){
@@ -1462,47 +1481,11 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
     }
 
     fun startStream(room:String, email:String){
-//        lifecycleScope.launch {
-//            runCatching { hubViewModel.getStreamKey(room,email) }
-//                .onSuccess {
-//
-//
-//                    hubViewModel.stream_key = it.toString()
-//                    val mediaProjectionService: MediaProjectionService? = MediaProjectionService.INSTANCE
-//                    if(mediaProjectionService!=null) {
-//                        val sendIntent = mediaProjectionService.sendIntent()
-//
-//                        if (sendIntent != null) {
-//                            startActivityForResult(sendIntent, hubViewModel.REQUEST_CODE_STREAM)
-//                        }
-//                    }
-//
-//                }
-//                .onFailure {
-//                    runOnUiThread {
-//                        Log.e("GRIDACT","stream error = ${it.message}")
-//                        Toast.makeText(this@GridActivity,"Can not start stream ${it.message}",Toast.LENGTH_LONG).show()
-//                    }
-//                }
-//        }
-
         lifecycleScope.launch {
-            val url = "https://socket.joinmyworld.in/stream_key?room_code=$room&email=$email"
-
-            val queue = Volley.newRequestQueue(this@GridActivity)
-            val request = StringRequest(Request.Method.GET, url,
-                {
-
-
-                    val obj: JSONObject = JSONObject(it)
-
-
-
-
-                    hubViewModel.stream_key = obj.optString("data")
-
-                    Log.d("Stream Key","${it.toString()}")
-
+            runCatching { hubViewModel.getStreamKey(room,email) }
+                .onSuccess {
+                    Log.d(TAG,"stream key $it")
+                    hubViewModel.stream_key = it.toString()
                     val mediaProjectionService: MediaProjectionService? = MediaProjectionService.INSTANCE
                     if(mediaProjectionService!=null) {
                         val sendIntent = mediaProjectionService.sendIntent()
@@ -1512,17 +1495,14 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
                         }
                     }
 
-//                Toast.makeText(this@GridActivity,"$it",Toast.LENGTH_LONG).show()
-                }) { error -> Log.d("error", error.toString()) }
-            queue.add(request)
-
+                }
+                .onFailure {
+                    runOnUiThread {
+                        Log.e("GRIDACT","stream error = ${it.message}")
+//                        Toast.makeText(this@GridActivity,"Can not start stream ${it.message}",Toast.LENGTH_LONG).show()
+                    }
+                }
         }
-
-
-
-
-
-
 
     }
 

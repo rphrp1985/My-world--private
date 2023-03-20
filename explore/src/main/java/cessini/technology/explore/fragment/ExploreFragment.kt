@@ -232,6 +232,9 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
                     )
                 }
                 is ExploreOnClickEvents.ExploreFragmentToLiveFragment -> {
+
+                    Constant.keyword= onItemClick.type
+
                     Constant.home_fragment_live= false
 
                     this.findNavController().navigate(ExploreFragmentDirections.actionExploreFragmentToLiveFragment())

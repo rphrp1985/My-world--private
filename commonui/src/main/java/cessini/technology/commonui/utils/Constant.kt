@@ -32,6 +32,7 @@ class Constant {
         }
 
         var home_fragment_live= true
+        var keyword=""
 
     }
 

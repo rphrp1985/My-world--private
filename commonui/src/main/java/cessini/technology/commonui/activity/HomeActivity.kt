@@ -275,7 +275,7 @@ class HomeActivity : AppCompatActivity(), ToFlowNavigable,
 
         val menu = binding.bottomNavigation.menu
         val menuItem = menu.findItem(R.id.profile_flow)
-
+            Log.d(TAG,"Inside setupnavicon")
         if (bitmap == null) {
             Glide.with(this@HomeActivity)
                 .asBitmap()

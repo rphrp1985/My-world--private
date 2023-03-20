@@ -81,8 +81,7 @@ class MainRecyclerViewController(
 
                     onClickListener(
                         ExploreOnClickEvents.ExploreFragmentToLiveFragment(
-                            "Suggestion Rooms",
-                            room.categorytitle
+                            room.categorytitle,room.categorytitle
                         )
                     )
                 }

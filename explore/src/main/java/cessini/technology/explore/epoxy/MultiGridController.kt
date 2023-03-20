@@ -37,6 +37,7 @@ class MultiGridController(var activity: FragmentActivity?,val fragment:Fragment,
                     Log.e("MultiGridController","category rooms on click listener called")
                     fragment.let {
                         Constant.home_fragment_live= false
+//                        Constant.keyword= roomInfo.
 
 //                        it.findNavController().navigate("cessini.technology.home.fragment.homefragment")
                         it.findNavController().navigate(

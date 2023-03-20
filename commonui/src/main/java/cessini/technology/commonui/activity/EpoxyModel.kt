@@ -95,28 +95,6 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                     holder.imgPerson.setZOrderMediaOverlay(true)
                     track.addSink(holder.imgPerson)
 
-//                    GridActivity.modelProcessed++
-
-//                    holder.imgPerson.addFrameListener(
-//                        object :
-//                            EglRenderer.FrameListener {
-//                            override fun onFrame(p0: Bitmap?) {
-//
-//                                ThreadUtils.runOnUiThread {
-//
-//                                    GridActivity.screenShot.value!!.add(p0)
-//                                    GridActivity.screenShot.value = GridActivity.screenShot.value
-//
-//                                    holder.imgPerson.removeFrameListener(this)
-//                                }
-//                            }
-//
-//                        }, 1.0f
-//
-//                    )
-
-
-
 
                 } catch (e: Exception) {
                 }
@@ -129,11 +107,12 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                 }
 
                 if (!videoSwitch){
-                    holder.contraint_layout.visibility=View.VISIBLE
-
+                    holder.profilePic.visibility=View.VISIBLE
+//                    holder.imgPerson.visibility= View.GONE
                 }
                 else{
-                    holder.contraint_layout.visibility=View.INVISIBLE
+                    holder.profilePic.visibility=View.INVISIBLE
+//                    holder.imgPerson.visibility= View.VISIBLE
                 }
 
                 if (!microphoneSwitch){

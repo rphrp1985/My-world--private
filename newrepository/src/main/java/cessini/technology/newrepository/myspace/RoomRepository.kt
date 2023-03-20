@@ -10,6 +10,7 @@ import cessini.technology.newapi.services.myspace.RoomSocket
 import cessini.technology.newapi.services.myspace.model.body.AcceptRoomRequestBody
 import cessini.technology.newapi.services.myspace.model.body.RoomBody
 import cessini.technology.newapi.services.myspace.model.body.UserLikeBody
+import cessini.technology.newapi.services.myspace.model.response.ApiStreamKey
 import cessini.technology.newapi.services.myworld.MyWorldService
 import cessini.technology.newrepository.extensions.createMultipartBody
 import cessini.technology.newrepository.mappers.toModel
@@ -62,7 +63,7 @@ class RoomRepository @Inject constructor(
        return "Error in sendsnapshot"
     }
 
-    suspend fun getStreamKey(room: String, email: String): Response<String> = Roomsocket.getKey(room,email).execute()
+    suspend fun getStreamKey(room: String, email: String): String = Roomsocket.getKey(room,email).getOrThrow().data
 
 
 

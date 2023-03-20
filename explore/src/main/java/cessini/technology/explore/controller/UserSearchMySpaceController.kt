@@ -129,6 +129,9 @@ class   UserSearchMySpaceController(
                     if(room.live)
                     {
 
+                        if(room.categories.isNotEmpty())
+                        Constant.keyword= room.categories[0]
+                        else Constant.keyword=""
                         Constant.home_fragment_live= false
                         fragment.findNavController().navigate(ExploreSearchFragmentDirections.actionExploreSearchFragmentToLiveFragment())
                     }

@@ -84,14 +84,13 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
         holder.joinHub.setOnClickListener {
             if (signInStatus()) {
 
-                if(HomeFragment.canSendJoinReq) {
                     onJoinButtonClicked(joinRoomSocketEventPayload)
                     holder.joinHub.visibility = View.GONE
                     holder.joinHubRequestSent.visibility = View.VISIBLE
-                }else
-                {
-                  warning()
-                }
+//                }else
+//                {
+//                  warning()
+//                }
 
             }
         }

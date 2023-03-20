@@ -10,13 +10,10 @@ import android.os.Environment
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import cessini.technology.newapi.extensions.getOrThrow
 import cessini.technology.newrepository.myspace.RoomRepository
 import com.amazonaws.util.IOUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import okhttp3.Response
-import okhttp3.ResponseBody
 import org.webrtc.*
 import java.io.File
 import java.io.FileNotFoundException
@@ -104,12 +101,12 @@ class HubViewModel @Inject constructor(
             }
         }
         if (this::remoteVideoTrack.isInitialized){
-            remoteVideoTrack.removeSink(fileRenderer)
+//            remoteVideoTrack.removeSink(fileRenderer)
             videoTrack?.setEnabled(false)
             videoTrackScreen?.setEnabled(false)
             localAudioTrackScreen?.setEnabled(false)
             localAudioTrack?.setEnabled(false)
-            fileRenderer.release()
+//            fileRenderer?.release()
         }
 
     }
@@ -259,11 +256,10 @@ class HubViewModel @Inject constructor(
     }
 
 
-    suspend fun getStreamKey(room: String, email: String): String? {
-     val x= roomRepository.getStreamKey(room,email).body()
-//    Log.d("HUBVM","res = ${}")
+    suspend fun getStreamKey(room: String, email: String): String{
+        //    Log.d("HUBVM","res = ${}")
 
-        return x
+        return roomRepository.getStreamKey(room, email)
 
     }
 

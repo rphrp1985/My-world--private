@@ -30,3 +30,7 @@ data class ApiRequestProfile(
     @SerializedName(value = "isScreenShared") val isScreenShared: Boolean,
     @SerializedName(value = "isHost") val isHost: Boolean,
 )
+
+data class ApiStreamKey(
+    @SerializedName(value = "data") val data:String
+)
