@@ -4,6 +4,7 @@ package cessini.technology.home.fragment
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Paint.Join
 import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -92,7 +93,13 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
     companion object {
         private const val TAG = "HomeFragment"
-//        var canSendJoinReq=true
+        var canSendJoinReq=true
+        var JOIN_ROOM_NAME=""
+        var REQUEST_STATUS=0
+//        0= nothing
+//        1= waiting
+//        2= joined
+//        3= declined
     }
 
     @Inject lateinit var videoRepository: VideoRepository
@@ -140,6 +147,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
         mode= Constant.home_fragment_live
         recyclerView= binding.recyclerView
+
 
         if(socketFeedViewModel.controller==null ) {
             socketFeedViewModel.controller = HomeEpoxyController(
@@ -246,9 +254,10 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
         setup()
 
-//        if(!canSendJoinReq){
-//            showFrag()
-//        }
+        if(REQUEST_STATUS!=0){
+            showFrag()
+        }else
+            hideWaiting()
 
 
 //        lifecycleScope.launch {
@@ -512,8 +521,9 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 
         Toast.makeText(context, "Join Room Request Sent", Toast.LENGTH_LONG).show()
-        showWaiting(data,roomName)
-//       canSendJoinReq= false
+        JOIN_ROOM_NAME= roomName
+        showWaiting()
+       canSendJoinReq= false
         SignalingClient.get()?.requestJoinRoom(object : SocketEventCallback {
             override fun onJoinRequestAccepted(socketId: String) {
                 (activity as HomeActivity)?.runOnUiThread {
@@ -536,24 +546,19 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
 //                })
 
-                (activity as HomeActivity)?.runOnUiThread {
-                    top_notification?.waitingBar?.visibility = View.GONE
-                        top_notification?.enterButton?.visibility = View.VISIBLE
-                    top_notification?.okButton?.visibility = View.GONE
-                    top_notification?.roomName?.text = roomName
-                    top_notification?.joinStatus?.text = "Request Approved"
-                }
 
+
+                setApproved()
 
 //                roomWaitingFragment.setApproved(roomName)
-//                canSendJoinReq= true
+                canSendJoinReq= true
 
             }
 
             override fun onJoinRequestDenied(msg: String) {
                 (activity as HomeActivity)?.runOnUiThread {
 
-                    Toast.makeText(context, "Join Request Denied", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context,"Join Request Denied", Toast.LENGTH_LONG).show()
                 }
 
 //                roomWaitingFragment.setEventCallback(object :JoinEvents{
@@ -567,21 +572,52 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 //                    }
 //
 //                })
-                (activity as HomeActivity)?.runOnUiThread {
-                    top_notification?.waitingBar?.visibility = View.GONE
-                        top_notification?.enterButton?.visibility = View.GONE
-                    top_notification?.okButton?.visibility = View.VISIBLE
-                        top_notification?.roomName?.text = roomName
-                    top_notification?.joinStatus?.text = "Request Denied"
-                }
+                setDenied()
 //                roomWaitingFragment.setDenied(roomName)
-//                canSendJoinReq= true
+                canSendJoinReq= true
 
             }
         }, data)
     }
 
+    private fun setDenied() {
+        (activity as HomeActivity)?.runOnUiThread {
+            REQUEST_STATUS=3
+            val top_notification: HomeRoomTopPopupBinding = binding.topRoom
+            top_notification?.waitingBar?.visibility = View.GONE
+            top_notification?.enterButton?.visibility = View.GONE
+            top_notification?.okButton?.visibility = View.VISIBLE
+            top_notification?.roomName?.text = JOIN_ROOM_NAME
+            top_notification?.joinStatus?.text = "Request Denied"
+        }
+    }
+
+    private fun setApproved() {
+        (activity as HomeActivity)?.runOnUiThread {
+            REQUEST_STATUS= 2
+            val top_notification: HomeRoomTopPopupBinding = binding.topRoom
+            top_notification?.waitingBar?.visibility = View.GONE
+            top_notification?.enterButton?.visibility = View.VISIBLE
+            top_notification?.okButton?.visibility = View.GONE
+            top_notification?.roomName?.text = JOIN_ROOM_NAME
+            top_notification?.joinStatus?.text = "Request Approved"
+        }
+    }
+
     fun showFrag(){
+        (activity as HomeActivity).runOnUiThread{
+
+            binding.topRoom.cardView.visibility= View.VISIBLE
+            when(REQUEST_STATUS){
+                0->hideWaiting()
+                1-> showWaiting()
+                2-> setApproved()
+                3-> setDenied()
+
+            }
+
+        }
+
 //        binding.frameLayout.visibility= View.VISIBLE
 //        childFragmentManager.beginTransaction()
 //            .replace(R.id.frame_layout, roomWaitingFragment)
@@ -596,13 +632,15 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 ////            yourFragment = null
 //        }
     }
-    fun showWaiting(data: JSONObject,roomName: String){
-        binding.topRoom.cardView.visibility= View.VISIBLE
+    fun showWaiting(){
+
         (activity as HomeActivity).runOnUiThread {
+            binding.topRoom.cardView.visibility= View.VISIBLE
+            REQUEST_STATUS= 1
             binding.topRoom?.waitingBar?.visibility= View.VISIBLE
             binding.topRoom?.enterButton?.visibility= View.GONE
             binding.topRoom?.okButton?.visibility= View.GONE
-            binding.topRoom?.roomName?.text= roomName
+            binding.topRoom?.roomName?.text= JOIN_ROOM_NAME
             binding.topRoom?.joinStatus?.text="Waiting for Accept"
         }
 //        roomWaitingFragment.setWaiting(roomName)
@@ -634,16 +672,14 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             }
         }
 
+        hideWaiting()
     }
 
 
     fun hideWaiting(){
+        REQUEST_STATUS=0
 (activity as HomeActivity).runOnUiThread {
     binding.topRoom.cardView.visibility= View.GONE
-
-//    binding.frameLayout.visibility = View.GONE
-    //            removeFragment()
-
         }
     }
 

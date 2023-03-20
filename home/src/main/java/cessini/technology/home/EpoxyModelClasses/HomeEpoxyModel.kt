@@ -42,6 +42,9 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
     lateinit var profileImageUrl:String
 
     @EpoxyAttribute
+    lateinit var roomcode:String
+
+    @EpoxyAttribute
     lateinit var context: Context
 
     @EpoxyAttribute
@@ -74,12 +77,20 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
         holder.title.text = title
         holder.username.text = username
 
+
+        if(roomcode==HomeFragment.JOIN_ROOM_NAME){
+            holder.joinHub.visibility = View.GONE
+            holder.joinHubRequestSent.visibility = View.VISIBLE
+        }
+
         /*TODO: Ask Backend to give admin profile pic in API response
            if(profileImageUrl.isNotEmpty()) {
             Glide.with(context)
                 .load(profileImageUrl)
                 .into(holder.adminProfilePic)
         }*/
+
+
 
         holder.joinHub.setOnClickListener {
             if (signInStatus()) {

@@ -131,6 +131,7 @@ class SignalingClient() {
                         val user = array.getJSONObject(i)
                         val socketid = user.optString("socket")
 //                    socketUserMap.put(socketid,user)
+                        if(socketid!=socket.id())
                         callback.onPeerJoined(socketid, false)
                     }
                 }
@@ -189,7 +190,7 @@ class SignalingClient() {
 //            callback.hidefragment()
             Log.d(TAG,"join room = ${data}")
 
-//            socket.emit("join room", data )
+            socket.emit("join room", data )
 
 
             val json= JSONObject(it!![0].toString())

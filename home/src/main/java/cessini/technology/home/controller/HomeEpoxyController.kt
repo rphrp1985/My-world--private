@@ -25,7 +25,7 @@ class HomeEpoxyController(
     override fun buildItemModel(currentPosition: Int, it: DataResponse?): EpoxyModel<*> {
 
         it?.let {
-        return HomeEpoxyModel_().link(it?.hls).title(it?.title).context(context)
+        return HomeEpoxyModel_().link(it?.hls).title(it?.title).context(context).roomcode(it?.room)
             .username(it!!.creator.name).
         joinRoomSocketEventPayload(
             JoinRoomSocketEventPayload(
@@ -40,6 +40,7 @@ class HomeEpoxyController(
                 email = it.admin
             )
         ).
+
         signInStatus {
             checkSignInStatus()
         }.
@@ -53,6 +54,7 @@ class HomeEpoxyController(
         likeButtonClick {}.
         commentButtonClick {}.
         roomButtonClick {}.
+
         id("HomeFeed$currentPosition")
 
 
