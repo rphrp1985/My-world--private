@@ -7,8 +7,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/Dark"
-        android:paddingBottom="50dp">
+        android:background="@color/Dark">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout

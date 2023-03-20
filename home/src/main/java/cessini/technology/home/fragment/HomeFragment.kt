@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -112,6 +113,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         savedInstanceState: Bundle?
     ): View {
         val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.backgroundTintList=ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.cpDark))
         bottomNavigationView.itemIconTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
         bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
         return super.onCreateView(inflater, container, savedInstanceState)
@@ -411,6 +413,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
     override fun onDestroyView() {
         val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.backgroundTintList=ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.cpWhite))
         bottomNavigationView.itemIconTintList = null
         bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.drawable.bottom_nav_bar_item_color))
         super.onDestroyView()
@@ -667,12 +670,12 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         )
     }*/
 
-//    private fun setUpNavViewColor(color: String) {
-//        if (!isInDarkTheme()) {
-//            (activity as HomeActivity).binding.navBarView.background =
-//                ColorDrawable(Color.parseColor(color))
-//        }
-//    }
+    private fun setUpNavViewColor(color: String) {
+        if (!isInDarkTheme()) {
+            (activity as HomeActivity).binding.navBarView.background =
+                ColorDrawable(Color.parseColor(color))
+        }
+    }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         v?.onTouchEvent(event)
@@ -744,7 +747,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         if(!Constant.home_fragment_live){
 //            Constant.home_fragment_live= true
             (activity as HomeActivity).binding.bottomNavigation.visibility = View.GONE
-            binding.translucentBackground.visibility= View.GONE
+//            binding.translucentBackground.visibility= View.GONE
             binding.backButton.visibility=View.VISIBLE
 //            socketFeedViewModel.setPagingSuggestion()
 //            setupEpoxySuggestion()
@@ -752,7 +755,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         }else
         {
             (activity as HomeActivity).binding.bottomNavigation.visibility = View.VISIBLE
-            binding.translucentBackground.visibility= View.GONE
+//            binding.translucentBackground.visibility= View.GONE
             binding.backButton.visibility=View.GONE
 
         }
