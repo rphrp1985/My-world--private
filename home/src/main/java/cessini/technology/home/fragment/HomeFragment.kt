@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.util.TypedValue
 import android.view.*
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -121,7 +122,13 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // Set the navigation bar color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity?.window?.navigationBarColor = Color.BLACK
+        }
+
         val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.backgroundTintList=ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.Black))
         bottomNavigationView.itemIconTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
         bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
         return super.onCreateView(inflater, container, savedInstanceState)
@@ -397,7 +404,16 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
     }
 
     override fun onDestroyView() {
+        val typedValue = TypedValue()
+        val theme = requireContext().theme
+        theme.resolveAttribute(android.R.attr.navigationBarColor, typedValue, true)
+        val originalColor = typedValue.data
+        // Revert the navigation bar color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity?.window?.navigationBarColor = originalColor // originalColor is the color that the navigation bar was before the fragment was loaded
+        }
         val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavigationView.backgroundTintList=ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.cpWhite))
         bottomNavigationView.itemIconTintList = null
         bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.drawable.bottom_nav_bar_item_color))
         super.onDestroyView()

@@ -43,6 +43,7 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="@dimen/dimen_15"
         android:layout_marginBottom="@dimen/dimen_15"
+        android:background="@drawable/bottom_nav_gradient"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
