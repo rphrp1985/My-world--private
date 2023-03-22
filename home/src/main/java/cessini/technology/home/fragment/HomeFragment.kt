@@ -122,7 +122,6 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         savedInstanceState: Bundle?
     ): View {
         val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNavigationView.backgroundTintList=ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.cpDark))
         bottomNavigationView.itemIconTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
         bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.white))
         return super.onCreateView(inflater, container, savedInstanceState)
@@ -399,7 +398,6 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 
     override fun onDestroyView() {
         val bottomNavigationView=requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNavigationView.backgroundTintList=ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.cpWhite))
         bottomNavigationView.itemIconTintList = null
         bottomNavigationView.itemTextColor = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.drawable.bottom_nav_bar_item_color))
         super.onDestroyView()
