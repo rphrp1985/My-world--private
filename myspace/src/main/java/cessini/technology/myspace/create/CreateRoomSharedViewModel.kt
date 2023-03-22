@@ -111,8 +111,13 @@ class CreateRoomSharedViewModel @Inject constructor(
     fun addData(){
         if(flag) {
             viewModelScope.launch {
-                var response = registrationRepository.getVideoCategories()
-                data.value = response.data
+                try {
+
+                    var response = registrationRepository.getVideoCategories()
+                    data.value = response.data
+                }catch (e:Exception){
+                    e.printStackTrace()
+                }
             }
             flag=false
         }

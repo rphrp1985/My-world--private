@@ -24,8 +24,8 @@ data class DataResponse(
     @SerializedName("category") val category: List<String>,//
     @SerializedName("creator") val creator: User,//
     @SerializedName("dash") val dash:String,//
-    @SerializedName("hls") val hls:String
-
+    @SerializedName("hls") val hls:String,
+    @SerializedName("flv") val flv:String
 
 
 

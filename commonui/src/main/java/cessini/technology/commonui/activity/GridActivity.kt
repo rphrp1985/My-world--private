@@ -170,7 +170,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         }
         val screenWidth: Int = Resources.getSystem().displayMetrics.widthPixels
-        val screenHeight: Int = Resources.getSystem().displayMetrics.heightPixels - 20
+        val screenHeight: Int = Resources.getSystem().displayMetrics.heightPixels
 
          controller = EpoxyController(screenHeight, screenWidth, applicationContext)
 

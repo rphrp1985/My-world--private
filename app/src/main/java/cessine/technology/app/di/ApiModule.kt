@@ -201,11 +201,12 @@ object ApiModule {
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
-            .readTimeout(5000, TimeUnit.SECONDS)
-            .writeTimeout(5000, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .writeTimeout(120, TimeUnit.SECONDS)
             .addInterceptor(authInterceptor)
             .hostnameVerifier(hostnameVerifier)
             .sslSocketFactory(sslSocketFactory, trustManager)
+            .callTimeout(120,TimeUnit.SECONDS)
             .build()
         return okhttpclient
     }

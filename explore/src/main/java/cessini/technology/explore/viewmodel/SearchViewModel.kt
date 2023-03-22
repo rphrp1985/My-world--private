@@ -420,6 +420,7 @@ class SearchViewModel @Inject constructor(
 
             val response = exploreRepository.exploreUser()
             response.collectLatest { result ->
+                Log.d(TAG,"result explore = $response")
                 when (result) {
                     is Resource.Success -> {
                         allCategory.value = result.data

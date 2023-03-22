@@ -5,7 +5,7 @@ object ExploreConstants {
     // prev: http://15.207.114.134/
     const val BASE_ENDPOINT = "http://others.joinmyworld.in/"
     // TODO: Replace with https://videos-api.joinmyworld.live/
-    const val BASE_ENDPOINT_INFO = "http://43.204.231.19/"
+    const val BASE_ENDPOINT_INFO = "http://videos.joinmyworld.in/"
     // TODO: Replace with https://recording-api.joinmyworld.live/
     const val BASE_ENDPOINT_RECORDED = "http://43.204.221.135/"
     const val EXPLORE_ENDPOINT_AUTH = "explore/"

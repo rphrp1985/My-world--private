@@ -152,6 +152,7 @@ internal class MySpaceAreaFragment(val levelInterface: BottomSheetLevelInterface
 
         lifecycleScope.launchWhenCreated {
             launch(Dispatchers.Default) {
+                try{
                 val gg = registrationRepository.getVideoCategories().data.forEach {
 //                     Log.d(TAG,"it is $it")
                     dataTopicList.add(it.key)
@@ -198,6 +199,9 @@ internal class MySpaceAreaFragment(val levelInterface: BottomSheetLevelInterface
 
                 }
                 // Log.d(TAG,"chipmap is $chipMap")
+            }catch (e:Exception){
+                e.printStackTrace()
+                }
             }
         }
 

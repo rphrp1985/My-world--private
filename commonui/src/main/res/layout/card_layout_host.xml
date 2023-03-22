@@ -10,8 +10,8 @@
         android:theme="@style/Theme.MaterialComponents.Light"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:elevation="@dimen/dimen_5">
-
+           >
+<!--        android:elevation="@dimen/dimen_5"-->
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/localView"
             xmlns:app="http://schemas.android.com/apk/res-auto"

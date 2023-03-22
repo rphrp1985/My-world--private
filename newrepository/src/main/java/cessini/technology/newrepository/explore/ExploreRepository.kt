@@ -65,15 +65,17 @@ class ExploreRepository @Inject constructor(
         return flow {
             try {
 
+                Log.d("ExploreRespo","Exploruser -------")
                 val response = if (userIdentifierPreferences.loggedIn) {
                     //If user is Signed In (get data for signed in user)
                     exploreService.explore().toModel()
                 } else {
 
                     //If user is not Signed In (get data for not signed in user)
-                    exploreService.exploreUnAuth(userIdentifierPreferences.uuid).toModel()
+                    exploreService.exploreUnAuth().toModel()
                 }
 
+                Log.d("ExploreRespo","Explore = ${response}")
                 emit(Resource.Success(data = response))
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -82,6 +84,10 @@ class ExploreRepository @Inject constructor(
             } catch (e: HttpException) {
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data"))
+            }
+            catch (e:Exception){
+                Log.d("ExploreRespo","Error in expkore")
+                e.printStackTrace()
             }
         }
 

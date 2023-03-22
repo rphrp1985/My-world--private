@@ -21,7 +21,7 @@ class ExplorePagination constructor(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, LiveRoom> {
         return try {
                 if (authRegisterUser) {
-                    val response = exploreService.exploreUnAuth(userIdentifierPreferences.uuid).toModel().liveRooms
+                    val response = exploreService.exploreUnAuth().toModel().liveRooms
                     LoadResult.Page(
                         data = response,
                         prevKey = null,

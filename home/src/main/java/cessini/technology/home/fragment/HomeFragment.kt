@@ -173,32 +173,6 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             )
         }
 
-//        if( !mode ) {
-//            socketFeedViewModel.controllerSuggestion = HomeEpoxyController(
-//                context = requireContext(),
-//                onJoinClicked = { joinRoomSocketEventPayload ->
-//                    if (!isUserSignedIn)
-//                        showSignInBottomSheet()
-//                    else {
-//                        joinRoomRequest(convertToJSONObject(joinRoomSocketEventPayload),joinRoomSocketEventPayload.room)
-//                    }
-//                },
-//                checkSignInStatus = {
-//                    if (!isUserSignedIn) {
-//                        showSignInBottomSheet()
-//                        false
-//                    } else true
-//                },
-//                canLoadMore = socketFeedViewModel.canLoadMore,
-//
-//                warningFunction =  {
-//                    onCanNotJoin()
-//                }
-//            )
-//        }
-
-
-
 
         homeFeedViewModel.isUserSignedIn()
         binding.recyclerView.setController(socketFeedViewModel.controller!!)
@@ -215,7 +189,8 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
             if (isSignedIn) {
                 isUserSignedIn = true
                 homeFeedViewModel.loadUserInfo()
-                temp = userIdentifierPreferences.id
+                Log.d(TAG,"auth entity ${homeFeedViewModel.authEntity}")
+                temp = homeFeedViewModel.authEntity.id
 
             }else{
             temp = userIdentifierPreferences.uuid

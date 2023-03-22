@@ -24,9 +24,9 @@ import retrofit2.http.Path
 interface ExploreService {
 
     @Headers(ApiParameters.NO_AUTH_HEADER)
-    @GET("${ExploreConstants.EXPLORE_ENDPOINT}{id}")
+    @GET("${ExploreConstants.EXPLORE_ENDPOINT_AUTH}")
     suspend fun exploreUnAuth(
-        @Path(value = "id") id: String
+//        @Path(value = "id") id: String
     ): ApiExplore
 
 //    @Headers(ApiParameters.AUTH_HEADER)

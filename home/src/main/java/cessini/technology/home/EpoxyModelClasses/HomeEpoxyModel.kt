@@ -16,6 +16,8 @@ import com.airbnb.epoxy.EpoxyHolder
 import com.airbnb.epoxy.EpoxyModelClass
 import com.airbnb.epoxy.EpoxyModelWithHolder
 import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.extractor.flv.FlvExtractor
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
@@ -153,6 +155,7 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
             return
         val uri= Uri.parse(link)
         val mediaSource=HlsMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
+
         player.prepare(mediaSource)
         player.playWhenReady=playWhenReady
 
