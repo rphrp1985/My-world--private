@@ -152,6 +152,9 @@ var currentId : String ="ID825560790000000104"
 
             if (followingStatus.value == true) {
                 unfollowUser()
+                viewModelScope.launch {
+                    amazonSNSImpl.deleteDataUnfollow(profileEntity.id)
+                }
                 Log.e("Follow","Unfollowed")
                 followingStatus.value = false
             } else {
