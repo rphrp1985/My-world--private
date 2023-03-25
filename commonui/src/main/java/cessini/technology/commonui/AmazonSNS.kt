@@ -205,7 +205,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
                 Log.e(TAG,profile_image)
                 Log.e(TAG,username)
                 newdocRef.collection("NotificationData")
-                    .document()
+                    .document(userId)
                     .set(MyWorldNotification(userId,message,username,profile_image))
                     .addOnCompleteListener {
                         if (it.isSuccessful) {
@@ -222,6 +222,15 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
 
 
 
+    }
+    fun deleteDataUnfollow(id:String){
+        val colRef=Firebase.firestore.collection("GlobalNotifications")
+        val newdocRef=colRef.document("${id}")
+        newdocRef.collection("NotificationData")
+            .document(userId)
+            .delete()
+            .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully deleted!") }
+            .addOnFailureListener { e -> Log.w(TAG, "Error deleting document", e) }
     }
 }
 

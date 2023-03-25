@@ -131,7 +131,12 @@ class NotificationTabFragment : Fragment() {
                     image(notification.profile_image)
                     time(5L)
                     title(notification.username)
-                    onClick { _ -> }
+                    onClick { _ ->
+                        this@NotificationTabFragment.navigateToProfile(
+                            notification.id,
+                            baseViewModel.id.value.orEmpty()
+                        )
+                    }
                 }
             }
         }
