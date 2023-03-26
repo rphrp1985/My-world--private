@@ -10,11 +10,11 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
@@ -34,6 +34,7 @@ import cessini.technology.model.recordmyspacegrid.recordGrid
 import cessini.technology.model.recordmyspacegrid.viewpagerItem
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.ToFlowNavigable
+import cessini.technology.newrepository.explore.ExploreRepository
 import cessini.technology.newrepository.myspace.RoomRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.airbnb.epoxy.Carousel
@@ -51,6 +52,8 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
 
     companion object {
         private const val TAG = "ExploreFragment"
+//        var Explorecontext:Context
+//        var activity:FragmentActivity?=null
     }
 
     val viewModel: SearchViewModel by activityViewModels()
@@ -61,6 +64,9 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
 
     @Inject
     lateinit var roomRepository: RoomRepository
+
+    @Inject
+    lateinit var exploreRepository: ExploreRepository
 
     val videoViewModel: ExploreSearchViewModel by activityViewModels()
 
@@ -221,6 +227,7 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
             roomRepository,
             userIdentifierPreferences,
             videoViewModel,
+            exploreRepository
         ) { onItemClick ->
             when (onItemClick) {
                 is ExploreOnClickEvents.ToAccessRoomFlow -> {

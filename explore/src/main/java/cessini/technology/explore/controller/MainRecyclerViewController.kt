@@ -2,27 +2,24 @@ package cessini.technology.explore.controller
 
 import android.content.Context
 import android.util.Log
-import android.widget.Button
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import cessini.technology.cvo.exploremodels.CategoryModel
 import cessini.technology.explore.R
 import cessini.technology.explore.adapter.MainRecyclerHeaderAdapter
 import cessini.technology.explore.childViewItem
+import cessini.technology.explore.childViewItemPaged
 import cessini.technology.explore.databinding.HeaderRefreshExploreBinding
 import cessini.technology.explore.epoxy.*
 import cessini.technology.explore.headerViewItem
 import cessini.technology.explore.states.ExploreOnClickEvents
 import cessini.technology.explore.viewmodel.ExploreSearchViewModel
 import cessini.technology.explore.viewmodel.SearchViewModel
-import cessini.technology.model.Explore
-import cessini.technology.model.HealthFitness
-import cessini.technology.model.Video
+import cessini.technology.model.*
+import cessini.technology.newrepository.explore.ExploreRepository
 import cessini.technology.newrepository.myspace.RoomRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.airbnb.epoxy.*
-import kotlinx.android.synthetic.main.header_refresh_explore.view.*
 import kotlin.math.min
 
 class MainRecyclerViewController(
@@ -33,6 +30,7 @@ class MainRecyclerViewController(
     val roomRepository: RoomRepository,
     val userIdentifierPreferences: UserIdentifierPreferences,
     var videoViewModel: ExploreSearchViewModel,
+    val exploreRepository: ExploreRepository,
     var onClickListener: (event: ExploreOnClickEvents) -> Unit
 ) : TypedEpoxyController<Explore>() {
 
@@ -48,6 +46,7 @@ class MainRecyclerViewController(
         setHeader(allCategory)
         // Live
         // Rooms
+
         childViewItem {
             id("room")
             categoryTitle("Trending Hub")
@@ -68,26 +67,34 @@ class MainRecyclerViewController(
             Log.i("Live hub data", allCategory.trendingRooms.toString())
             childController(childRecyclerViewController)
         }
-        allCategory.categoryRooms.forEachIndexed { index, room ->
-            val multiGridController = MultiGridController(activity, fragment, room.categorytitle)
-            multiGridController.allRooms = room.rooms
+
+        //Live rooms with thumbnal
+
+
+
+
+        val multiGridController= viewModel!!.SuggestedLiveRoom(fragment!!, activity!!)
+
+//        allCategory.categoryRooms.forEachIndexed { index, room ->
+//
+//            multiGridController.allRooms = room.rooms
             suggestedLiveMyspaceModelRecycler {
-                id("$index" + "${room.categorytitle} ")
+                id("1" + "Trending Technology ")
                 maincontroller(multiGridController)
-                categoryTitle("${room.categorytitle}")
+                categoryTitle("Trending Technology")
                 onClickListener { _ ->
                     var t1 = ""
                     Log.e("MainRVController", "category rooms on click listener called")
 
                     onClickListener(
                         ExploreOnClickEvents.ExploreFragmentToLiveFragment(
-                            room.categorytitle,room.categorytitle
+                            "Trending Technology","Trending Technology"
                         )
                     )
                 }
 
             }
-        }
+//        }
 
 
         // List Of Video Stories
@@ -125,54 +132,38 @@ class MainRecyclerViewController(
 
         videos.subList(0, min(2, allCategory.videos.size)).let(showVideos)
 
-        childViewItem {
+        // upcoming room epoxy
+
+        val upcomingCongroller= viewModel!!.UpcomingRooms(context!!,fragment!!,onClickListener,activity!!)
+
+        childViewItemPaged {
             Log.e("Upcoming", "It is here")
             id("upcoming")
             categoryTitle("Upcoming Hub")
             visible(0)
-            size("${allCategory.rooms.size} hubs")
-            val childRecyclerViewController =
-                ChildRecyclerViewController(
-                    context!!,
-                    5,
-                    viewModel!!,
-                    activity!!,
-                    fragment,
-                    roomRepository,
-                    userIdentifierPreferences,
-                    onClickListener
-                )
-
-            childRecyclerViewController.rooms = allCategory.rooms.toMutableList()
-
-            childController(childRecyclerViewController)
+            size(" ")
+            childController(upcomingCongroller)
         }
 
 //        videos.subList(min(2, allCategory.videos.size), min(4, allCategory.videos.size - 2))
 //            .let(showVideos)
 
-        childViewItem {
+
+        // voices to follow pages epoxy
+
+     val top_profilechildRecyclerViewController= viewModel!!.Top_profiles(context!!,fragment,onClickListener,activity!!)
+
+        childViewItemPaged {
             Log.e("Voices", allCategory.topProfiles.toMutableList().toString())
             id("1")
             categoryTitle("Voices to Follow")
             visible(0)
-            size("${allCategory.topProfiles.size} voices")
-            val childRecyclerViewController =
-                ChildRecyclerViewController(
-                    context!!,
-                    1,
-                    viewModel!!,
-                    activity!!,
-                    fragment,
-                    roomRepository,
-                    userIdentifierPreferences,
-                    onClickListener
-                )
-
-            childRecyclerViewController.topProfiles = allCategory.topProfiles.toMutableList()
-
-            childController(childRecyclerViewController)
+            size(" ")
+//            childRecyclerViewController.topProfiles = allCategory.topProfiles.toMutableList()
+            childController(top_profilechildRecyclerViewController)
         }
+
+
 
         videos.subList(min(4, allCategory.videos.size), allCategory.videos.size)
             .let(showVideos)

@@ -1,16 +1,27 @@
 package cessini.technology.explore.viewmodel
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import android.view.View
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.findNavController
 import androidx.paging.ExperimentalPagingApi
+import androidx.paging.PagedList
 import androidx.paging.PagingData
+import androidx.paging.RxPagedListBuilder
 import cessini.technology.commonui.utils.networkutil.NetworkUtils
+import cessini.technology.explore.controller.ChildRecyclerViewControllerPaged
+import cessini.technology.explore.controller.datasource.Live_RoomDataFactory
+import cessini.technology.explore.controller.datasource.TopProfileDataFactory
+import cessini.technology.explore.controller.datasource.UpcomingRoomDataFactory
+import cessini.technology.explore.epoxy.MultiGridController
 import cessini.technology.explore.fragment.ExploreFragmentDirections
+import cessini.technology.explore.states.ExploreOnClickEvents
 import cessini.technology.model.*
 import cessini.technology.model.search.UserLikes
 import cessini.technology.newrepository.explore.ExploreRepository
@@ -21,6 +32,9 @@ import cessini.technology.newrepository.timlineRoomRepo.TimelineRepository
 import cessini.technology.newrepository.utils.Resource
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.observers.DisposableObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
@@ -72,7 +86,181 @@ class SearchViewModel @Inject constructor(
             fetchAllRecordedVideos()
             fetchAllCommonRecordedVideos()
             getFollowing()
+
+//            SuggestedLiveRoom()
+//            UpcomingRooms()
+//            Top_ptfiles()
         }
+    }
+
+
+    var top_profilechildRecyclerViewController :ChildRecyclerViewControllerPaged?=null
+
+    fun Top_profiles(
+        context: Context,
+        fragment: Fragment,
+        onClickListener: (event: ExploreOnClickEvents) -> Unit,
+        activity: FragmentActivity
+    ): ChildRecyclerViewControllerPaged? {
+
+
+        if(top_profilechildRecyclerViewController!=null) {
+            return top_profilechildRecyclerViewController
+        }
+
+         top_profilechildRecyclerViewController =
+            ChildRecyclerViewControllerPaged(
+                roomRepository,
+                userIdentifierPreferences,
+                1,
+                this,
+                context,
+                activity,
+                fragment,
+                onClickListener
+
+            )
+        val top_profilecompositeDisposable : CompositeDisposable  = CompositeDisposable()
+        var  top_profileconfig  : PagedList.Config = PagedList.Config.Builder()
+            .setPageSize(2)
+            .setInitialLoadSizeHint(15)
+            .setEnablePlaceholders(true)
+            .build()
+
+        val top_profiledatasourceFactory =
+            TopProfileDataFactory(
+                top_profilecompositeDisposable,
+                exploreRepository
+            )// false
+
+        val top_profilerxPageList: Observable<PagedList<ExplorePagedData>> = RxPagedListBuilder(top_profiledatasourceFactory,top_profileconfig).buildObservable()
+
+
+
+
+        top_profilecompositeDisposable.add(
+            top_profilerxPageList
+                .subscribeWith(object : DisposableObserver<PagedList<ExplorePagedData>>() {
+                    override fun onComplete() {
+
+                    }
+                    override fun onNext(pagedList: PagedList<ExplorePagedData>) {
+                        Log.d("Top Profile","page list = $pagedList")
+                        top_profilechildRecyclerViewController!!.submitList(pagedList)
+                    }
+                    override fun onError(e: Throwable) {
+                        Log.e("Home WebSocket", "error: ${e}")
+//                        onPageLoadFailed(e)
+                    }
+
+                })
+        )
+     return top_profilechildRecyclerViewController
+    }
+
+
+    var multiGridController : MultiGridController?=null
+    fun SuggestedLiveRoom(fragment: Fragment, activity: FragmentActivity): MultiGridController? {
+
+        if(multiGridController!=null)
+            return multiGridController
+
+        multiGridController = MultiGridController( "Trending Technology",activity,fragment)
+        val Live_RoomcompositeDisposable : CompositeDisposable = CompositeDisposable()
+        var  Live_Roomconfig  : PagedList.Config = PagedList.Config.Builder()
+            .setPageSize(2)
+            .setInitialLoadSizeHint(15)
+            .setEnablePlaceholders(true)
+            .build()
+
+        val Live_RoomdatasourceFactory =
+            Live_RoomDataFactory(
+                Live_RoomcompositeDisposable,
+                exploreRepository
+            )// false
+
+        val Live_RoomrxPageList: Observable<PagedList<roomInfo>> = RxPagedListBuilder(Live_RoomdatasourceFactory,Live_Roomconfig).buildObservable()
+
+
+
+        Live_RoomcompositeDisposable.add(
+            Live_RoomrxPageList
+                .subscribeWith(object : DisposableObserver<PagedList<roomInfo>>() {
+                    override fun onComplete() {
+
+                    }
+                    override fun onNext(pagedList: PagedList<roomInfo>) {
+                        Log.d("Live Room","page list = $pagedList")
+                        multiGridController?.submitList(pagedList)
+                    }
+                    override fun onError(e: Throwable) {
+                        Log.e("Home WebSocket", "error: ${e}")
+//                        onPageLoadFailed(e)
+                    }
+
+                })
+        )
+return multiGridController
+    }
+
+
+    var UpcommingchildRecyclerViewController :ChildRecyclerViewControllerPaged?=null
+    fun UpcomingRooms( context: Context,
+                       fragment: Fragment,
+                       onClickListener: (event: ExploreOnClickEvents) -> Unit,
+                       activity: FragmentActivity): ChildRecyclerViewControllerPaged? {
+
+        if(UpcommingchildRecyclerViewController!=null)
+            return UpcommingchildRecyclerViewController
+
+
+        UpcommingchildRecyclerViewController =
+            ChildRecyclerViewControllerPaged(
+                roomRepository,
+                userIdentifierPreferences,
+                5,
+                this,
+                context,
+                activity,
+                fragment,
+                onClickListener
+
+            )
+        val UpcomingroomcompositeDisposable : CompositeDisposable  = CompositeDisposable()
+        var  upcomingconfig  : PagedList.Config = PagedList.Config.Builder()
+            .setPageSize(2)
+            .setInitialLoadSizeHint(15)
+            .setEnablePlaceholders(true)
+            .build()
+
+        val upcomigdatasourceFactory =
+            UpcomingRoomDataFactory(
+                UpcomingroomcompositeDisposable,
+                exploreRepository
+            )// false
+
+        val UpcomingrxPageList: Observable<PagedList<ExplorePagedData>> = RxPagedListBuilder(upcomigdatasourceFactory,upcomingconfig).buildObservable()
+
+
+
+        UpcomingroomcompositeDisposable.add(
+            UpcomingrxPageList
+                .subscribeWith(object : DisposableObserver<PagedList<ExplorePagedData>>() {
+                    override fun onComplete() {
+
+                    }
+                    override fun onNext(pagedList: PagedList<ExplorePagedData>) {
+                        Log.d("Upcoming","page list = $pagedList")
+                        UpcommingchildRecyclerViewController?.submitList(pagedList)
+                    }
+                    override fun onError(e: Throwable) {
+                        Log.e("Home WebSocket", "error: ${e}")
+//                        onPageLoadFailed(e)
+                    }
+
+                })
+        )
+return UpcommingchildRecyclerViewController
     }
 
     fun getFollowing() {
@@ -239,7 +427,7 @@ class SearchViewModel @Inject constructor(
 
     fun fetchSuggestedRooms() {
         viewModelScope.launch {
-            val response = exploreRepository.getsuggestedrooms()
+            val response = exploreRepository.getsuggestedrooms(1)
             response.collectLatest { result ->
                 when (result) {
                     is Resource.Success -> {

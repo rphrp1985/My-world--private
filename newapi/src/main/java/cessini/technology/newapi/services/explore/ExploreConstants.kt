@@ -1,5 +1,7 @@
 package cessini.technology.newapi.services.explore
 
+import cessini.technology.model.Explore
+
 object ExploreConstants {
     // TODO: Replace with https://others-api.joinmyworld.live/
     // prev: http://15.207.114.134/
@@ -23,5 +25,7 @@ object ExploreConstants {
     const val COMMON_RECORD_END_POINT = "getRecordings/"
     const val SUGGESTION_CAT_ROOMS="suggested/liverooms/"
     const val TRENDING_ROOMS = "trending/rooms"
+    const val EXPLORE_ROOM ="/rooms/"
+    const val EXPLORE_TOP_PROFILE="/topProfiles/"
 }
 

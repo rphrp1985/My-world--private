@@ -41,13 +41,13 @@ abstract class VoiceModel : EpoxyModelWithHolder<VoiceModel.Holder>() {
     lateinit var title1: String
 
     @EpoxyAttribute
-    lateinit var vid: String
+     var vid: String=""
 
     @EpoxyAttribute
     lateinit var channelName: String
 
     @EpoxyAttribute
-    lateinit var activity: FragmentActivity
+     var activity: FragmentActivity?=null
 
     @EpoxyAttribute
     lateinit var followingStatusId: HashMap<String, Boolean>
@@ -60,31 +60,32 @@ abstract class VoiceModel : EpoxyModelWithHolder<VoiceModel.Holder>() {
     }
 
     override fun bind(holder: Holder) {
-        super.bind(holder)
-        with(holder)
-        {
-            val publicProfileViewModel = activity.run {
-                ViewModelProvider(this)[PublicProfileViewModel::class.java]
-            }
-            var signedIn = (activity as HomeActivity).baseViewModel.authFlag.value
-            followButton(btn)
-            Glide.with(this.image.context).load(img).into(this.image)
-            this.title.text = title1
-            image.setOnClickListener {
-                    ProfileConstants.creatorModel= SearchCreatorApiResponse(
-                        vid,title1,channelName,img
+        activity?.let {
+            super.bind(holder)
+            with(holder)
+            {
+                val publicProfileViewModel = activity?.run {
+                    ViewModelProvider(this)[PublicProfileViewModel::class.java]
+                }
+                var signedIn = (activity as HomeActivity).baseViewModel.authFlag.value
+                followButton(btn)
+                Glide.with(this.image.context).load(img).into(this.image)
+                this.title.text = title1
+                image.setOnClickListener {
+                    ProfileConstants.creatorModel = SearchCreatorApiResponse(
+                        vid, title1, channelName, img
                     )
-                onClickEvents(ExploreOnClickEvents.ToGlobalProfileFlow)
-            }
-            btn.setOnClickListener {
-                publicProfileViewModel.activity = activity
-                Log.e("VoiceModel", "ButtonClickListenerCalled Signed=${signedIn}")
-                publicProfileViewModel.onFollowClickExplore(vid)
-                if (signedIn == true)
-                    followButtonClick(btn)
+                    onClickEvents(ExploreOnClickEvents.ToGlobalProfileFlow)
+                }
+                btn.setOnClickListener {
+                    publicProfileViewModel?.activity = activity!!
+                    Log.e("VoiceModel", "ButtonClickListenerCalled Signed=${signedIn}")
+                    publicProfileViewModel!!.onFollowClickExplore(vid)
+                    if (signedIn == true)
+                        followButtonClick(btn)
+                }
             }
         }
-
     }
 
     class Holder : EpoxyHolder() {
@@ -100,32 +101,37 @@ abstract class VoiceModel : EpoxyModelWithHolder<VoiceModel.Holder>() {
 
 
     private fun followButton(btn: Button) {
-        if (followingStatusId.get(vid) != null && followingStatusId.get(vid) == true) {
-            btn.text = "Unfollow"
-            btn.setBackgroundResource(R.drawable.unfollow_btn)
-            btn.setTextColor(ContextCompat.getColor(activity, R.color.cpTextDark))
-            //btn.setTextColor(Color.rgb(118,118,118))
-        } else {
-            btn.text = "Follow"
-            btn.setTextColor(ContextCompat.getColor(activity, R.color.btnfllow))
-            //btn.setTextColor(Color.rgb(239,239,239))
-            btn.setBackgroundResource(R.drawable.join_myspace_upcoming)
+        activity?.let {
+            if (followingStatusId.get(vid) != null && followingStatusId.get(vid) == true) {
+                btn.text = "Unfollow"
+                btn.setBackgroundResource(R.drawable.unfollow_btn)
+
+                btn.setTextColor(ContextCompat.getColor(it, R.color.cpTextDark))
+                //btn.setTextColor(Color.rgb(118,118,118))
+            } else {
+                btn.text = "Follow"
+                btn.setTextColor(ContextCompat.getColor(it, R.color.btnfllow))
+                //btn.setTextColor(Color.rgb(239,239,239))
+                btn.setBackgroundResource(R.drawable.join_myspace_upcoming)
+            }
         }
     }
 
     private fun followButtonClick(btn: Button) {
-        if (followingStatusId.get(vid) == false) {
-            btn.text = "Unfollow"
-            btn.setTextColor(ContextCompat.getColor(activity, R.color.cpTextDark))
-            //btn.setTextColor(Color.rgb(118,118,118))
-            btn.setBackgroundResource(R.drawable.unfollow_btn)
-            followingStatusId.put(vid, true)
-        } else {
-            btn.text = "Follow"
-            btn.setTextColor(ContextCompat.getColor(activity, R.color.btnfllow))
-            //btn.setTextColor(Color.rgb(239,239,239))
-            btn.setBackgroundResource(R.drawable.join_myspace_upcoming)
-            followingStatusId.put(vid, false)
+        activity?.let {
+            if (followingStatusId.get(vid) == false) {
+                btn.text = "Unfollow"
+                btn.setTextColor(ContextCompat.getColor(it, R.color.cpTextDark))
+                //btn.setTextColor(Color.rgb(118,118,118))
+                btn.setBackgroundResource(R.drawable.unfollow_btn)
+                followingStatusId.put(vid, true)
+            } else {
+                btn.text = "Follow"
+                btn.setTextColor(ContextCompat.getColor(it, R.color.btnfllow))
+                //btn.setTextColor(Color.rgb(239,239,239))
+                btn.setBackgroundResource(R.drawable.join_myspace_upcoming)
+                followingStatusId.put(vid, false)
+            }
         }
     }
 }

@@ -2,17 +2,16 @@ package cessini.technology.newapi.services.explore
 
 import cessini.technology.model.*
 import cessini.technology.newapi.ApiParameters
-import cessini.technology.newapi.model.ApiGetNotification
 import cessini.technology.newapi.model.ApiMessage
 import cessini.technology.newapi.model.ApiNotification
 import cessini.technology.newapi.model.ApiNotificationWhenLoggedIn
-import cessini.technology.newapi.services.explore.ExploreConstants
 import cessini.technology.newapi.services.explore.model.body.RegisterAuthUserBody
 import cessini.technology.newapi.services.explore.model.body.TokenBody
 import cessini.technology.newapi.services.explore.model.body.UserRegistrationBody
 import cessini.technology.newapi.services.explore.model.response.ApiExplore
+import cessini.technology.newapi.services.explore.model.response.ApiExploreProfile
+import cessini.technology.newapi.services.explore.model.response.ApiExploreRoom
 import cessini.technology.newapi.services.explore.model.response.ApiSongs
-import retrofit2.Call
 
 import retrofit2.Response
 import retrofit2.http.Body
@@ -29,15 +28,31 @@ interface ExploreService {
 //        @Path(value = "id") id: String
     ): ApiExplore
 
+//    @GET("${ExploreConstants.EXPLORE_ENDPOINT_AUTH}")
+//    suspend fun explorePaged(
+////        @Path(value = "id") id: String
+//    ): ApiExplore
+
 //    @Headers(ApiParameters.AUTH_HEADER)
     @GET(value = "${ExploreConstants.EXPLORE_ENDPOINT_AUTH}")
     suspend fun explore(
 //        @Path(value = "id") id: String,
     ): ApiExplore
 
-    @GET(value = "${ExploreConstants.SUGGESTION_CAT_ROOMS}{id}")
+    @GET( value = "${ExploreConstants.EXPLORE_ROOM}{page}" )
+    suspend fun explore_room(
+        @Path(value = "page") page:Int
+    ): Response<ApiExploreRoom>
+
+    @GET( value = "${ExploreConstants.EXPLORE_TOP_PROFILE}{page}" )
+    suspend fun explore_top_profile(
+        @Path(value = "page") id:Int
+    ): Response<ApiExploreProfile>
+
+    @GET(value = "${ExploreConstants.SUGGESTION_CAT_ROOMS}{id}/{page}")
     suspend fun getSuggestedRooms(
-        @Path(value = "id") id:String
+        @Path(value = "id") id: String,
+        @Path(value="page") page: Int
     ):suggestionroomresponse
 
     @GET(value = "${ExploreConstants.COMPONENT_END_POINT}{id}")

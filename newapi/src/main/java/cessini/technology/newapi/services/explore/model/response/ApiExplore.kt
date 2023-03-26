@@ -34,3 +34,23 @@ data class ApiTopProfile(
     @SerializedName(value = "profile_picture") val profilePicture: String,
 //    @SerializedName(value = "is_following") val is_following:Boolean?,
 )
+
+data class ApiExploreRoom(
+    @SerializedName(value = "message") val message:ApiExploreRoomMessage,
+    @SerializedName( value = "status") val status:Boolean
+)
+
+data class ApiExploreRoomMessage(
+    @SerializedName(value = "rooms")val rooms: List<ApiRoom> = emptyList(),
+)
+
+
+
+data class ApiExploreProfile(
+    @SerializedName(value = "message") val message:ApiExploreProfileMessage,
+    @SerializedName( value = "status") val status:Boolean
+)
+
+data class ApiExploreProfileMessage(
+    @SerializedName(value = "top_profiles")val top_profiles: List<ApiTopProfile> = emptyList(),
+)

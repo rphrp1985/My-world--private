@@ -29,7 +29,7 @@ import com.google.android.exoplayer2.util.Util
 @EpoxyModelClass
 abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
 
-    private var playWhenReady=false
+    private var playWhenReady=true
 
     @EpoxyAttribute
     var link:String?=null
@@ -160,6 +160,7 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
         player.playWhenReady=playWhenReady
 
         player.addListener(object : Player.EventListener {
+
             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                 super.onPlayerStateChanged(playWhenReady, playbackState)
             }

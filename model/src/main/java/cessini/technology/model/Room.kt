@@ -1,7 +1,7 @@
 package cessini.technology.model
 
 data class Room(
-    val id: String = "",
+    var id: String = "",
     val name: String = "",
     val title: String = "",
     val creator: Creator = Creator(),

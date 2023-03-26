@@ -28,7 +28,7 @@ abstract class SuggestedLiveMyspaceModelRecycler: EpoxyModelWithHolder<Suggested
         holder.textView.setOnClickListener(onClickListener)
         holder.imageView.setOnClickListener(onClickListener)
         holder.recyclerView.setOnClickListener {
-            maincontroller.fragment.let {
+            maincontroller.fragment?.let {
                 it.findNavController().navigate(
                     ExploreFragmentDirections.actionExploreFragmentToLiveFragment(
 //                        "Suggestion Rooms",

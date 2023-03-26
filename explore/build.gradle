@@ -76,7 +76,14 @@ dependencies {
     implementation mikhaellopez
     implementation paging3
 
-    implementation 'com.airbnb.android:epoxy-paging:4.6.3'
+//    implementation 'com.airbnb.android:epoxy-paging:4.6.3'
+    def epoxyVersion = "4.6.4"
+    implementation "com.airbnb.android:epoxy:$epoxyVersion"
+    implementation "com.airbnb.android:epoxy-paging:$epoxyVersion"
+    implementation "com.airbnb.android:epoxy-paging3:$epoxyVersion"
+    implementation "androidx.paging:paging-rxjava2:2.1.0"
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.0'
+//
 
     implementation project(":persistence")
     implementation project(":commonui")

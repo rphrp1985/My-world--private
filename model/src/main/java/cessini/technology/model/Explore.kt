@@ -19,3 +19,10 @@ data class Explore(
 
 
     )
+
+data class ExplorePagedData(
+    val topProfilesModel:TopProfile?=null,
+    val room:Room?= null,
+//    val live_room:SuggestionCategoryRooms?=null
+
+)

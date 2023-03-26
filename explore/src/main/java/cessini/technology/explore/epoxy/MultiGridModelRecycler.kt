@@ -3,6 +3,7 @@ package cessini.technology.explore.epoxy
 import android.content.Context
 import android.content.res.Resources
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -57,14 +58,15 @@ abstract class MultiGridModelRecycler : EpoxyModelWithHolder<MultiGridModelRecyc
 //        }
 //        holder.recyclerView.layoutManager= layoutManager
 
-
 try {
     Glide
         .with(context)
         .load(thumbnail)
         .centerCrop()
         .into(holder.recyclerView);
-}catch (e:Exception){}
+}catch (e:Exception){
+    Log.d("Glide Error","${e.message}")
+}
         holder.textView.text= roomTitle
         holder.textView.setOnClickListener(clickListener)
         holder.recyclerView.isClickable=true

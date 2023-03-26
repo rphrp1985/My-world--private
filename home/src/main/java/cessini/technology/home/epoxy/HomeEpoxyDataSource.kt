@@ -56,14 +56,14 @@ class HomeEpoxyDataSource(
         if(!suggestion) {
             Log.d(TAG,"send initia send")
             service.sendInitial(HomeFeedSocketPayload(
-                User_id = userID,
+                user_id = userID,
                 page = 1
             ), callback)
 
         }else{
             Log.d(TAG,"send initial send")
             service.sendInitialSuggestion(HomeFeedSocketPayloadSuggestion(
-                User_id = userID,
+                user_id = userID,
                 page = 1,
                 Keyword = "1"
             ), callback)
@@ -95,13 +95,13 @@ class HomeEpoxyDataSource(
         callbackAfter= callback
         if(!suggestion){
         service.send(HomeFeedSocketPayload(
-            User_id = userID ,
+            user_id = userID ,
             page = params.key
         ))}
         else{
             Log.d(TAG,"send initial send  after")
             service.sendSuggestion(HomeFeedSocketPayloadSuggestion(
-                User_id = userID ,
+                user_id = userID ,
                 page = params.key,
                 Keyword = Constant.keyword
             ))

@@ -3,12 +3,13 @@ package cessini.technology.newrepository.explore
 import android.util.Log
 import androidx.paging.*
 import cessini.technology.model.*
-import cessini.technology.newapi.extensions.getOrThrow
 import cessini.technology.newapi.model.ApiNotification
 import cessini.technology.newapi.model.ApiNotificationWhenLoggedIn
 import cessini.technology.newapi.services.explore.ExploreInfoService
 import cessini.technology.newapi.services.explore.ExploreRecordService
 import cessini.technology.newapi.services.explore.ExploreService
+import cessini.technology.newapi.services.explore.model.response.ApiExploreProfile
+import cessini.technology.newapi.services.explore.model.response.ApiExploreRoom
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.newrepository.utils.Resource
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +61,27 @@ class ExploreRepository @Inject constructor(
         ).flow
     }
 
+    suspend fun explorePaging(page:Int): ApiExploreRoom? {
+        return try {
+            exploreService.explore_room(page).body()
+
+        }  catch (e:Exception){
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    suspend fun exploreProfilePaging(page:Int): ApiExploreProfile? {
+        return try {
+            exploreService.explore_top_profile(page).body()
+
+        }  catch (e:Exception){
+            e.printStackTrace()
+            return null
+        }
+    }
+
+
     suspend fun exploreUser(): Flow<Resource<Explore>> {
 
         return flow {
@@ -94,7 +116,7 @@ class ExploreRepository @Inject constructor(
     }
 
 
-    suspend fun getsuggestedrooms(): Flow<Resource<suggestionroomresponse>> {
+    suspend fun getsuggestedrooms(page:Int): Flow<Resource<suggestionroomresponse>> {
         Log.d("Hemlo", "get suggested rooms")
         Log.d("Hemlo", "${userIdentifierPreferences.id} ")
 
@@ -103,9 +125,9 @@ class ExploreRepository @Inject constructor(
             try {
 
                 val response = if (!userIdentifierPreferences.loggedIn) {
-                    exploreService.getSuggestedRooms(userIdentifierPreferences.uuid)
+                    exploreService.getSuggestedRooms(userIdentifierPreferences.uuid,page)
                 } else {
-                    exploreService.getSuggestedRooms(userIdentifierPreferences.id)
+                    exploreService.getSuggestedRooms(userIdentifierPreferences.id,page)
                 }
 
                 emit(Resource.Success(data = response))

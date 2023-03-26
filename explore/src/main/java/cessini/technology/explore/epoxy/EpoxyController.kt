@@ -16,7 +16,7 @@ class EpoxyController(
     val screenWeight: Int,
     val radius: Float,
     val category:String,
-    val fragment: Fragment,
+    val fragment: Fragment?,
     var clickable:Boolean
 ) : AsyncEpoxyController() {
     var roomUsers: MutableList<RoomUsers> = mutableListOf()
@@ -53,14 +53,14 @@ class EpoxyController(
                 height(h1)
                 width(h2)
                 topLeft(tl)
-                context(fragment.context)
+                context(fragment?.context)
                 topRight(tr)
                 bottomRight(br)
                 bottomLeft(bl)
                 clickable(clickable)
              onClickListener{
                  _, ->
-                 fragment.findNavController().navigate(
+                 fragment?.findNavController()?.navigate(
                      ExploreFragmentDirections.actionExploreFragmentToLiveFragment(
 //                         "Suggestion Rooms",
 //                         category
