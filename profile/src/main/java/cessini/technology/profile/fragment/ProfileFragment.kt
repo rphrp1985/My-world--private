@@ -12,6 +12,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
+import android.text.style.ImageSpan
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
@@ -19,8 +20,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -98,12 +101,12 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
                     Log.d("Profile-id","profile id = ${it.id}")
                     val bio=SpannableString(it.bio+" ")
-                    val expert=SpannableString(modifyFont(it.expertise))
+                    val expert=modifyFont(it.expertise)
                     expert.setSpan(ForegroundColorSpan(Color.rgb(35,153,234)),0,expert.length,Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
                     val final=SpannableStringBuilder("")
                     final.append(bio)
                     final.append(expert)
-                    binding.bioAndExpertise = final
+                    binding.profileBio.setText(final,TextView.BufferType.SPANNABLE)
 
                     (activity as HomeActivity).setUpNavProfileIcon(it.profilePicture, null, true)
                     if(it.verified)
@@ -374,7 +377,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
     override fun onTransitionTrigger(p0: MotionLayout?, p1: Int, p2: Boolean, p3: Float) = Unit
 
-    private fun modifyFont(expertise:String):String{
+    private fun modifyFont(expertise:String):SpannableStringBuilder{
         val arr=expertise.toCharArray()
         val parts= mutableListOf<String>()
         var i=0
@@ -392,9 +395,14 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
             i++
             parts.add(temp)
         }
-        var ans=""
+        var ans=SpannableStringBuilder("")
         for (str in parts){
-            ans+=" #$str"
+            val spannableString = SpannableString("  $str")
+            val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_like_active)
+            drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+            val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
+            spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            ans.append(spannableString)
         }
         return ans
     }

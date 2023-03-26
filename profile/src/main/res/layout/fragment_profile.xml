@@ -155,7 +155,6 @@
                             gone="@{profile.bio.empty}"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:bufferType="spannable"
                             android:ellipsize="end"
                             android:gravity="center_horizontal"
                             android:lineHeight="@dimen/dimen_15"
@@ -163,7 +162,6 @@
                             android:maxLines="3"
                             android:paddingHorizontal="@dimen/dimen_5"
                             android:paddingVertical="@dimen/dimen_3"
-                            android:text="@{bioAndExpertise}"
                             android:textColor="@color/cpTextDark"
                             android:textSize="@dimen/font_size_16"
                             android:textStyle="normal" />
