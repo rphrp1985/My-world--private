@@ -397,9 +397,10 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         }
         var ans=SpannableStringBuilder("")
         for (str in parts){
-            val spannableString = SpannableString("  $str")
-            val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_like_active)
-            drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+            val spannableString = SpannableString(" $str ")
+            val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.experties)
+            val lineHeight = binding.profileBio.lineHeight
+            drawable?.setBounds(0, 0, lineHeight, lineHeight)
             val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
             spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             ans.append(spannableString)
