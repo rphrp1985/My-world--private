@@ -1,12 +1,21 @@
 package cessini.technology.explore.controller
 
 import android.content.Context
+import android.graphics.Color
 import android.provider.Settings.Global.getString
 import android.provider.Settings.System.getString
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.text.style.ImageSpan
 import android.util.Log
 import android.view.MotionEvent
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
+import androidx.core.text.set
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
@@ -260,6 +269,8 @@ class ChildRecyclerViewControllerPaged(
 
                return VoiceModel_().
                 id(item?.topProfilesModel?.id).
+               expertise(item?.topProfilesModel?.area_of_expert).
+                   context(context).
                 img(item?.topProfilesModel?.profilePicture).
                 title1(item?.topProfilesModel?.name).
                 vid(item.topProfilesModel?.id.toString()).
@@ -270,135 +281,9 @@ class ChildRecyclerViewControllerPaged(
 
 
 
-
-//                return voice {
-//                    id(item?.topProfilesModel?.id)
-//                    img(item?.topProfilesModel?.profilePicture)
-//                    title1(item?.topProfilesModel?.name)
-//                    vid(item?.topProfilesModel?.id)
-//                    channelName(item?.topProfilesModel?.channelName)
-//                    activity(activity)
-//                    followingStatusId(followingStatusID)
-//                    onClickEvents(onClickListener)
-//                }
             }
             2 -> {
 
-//                val room=Room()
-//                val moreThan3Listener = if (room[0].allowedUser.size < 4) {
-//                    "0"
-//                } else {
-//                    (5 - room[0].allowedUser.size).toString()
-//                }
-//
-//                // Touch effect
-//                val touchTimeFactor = 200
-//                var touchDownTime = 0L
-//
-//                ChildItemRoomBindingModel_().
-//                id(room[0].room).
-//                roomTitle(room.get(0).title).
-//                listenerCount(moreThan3Listener).
-//                listener1Image(room[0].creator.profilePicture).
-//                listener2Image(room[0].allowedUser.getOrNull(0)?.profilePicture ?: "").
-//                listener3Image(room[0].allowedUser.getOrNull(1)?.profilePicture ?: "").
-//                listener4Image(room[0].allowedUser.getOrNull(2)?.profilePicture ?: "").
-//                listener5Image(room[0].allowedUser.getOrNull(3)?.profilePicture ?: "").
-//                searchViewModel(viewModel).
-//                fragment(fragment).
-//                onTouchDetected { view, event ->
-//
-//                    if (event.action == MotionEvent.ACTION_DOWN) {
-//                        view.animate().scaleX(0.98f).scaleY(0.98f).duration = 20
-//                        Log.i("ChildRecyclerViewRoom", "Pressed")
-//                        touchDownTime = System.currentTimeMillis()
-//
-//                    } else if (event.action == MotionEvent.ACTION_UP) {
-//                        view.animate().scaleX(1f).scaleY(1f).duration = 20
-//                        Log.i("ChildRecyclerViewRoom", "Released")
-//                        val isClickTime =
-//                            System.currentTimeMillis() - touchDownTime < touchTimeFactor
-//                        if (isClickTime) {
-//                            view.performClick()
-//                            Log.i("ChildRecyclerViewRoom", "Clicked")
-////                                    val intent = Intent(activity, LiveMyspaceActivity::class.java)
-////                                    intent.putExtra("ROOM_CODE",room.get(0).roomCode)
-////                                    activity.startActivity(intent)
-////                                    activity.overridePendingTransition(R.anim.slide_out_animation, R.anim.slide_in_animation)
-//////                                        (activity as ToFlowNavigable).navigateToFlow(
-////                                            NavigationFlow.AccessRoomFlow(room.room_code!!)
-////                                        )
-//
-//                            onClickListener(
-//
-////                                openLive()
-//                                ExploreOnClickEvents.ExploreFragmentToLiveFragment(
-//                                    "Trending Rooms",
-//                                    "abc"
-//                                )
-//                            )
-//
-//                        }
-//
-//                    }
-//                    false
-//                }
-
-
-
-//                childItemRoom {
-//                    id(room[0].room)
-//                    roomTitle(room.get(0).title)
-//
-//                    listenerCount(moreThan3Listener)
-//
-//                    listener1Image(room[0].creator.profilePicture)
-//                    listener2Image(room[0].allowedUser.getOrNull(0)?.profilePicture ?: "")
-//                    listener3Image(room[0].allowedUser.getOrNull(1)?.profilePicture ?: "")
-//                    listener4Image(room[0].allowedUser.getOrNull(2)?.profilePicture ?: "")
-//                    listener5Image(room[0].allowedUser.getOrNull(3)?.profilePicture ?: "")
-//                    searchViewModel(viewModel)
-//                    fragment(fragment)
-//
-//
-//
-//                    onTouchDetected { view, event ->
-//
-//                        if (event.action == MotionEvent.ACTION_DOWN) {
-//                            view.animate().scaleX(0.98f).scaleY(0.98f).duration = 20
-//                            Log.i("ChildRecyclerViewRoom", "Pressed")
-//                            touchDownTime = System.currentTimeMillis()
-//
-//                        } else if (event.action == MotionEvent.ACTION_UP) {
-//                            view.animate().scaleX(1f).scaleY(1f).duration = 20
-//                            Log.i("ChildRecyclerViewRoom", "Released")
-//                            val isClickTime =
-//                                System.currentTimeMillis() - touchDownTime < touchTimeFactor
-//                            if (isClickTime) {
-//                                view.performClick()
-//                                Log.i("ChildRecyclerViewRoom", "Clicked")
-////                                    val intent = Intent(activity, LiveMyspaceActivity::class.java)
-////                                    intent.putExtra("ROOM_CODE",room.get(0).roomCode)
-////                                    activity.startActivity(intent)
-////                                    activity.overridePendingTransition(R.anim.slide_out_animation, R.anim.slide_in_animation)
-//////                                        (activity as ToFlowNavigable).navigateToFlow(
-////                                            NavigationFlow.AccessRoomFlow(room.room_code!!)
-////                                        )
-//
-//                                onClickListener(
-//
-////                                openLive()
-//                                    ExploreOnClickEvents.ExploreFragmentToLiveFragment(
-//                                        "Trending Rooms",
-//                                        "abc"
-//                                    )
-//                                )
-//
-//                            }
-//
-//                        }
-//                        false
-//                    }
 
             }
             5 -> {
@@ -450,12 +335,37 @@ class ChildRecyclerViewControllerPaged(
 //                text = item?.room?.title.toString() + categorytext
                       text= context?.getString(R.string.some_text, item?.room?.title, categorytext).toString()
 
+                var temp=""
+
+                if (item?.room?.categories?.isNotEmpty() == true)
+                for(str in item?.room?.categories!!)
+                {
+
+                    temp+= "${ str.substring(1)} "
+                }
+
+
+                val titleString= SpannableString(item?.room?.title+" ")
+                titleString.setSpan(HtmlCompat.FROM_HTML_MODE_LEGACY,0,titleString.length-1, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+                val expertString=modifyFont(temp,30)
+                expertString.setSpan(ForegroundColorSpan(Color.rgb(35,153,234)),0,expertString.length,
+                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+                val final= SpannableStringBuilder("")
+                final.append(titleString)
+                final.append(expertString)
+
+
+//                holder.expert.setText(final, TextView.BufferType.SPANNABLE)
+
+
+
 
                 return UpcomingMyspaceBindingModel_().
                 id(item?.room?.id).
                 creatorName(item?.room?.creator?.name).
                 time(item?.room?.time).
-                span(HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY)).
+                    span(final).
+//                span(HtmlCompat.fromHtml(final, HtmlCompat.FROM_HTML_MODE_LEGACY)).
                 listener1Image(item?.room?.creator?.profilePicture).
                 listener2Image(item?.room?.listeners?.getOrNull(0)?.profile_picture ?: "").
                 listener3Image(item?.room?.listeners?.getOrNull(1)?.profile_picture ?: "").
@@ -484,73 +394,6 @@ class ChildRecyclerViewControllerPaged(
                         }
                     }
                 }
-
-
-
-
-
-//                upcomingMyspace {
-//                    id(item?.room?.id)
-//                    creatorName(item?.room?.creator?.name)
-//                    time(item?.room?.time)
-//
-//                    if (item?.room?.categories?.isNotEmpty() == true) {
-//                        val category = StringBuilder()
-//                        item?.room?.categories?.forEach {
-//
-//                            if(it.isNotEmpty())
-//                                category.append("$it#")
-//
-//                        }
-//                        val fh = category.indexOf("#")
-//                        val sh = category.indexOf("#", fh + 1)
-//                        val th = category.indexOf("#", sh + 1)
-//                        if(fh>1)
-//                            categorytext += "#" + category.substring(1, fh) + " "
-//                        if (sh != -1) {
-//                            categorytext += "#" + category.substring(fh + 2, sh) + " "
-//
-//                        } else
-//
-//                            if (th != -1) {
-//                                categorytext += "#" + category.substring(sh + 2, th) + " "
-//                            }
-//
-//                    }
-//
-//                    text = context.getString(R.string.some_text, item?.room?.title, categorytext)
-//
-//                    span(HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY))
-//                    listener1Image(item?.room?.creator?.profilePicture)
-//                    listener2Image(item?.room?.listeners?.getOrNull(0)?.profile_picture ?: "")
-//                    listener3Image(item?.room?.listeners?.getOrNull(1)?.profile_picture ?: "")
-//
-//                    onClick { _ ->
-//                        item?.room?.name?.let { Log.e("RoomName", it) }
-//
-//                        item?.room?.let { ExploreOnClickEvents.ToAccessRoomFlow(it) }
-//                            ?.let { onClickListener(it) }
-//
-//                    }
-//                    onJoin { view ->
-//                        if (!userIdentifierPreferences.loggedIn) {
-//                            (activity as ToFlowNavigable).navigateToFlow(NavigationFlow.AuthFlow)
-//
-//                        } else {
-//                            activity.lifecycleScope.launch {
-//                                runCatching { item?.room?.name?.let { roomRepository.joinRoom(it) } }
-//                                    .onSuccess {
-//                                        Toast.makeText(
-//                                            activity,
-//                                            "Join request sent",
-//                                            Toast.LENGTH_SHORT
-//                                        ).show()
-//                                        view.setBackgroundResource(R.drawable.round_enable_viewbutton)
-//                                    }
-//                            }
-//                        }
-//                    }
-//                }
 
 
 
@@ -596,6 +439,38 @@ class ChildRecyclerViewControllerPaged(
         return ExploreLoadingBindingModel_().id("loading$currentPosition")
     }
 
+
+
+    private fun modifyFont(expertise: String, height: Int): SpannableStringBuilder {
+        val arr=expertise.toCharArray()
+        val parts= mutableListOf<String>()
+        var i=0
+        while(i<arr.size){
+            var temp=""
+            while(i<arr.size && arr[i]!=' ' && arr[i]!=','){
+                while(i<expertise.length && arr[i]=='#'){
+                    i++
+                }
+                if (i<expertise.length){
+                    temp += arr[i]
+                    i++
+                }
+            }
+            i++
+            parts.add(temp)
+        }
+        var ans=SpannableStringBuilder("")
+        for (str in parts){
+            val spannableString = SpannableString(" $str ")
+            val drawable = ContextCompat.getDrawable(context, R.drawable.experties)
+            val lineHeight = height
+            drawable?.setBounds(0, 0, lineHeight, lineHeight)
+            val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
+            spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            ans.append(spannableString)
+        }
+        return ans
+    }
 
 
     override fun addModels(models: List<EpoxyModel<*>>) {

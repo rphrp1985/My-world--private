@@ -10,7 +10,7 @@ data class AuthEntity(
 
     @PrimaryKey var id: String,
     @ColumnInfo(name = "email") var email: String = "",
-    @ColumnInfo(name = "expertise") var expertise: String = "",
+    @ColumnInfo(name = "expertise") var expertise:String = "",
     @ColumnInfo(name = "displayName") var displayName: String = "",
     @ColumnInfo(name = "channelName") var channelName: String = "",
     @ColumnInfo(name = "photoUrl") var photoUrl: String = "",

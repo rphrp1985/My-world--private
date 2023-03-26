@@ -73,7 +73,11 @@ class ExploreRepository @Inject constructor(
 
     suspend fun exploreProfilePaging(page:Int): ApiExploreProfile? {
         return try {
+            if(!userIdentifierPreferences.loggedIn)
             exploreService.explore_top_profile(page).body()
+            else
+                exploreService.explore_top_profile_auth(page,userIdentifierPreferences.id).body()
+
 
         }  catch (e:Exception){
             e.printStackTrace()

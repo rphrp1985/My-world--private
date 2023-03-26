@@ -84,6 +84,7 @@
                 android:paddingLeft="@dimen/dimen_9"
                 android:paddingRight="@dimen/dimen_9"
                 android:paddingTop="@dimen/dimen_17"
+                android:textColor="@color/cpTextDark"
                 android:text="@{span}"
                 android:textAllCaps="false"
                 android:textStyle="bold"

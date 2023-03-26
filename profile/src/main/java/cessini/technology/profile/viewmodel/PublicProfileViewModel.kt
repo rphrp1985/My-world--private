@@ -267,8 +267,8 @@ var currentId : String ="ID825560790000000104"
                 profileEntity.bio = it.bio ?: ""
                 profileEntity.channelName = it.channelName ?: "Channel Name"
                 profileEntity.photoUrl = it.profilePicture ?: ""
+                profileEntity.expertise = it.expertise?:""
 
-                /**No entry in database for these**/
                 followingCount.value = (it.followingCount).toString()
                 followersCount.value = (it.followerCount).toString()
                 followingStatus.value = it.following

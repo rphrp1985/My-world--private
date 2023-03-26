@@ -32,6 +32,7 @@ data class ApiTopProfile(
     @SerializedName(value = "channel_name") val channelName: String,
     val name: String,
     @SerializedName(value = "profile_picture") val profilePicture: String,
+    @SerializedName( value = "area_of_expert") val area_of_expert:String
 //    @SerializedName(value = "is_following") val is_following:Boolean?,
 )
 

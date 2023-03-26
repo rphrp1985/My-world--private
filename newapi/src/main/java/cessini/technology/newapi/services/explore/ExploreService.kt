@@ -49,6 +49,13 @@ interface ExploreService {
         @Path(value = "page") id:Int
     ): Response<ApiExploreProfile>
 
+    @GET( value = "${ExploreConstants.EXPLORE_TOP_PROFILE_AUTH}{id}/{page}" )
+    suspend fun explore_top_profile_auth(
+        @Path(value = "page") page:Int,
+        @Path(value ="id") id: String
+    ): Response<ApiExploreProfile>
+
+
     @GET(value = "${ExploreConstants.SUGGESTION_CAT_ROOMS}{id}/{page}")
     suspend fun getSuggestedRooms(
         @Path(value = "id") id: String,

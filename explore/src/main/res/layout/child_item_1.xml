@@ -85,6 +85,29 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/user_imageView" />
 
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dimen_7"
+            android:ellipsize="end"
+            android:paddingHorizontal="@dimen/dimen_3"
+            android:singleLine="true"
+            android:gravity="center"
+            android:text='@{childItem1.name}'
+            android:textAlignment="center"
+            android:textColor="@color/cpTextDark"
+            android:textSize="@dimen/font_size_16"
+            android:textStyle="bold"
+            android:hint=""
+            app:layout_constraintEnd_toEndOf="@+id/textView"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/follow"
             android:layout_width="wrap_content"
@@ -104,7 +127,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView" />
+            app:layout_constraintTop_toBottomOf="@id/textView2" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

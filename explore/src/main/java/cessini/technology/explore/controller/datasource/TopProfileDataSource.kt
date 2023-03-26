@@ -51,7 +51,8 @@ class TopProfileDataSource(
                                 id= profile.id,
                                 profilePicture = profile.profilePicture,
                                 name= profile.name,
-                                channelName = profile.channelName
+                                channelName = profile.channelName,
+                                area_of_expert = profile.area_of_expert
 
                             )
                         )
@@ -96,7 +97,8 @@ class TopProfileDataSource(
                                 id= profile.id,
                                 profilePicture = profile.profilePicture,
                                 name= profile.name,
-                                channelName = profile.channelName
+                                channelName = profile.channelName,
+                                area_of_expert = profile.area_of_expert
 
                             )
                         )

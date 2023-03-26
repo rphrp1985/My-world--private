@@ -27,5 +27,6 @@ object ExploreConstants {
     const val TRENDING_ROOMS = "trending/rooms"
     const val EXPLORE_ROOM ="/rooms/"
     const val EXPLORE_TOP_PROFILE="/topProfiles/"
+    const val EXPLORE_TOP_PROFILE_AUTH="/UserTopProfile/"
 }
 
