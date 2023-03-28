@@ -19,6 +19,7 @@ import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ExploreService {
 
@@ -118,6 +119,12 @@ interface ExploreService {
 
     @GET(ExploreConstants.TRENDING_ROOMS)
     suspend fun getTrendingRooms(
+    ) : TrendingRooms
+
+
+    @GET(ExploreConstants.TRENDING_ROOMS)
+    suspend fun getTrendingRoomsPaged(
+        @Query("page") page:Int
     ) : TrendingRooms
 
 

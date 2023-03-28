@@ -15,7 +15,7 @@ data class Explore(
     var recordMyspcaeGrid : MutableList<viewpagerItem> =mutableListOf(),
     var recordCommonMyspcaeGrid : MutableList<viewpagerItem> =mutableListOf(),
     var visibleItemIndex: Int = 0,
-    var trendingRooms: MutableList<List<MessageT>> = mutableListOf()
+    var trendingRooms: List<MessageT> = mutableListOf()
 
 
     )
@@ -23,6 +23,7 @@ data class Explore(
 data class ExplorePagedData(
     val topProfilesModel:TopProfile?=null,
     val room:Room?= null,
+    val trendingRoom: MessageT?=null
 //    val live_room:SuggestionCategoryRooms?=null
 
 )

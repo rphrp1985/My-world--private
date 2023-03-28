@@ -135,12 +135,7 @@ class ChildRecyclerViewControllerPaged(
         }
     }
 
-    private fun setupLiveRoom() {
-        Log.d(TAG, "Trending room = $trendingRooms")
-        trendingRooms.forEach { room ->
 
-        }
-    }
 
     fun openLive(){
         Constant.home_fragment_live= false
@@ -283,6 +278,124 @@ class ChildRecyclerViewControllerPaged(
 
             }
             2 -> {
+                // Touch effect
+                val touchTimeFactor = 200
+                var touchDownTime = 0L
+                val moreThan3Listener = if(item?.trendingRoom?.allowedUser?.size!! < 4) {
+                    "0"
+                } else {
+                    (5 - item?.trendingRoom?.allowedUser?.size!!).toString()
+                }
+
+                return ChildItemRoomBindingModel_().
+                id(item?.trendingRoom?.title).
+                roomTitle(item?.trendingRoom?.title).
+                listenerCount(moreThan3Listener).
+                listener1Image(item?.trendingRoom?.creator?.profilePicture).
+                listener2Image(item?.trendingRoom?.allowedUser!!.getOrNull(0)?.profilePicture ?: "").
+                listener3Image(item?.trendingRoom?.allowedUser!!.getOrNull(1)?.profilePicture ?: "").
+                listener4Image(item?.trendingRoom?.allowedUser!!.getOrNull(2)?.profilePicture ?: "").
+                listener5Image(item?.trendingRoom?.allowedUser!!.getOrNull(3)?.profilePicture ?: "").
+                searchViewModel(viewModel).
+                fragment(fragment).
+                onTouchDetected { view, event ->
+
+                    if (event.action == MotionEvent.ACTION_DOWN) {
+                        view.animate().scaleX(0.98f).scaleY(0.98f).duration = 20
+                        Log.i("ChildRecyclerViewRoom", "Pressed")
+                        touchDownTime = System.currentTimeMillis()
+
+                    } else if (event.action == MotionEvent.ACTION_UP) {
+                        view.animate().scaleX(1f).scaleY(1f).duration = 20
+                        Log.i("ChildRecyclerViewRoom", "Released")
+                        val isClickTime =
+                            System.currentTimeMillis() - touchDownTime < touchTimeFactor
+                        if (isClickTime) {
+                            view.performClick()
+                            Log.i("ChildRecyclerViewRoom", "Clicked")
+//                                    val intent = Intent(activity, LiveMyspaceActivity::class.java)
+//                                    intent.putExtra("ROOM_CODE",room.get(0).roomCode)
+//                                    activity.startActivity(intent)
+//                                    activity.overridePendingTransition(R.anim.slide_out_animation, R.anim.slide_in_animation)
+////                                        (activity as ToFlowNavigable).navigateToFlow(
+//                                            NavigationFlow.AccessRoomFlow(room.room_code!!)
+//                                        )
+
+                            onClickListener(
+
+//                                openLive()
+                                ExploreOnClickEvents.ExploreFragmentToLiveFragment(
+                                    "Trending Rooms",
+                                    "abc"
+                                )
+                            )
+
+                        }
+
+                    }
+                    false
+                }
+
+
+//                childItemRoom {
+//                    id(item?.trendingRoom?.title)
+//                    roomTitle(item?.trendingRoom?.title)
+//                    val moreThan3Listener = if (item?.trendingRoom?.allowedUser?.size!! < 4) {
+//                        "0"
+//                    } else {
+//                        (5 - item?.trendingRoom?.allowedUser?.size!!).toString()
+//                    }
+//                    listenerCount(moreThan3Listener)
+//
+//                    listener1Image(item?.trendingRoom?.creator?.profilePicture)
+//                    listener2Image(item?.trendingRoom?.allowedUser!!.getOrNull(0)?.profilePicture ?: "")
+//                    listener3Image(item?.trendingRoom?.allowedUser!!.getOrNull(1)?.profilePicture ?: "")
+//                    listener4Image(item?.trendingRoom?.allowedUser!!.getOrNull(2)?.profilePicture ?: "")
+//                    listener5Image(item?.trendingRoom?.allowedUser!!.getOrNull(3)?.profilePicture ?: "")
+//                    searchViewModel(viewModel)
+//                    fragment(fragment)
+//
+//
+//                    onTouchDetected { view, event ->
+//
+//                        if (event.action == MotionEvent.ACTION_DOWN) {
+//                            view.animate().scaleX(0.98f).scaleY(0.98f).duration = 20
+//                            Log.i("ChildRecyclerViewRoom", "Pressed")
+//                            touchDownTime = System.currentTimeMillis()
+//
+//                        } else if (event.action == MotionEvent.ACTION_UP) {
+//                            view.animate().scaleX(1f).scaleY(1f).duration = 20
+//                            Log.i("ChildRecyclerViewRoom", "Released")
+//                            val isClickTime =
+//                                System.currentTimeMillis() - touchDownTime < touchTimeFactor
+//                            if (isClickTime) {
+//                                view.performClick()
+//                                Log.i("ChildRecyclerViewRoom", "Clicked")
+////                                    val intent = Intent(activity, LiveMyspaceActivity::class.java)
+////                                    intent.putExtra("ROOM_CODE",room.get(0).roomCode)
+////                                    activity.startActivity(intent)
+////                                    activity.overridePendingTransition(R.anim.slide_out_animation, R.anim.slide_in_animation)
+//////                                        (activity as ToFlowNavigable).navigateToFlow(
+////                                            NavigationFlow.AccessRoomFlow(room.room_code!!)
+////                                        )
+//
+//                                onClickListener(
+//
+////                                openLive()
+//                                    ExploreOnClickEvents.ExploreFragmentToLiveFragment(
+//                                        "Trending Rooms",
+//                                        "abc"
+//                                    )
+//                                )
+//
+//                            }
+//
+//                        }
+//                        false
+//                    }
+//
+//
+//                }
 
 
             }

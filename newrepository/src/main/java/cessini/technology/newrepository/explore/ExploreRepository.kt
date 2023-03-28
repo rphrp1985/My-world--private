@@ -290,4 +290,25 @@ class ExploreRepository @Inject constructor(
 
         }
     }
+
+    suspend fun getTrendingRoomsPaged(page: Int): Flow<Resource<TrendingRooms>> {
+
+        return flow {
+            try {
+                val response = exploreService.getTrendingRoomsPaged(page)
+                emit(Resource.Success(data = response))
+            } catch (e: IOException) {
+                e.printStackTrace()
+                //emit custom error message here according to exception or error that may be displayed to the user or data ( dummy or empty data if required)
+                emit(Resource.Error("Couldn't load data"))
+            } catch (e: HttpException) {
+                e.printStackTrace()
+                emit(Resource.Error("Couldn't load data"))
+            }
+
+        }
+    }
+
+
+
 }

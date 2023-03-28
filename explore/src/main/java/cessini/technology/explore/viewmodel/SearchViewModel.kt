@@ -18,6 +18,7 @@ import cessini.technology.commonui.utils.networkutil.NetworkUtils
 import cessini.technology.explore.controller.ChildRecyclerViewControllerPaged
 import cessini.technology.explore.controller.datasource.Live_RoomDataFactory
 import cessini.technology.explore.controller.datasource.TopProfileDataFactory
+import cessini.technology.explore.controller.datasource.TrendingRoomDataFactory
 import cessini.technology.explore.controller.datasource.UpcomingRoomDataFactory
 import cessini.technology.explore.epoxy.MultiGridController
 import cessini.technology.explore.fragment.ExploreFragmentDirections
@@ -204,6 +205,80 @@ return multiGridController
     }
 
 
+
+
+
+    var TrendingRoomsRecyclerViewController :ChildRecyclerViewControllerPaged?=null
+    fun TrendingRooms( context: Context,
+                       fragment: Fragment,
+                       onClickListener: (event: ExploreOnClickEvents) -> Unit,
+                       activity: FragmentActivity): ChildRecyclerViewControllerPaged? {
+
+        if(TrendingRoomsRecyclerViewController!=null)
+            return TrendingRoomsRecyclerViewController
+
+
+        TrendingRoomsRecyclerViewController =
+            ChildRecyclerViewControllerPaged(
+                roomRepository,
+                userIdentifierPreferences,
+                2,
+                this,
+                context,
+                activity,
+                fragment,
+                onClickListener
+
+            )
+        val TrendingRoomscompositeDisposable : CompositeDisposable  = CompositeDisposable()
+        var  TrendingRoomsconfig  : PagedList.Config = PagedList.Config.Builder()
+            .setPageSize(2)
+            .setInitialLoadSizeHint(15)
+            .setEnablePlaceholders(true)
+            .build()
+
+        val TrendingRoomsdatasourceFactory =
+            TrendingRoomDataFactory(
+                TrendingRoomscompositeDisposable,
+                exploreRepository
+            )// false
+
+        val TrendingRoomsrxPageList: Observable<PagedList<ExplorePagedData>> = RxPagedListBuilder(TrendingRoomsdatasourceFactory,TrendingRoomsconfig).buildObservable()
+
+
+
+        TrendingRoomscompositeDisposable.add(
+            TrendingRoomsrxPageList
+                .subscribeWith(object : DisposableObserver<PagedList<ExplorePagedData>>() {
+                    override fun onComplete() {
+
+                    }
+                    override fun onNext(pagedList: PagedList<ExplorePagedData>) {
+                        Log.d("Upcoming","page list = $pagedList")
+                        TrendingRoomsRecyclerViewController?.submitList(pagedList)
+                    }
+                    override fun onError(e: Throwable) {
+                        Log.e("Home WebSocket", "error: ${e}")
+//                        onPageLoadFailed(e)
+                    }
+
+                })
+        )
+        return TrendingRoomsRecyclerViewController
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     var UpcommingchildRecyclerViewController :ChildRecyclerViewControllerPaged?=null
     fun UpcomingRooms( context: Context,
                        fragment: Fragment,
@@ -294,7 +369,12 @@ return UpcommingchildRecyclerViewController
                 when (result) {
                     is Resource.Success -> {
                         allTrendingRooms.value = result.data
-                        Log.e("TrendingRooms", result.data.toString())
+//                        val it= allCategory.value
+//                        it?.trendingRooms= result.data?.message!!
+//                        allCategory.value= it
+
+
+                        Log.d("TrendingRooms", result.data.toString())
                     }
                     is Resource.Error -> {
 

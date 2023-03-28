@@ -47,25 +47,14 @@ class MainRecyclerViewController(
         // Live
         // Rooms
 
-        childViewItem {
+        val TrendingRoomsCongroller= viewModel!!.TrendingRooms(context!!,fragment!!,onClickListener,activity!!)
+
+        childViewItemPaged {
             id("room")
-            categoryTitle("Trending Hub")
+            categoryTitle("Trending Rooms")
             visible(1)
-            size("${allCategory.trendingRooms.size} Live hub")
-            val childRecyclerViewController =
-                ChildRecyclerViewController(
-                    context!!,
-                    2,
-                    viewModel!!,
-                    activity!!,
-                    fragment,
-                    roomRepository,
-                    userIdentifierPreferences,
-                    onClickListener
-                )
-            childRecyclerViewController.trendingRooms = allCategory.trendingRooms.toMutableList()
-            Log.i("Live hub data", allCategory.trendingRooms.toString())
-            childController(childRecyclerViewController)
+            size(" ")
+            childController(TrendingRoomsCongroller)
         }
 
         //Live rooms with thumbnal

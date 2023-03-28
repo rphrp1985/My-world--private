@@ -85,7 +85,7 @@ class ChildRecyclerViewController(
             requestModelBuild()
         }
 
-    var trendingRooms: MutableList<List<MessageT>> = mutableListOf()
+    var trendingRooms: List<MessageT> = mutableListOf()
         set(value) {
             field = value
             requestModelBuild()
@@ -227,20 +227,20 @@ class ChildRecyclerViewController(
         Log.d(TAG, "Trending room = $trendingRooms")
         trendingRooms.forEach { room ->
             childItemRoom {
-                id(room[0].room)
-                roomTitle(room.get(0).title)
-                val moreThan3Listener = if (room[0].allowedUser.size < 4) {
+                id(room.title)
+                roomTitle(room.title)
+                val moreThan3Listener = if (room.allowedUser.size < 4) {
                     "0"
                 } else {
-                    (5 - room[0].allowedUser.size).toString()
+                    (5 - room.allowedUser.size).toString()
                 }
                 listenerCount(moreThan3Listener)
 
-                listener1Image(room[0].creator.profilePicture)
-                listener2Image(room[0].allowedUser.getOrNull(0)?.profilePicture ?: "")
-                listener3Image(room[0].allowedUser.getOrNull(1)?.profilePicture ?: "")
-                listener4Image(room[0].allowedUser.getOrNull(2)?.profilePicture ?: "")
-                listener5Image(room[0].allowedUser.getOrNull(3)?.profilePicture ?: "")
+                listener1Image(room.creator.profilePicture)
+                listener2Image(room.allowedUser.getOrNull(0)?.profilePicture ?: "")
+                listener3Image(room.allowedUser.getOrNull(1)?.profilePicture ?: "")
+                listener4Image(room.allowedUser.getOrNull(2)?.profilePicture ?: "")
+                listener5Image(room.allowedUser.getOrNull(3)?.profilePicture ?: "")
                 searchViewModel(viewModel)
                 fragment(fragment)
 

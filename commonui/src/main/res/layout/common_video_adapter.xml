@@ -5,6 +5,7 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/Dark"
@@ -57,10 +58,12 @@
             android:id="@+id/playerView"
             android:layout_width="match_parent"
             app:resize_mode="zoom"
+            app:use_controller="false"
             android:layout_height="match_parent"
             app:player_layout_id="@layout/exo_simple_player_view"
 
             >
+
 
         </com.google.android.exoplayer2.ui.PlayerView>
 

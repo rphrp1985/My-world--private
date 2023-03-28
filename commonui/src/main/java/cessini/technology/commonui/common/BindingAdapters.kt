@@ -9,15 +9,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.viewpager2.widget.ViewPager2
 import cessini.technology.commonui.R
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.CornerFamily
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @BindingAdapter("dayTime")
 fun TextView.bindDayTime(time: Long) {
@@ -95,8 +99,8 @@ fun setViewTouchListener(view: View, listener: View.OnTouchListener) {
 }
 
 @BindingAdapter("ripple")
-fun rippleListener(view: View, fragment: Fragment) {
-    fragment.viewLifecycleOwner.lifecycleScope.launch {
+fun rippleListener(view: View, searchViewModel: ViewModel) {
+    searchViewModel.viewModelScope.launch{
         while (true) rippleAnimate(view)
     }
 }

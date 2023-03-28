@@ -72,7 +72,7 @@
             app:onTouched="@{onTouchDetected}"
             >
             <androidx.constraintlayout.widget.ConstraintLayout
-                ripple="@{fragment}"
+                ripple="@{searchViewModel}"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 >

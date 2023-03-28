@@ -2,12 +2,15 @@ package cessini.technology.home.EpoxyModelClasses
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import cessini.technology.home.R
+//import cessini.technology.home.R2.id.play_pause
 import cessini.technology.home.fragment.HomeFragment
 import cessini.technology.home.model.JoinRoomSocketEventPayload
 /*import cessini.technology.newrepository.preferences.main*/
@@ -16,8 +19,6 @@ import com.airbnb.epoxy.EpoxyHolder
 import com.airbnb.epoxy.EpoxyModelClass
 import com.airbnb.epoxy.EpoxyModelWithHolder
 import com.google.android.exoplayer2.*
-import com.google.android.exoplayer2.extractor.flv.FlvExtractor
-import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
@@ -116,7 +117,7 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
 
         holder.roomBtn.setOnClickListener { if (signInStatus()) roomButtonClick() }
 
-        initPlayer(holder.screen)
+        initPlayer(holder.screen,holder.pause,holder.layout)
     }
 
     class Holder:EpoxyHolder(){
@@ -129,6 +130,8 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
         lateinit var likeBtn:ImageView
         lateinit var commentBtn:ImageView
         lateinit var roomBtn:ImageView
+        lateinit var pause:ImageView
+        lateinit var layout:ConstraintLayout
 
         override fun bindView(itemView: View) {
             screen= itemView.findViewById(R.id.playerView)
@@ -140,16 +143,19 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
             likeBtn = itemView.findViewById(R.id.user_like)
             commentBtn = itemView.findViewById(R.id.user_comment)
             roomBtn = itemView.findViewById(R.id.room_icon)
+            pause= itemView.findViewById(R.id.img_play)
+            layout = itemView.findViewById(R.id.layout)
         }
 
     }
-    private fun initPlayer(screen:PlayerView){
+    private fun initPlayer(screen: PlayerView, pause: ImageView, layout: ConstraintLayout){
        val adaptiveTrackSelection=AdaptiveTrackSelection.Factory(DefaultBandwidthMeter())
 
         val player=ExoPlayerFactory.newSimpleInstance(context,DefaultTrackSelector(context,adaptiveTrackSelection),DefaultLoadControl())
         screen.player = player
         val defaultBandwidthMeter=DefaultBandwidthMeter()
         val dataSourceFactory=DefaultDataSourceFactory(context,Util.getUserAgent(context,"Exo2"),defaultBandwidthMeter)
+
 
         if(link==null)
             return
@@ -158,6 +164,9 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
 
         player.prepare(mediaSource)
         player.playWhenReady=playWhenReady
+
+
+//screen.player.pa
 
         player.addListener(object : Player.EventListener {
 
@@ -171,6 +180,26 @@ abstract class HomeEpoxyModel(): EpoxyModelWithHolder<HomeEpoxyModel.Holder>() {
 
             }
         })
+
+        layout.setOnClickListener {
+
+            Log.d("Exoplyer","exoplyer clicked")
+            if(player.isPlaying) {
+                player.stop()
+                pause.visibility= View.VISIBLE
+
+            }else{
+                player.prepare(mediaSource)
+                player.playWhenReady=playWhenReady
+                pause.visibility= View.GONE
+            }
+
+//            return@setOnTouchListener true
+        }
+
+//        pause.visibility= View.VISIBLE
+
+
     }
 
 
