@@ -24,7 +24,7 @@ object ExploreConstants {
     const val RECORD_END_POINT = "getRecordingsByUserid/"
     const val COMMON_RECORD_END_POINT = "getRecordings/"
     const val SUGGESTION_CAT_ROOMS="suggested/liverooms/"
-    const val TRENDING_ROOMS = "trending/rooms"
+    const val TRENDING_ROOMS = "trending/rooms/"
     const val EXPLORE_ROOM ="/rooms/"
     const val EXPLORE_TOP_PROFILE="/topProfiles/"
     const val EXPLORE_TOP_PROFILE_AUTH="/UserTopProfile/"

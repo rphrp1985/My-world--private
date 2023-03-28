@@ -122,9 +122,9 @@ interface ExploreService {
     ) : TrendingRooms
 
 
-    @GET(ExploreConstants.TRENDING_ROOMS)
+    @GET(value ="${ExploreConstants.TRENDING_ROOMS}{page}")
     suspend fun getTrendingRoomsPaged(
-        @Query("page") page:Int
+        @Path("page") page:Int
     ) : TrendingRooms
 
 

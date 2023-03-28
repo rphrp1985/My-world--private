@@ -291,7 +291,7 @@ class ChildRecyclerViewControllerPaged(
                 id(item?.trendingRoom?.title).
                 roomTitle(item?.trendingRoom?.title).
                 listenerCount(moreThan3Listener).
-                listener1Image(item?.trendingRoom?.creator?.profilePicture).
+                listener1Image(item?.trendingRoom?.creator?.profilePicture?:"").
                 listener2Image(item?.trendingRoom?.allowedUser!!.getOrNull(0)?.profilePicture ?: "").
                 listener3Image(item?.trendingRoom?.allowedUser!!.getOrNull(1)?.profilePicture ?: "").
                 listener4Image(item?.trendingRoom?.allowedUser!!.getOrNull(2)?.profilePicture ?: "").
