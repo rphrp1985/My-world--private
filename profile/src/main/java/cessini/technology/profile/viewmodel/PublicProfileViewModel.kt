@@ -47,6 +47,7 @@ var currentId : String ="ID825560790000000104"
     var followingText = MutableLiveData<String>("Follow")
     var photoUrl = MutableLiveData<String>()
     var bio = MutableLiveData<String>("")
+    var expertise = MutableLiveData<String>("")
     var profileVideoListAPI = MutableLiveData<ArrayList<ProfileVideoModel>>()
     var profileStoriesListAPI = MutableLiveData<ArrayList<ProfileStoryModel>>()
 
@@ -126,6 +127,7 @@ var currentId : String ="ID825560790000000104"
         displayName.value = profileEntity.displayName
         channelName.value = profileEntity.channelName
         bio.value = profileEntity.bio
+        expertise.value = profileEntity.expertise
         photoUrl.value = profileEntity.photoUrl
 
         Log.d(TAG, "Followers: ${followersCount.value}, Following: ${followingCount.value}")
@@ -364,6 +366,7 @@ var currentId : String ="ID825560790000000104"
                 currentId = it.id
                 profileEntity.displayName = it.name ?: "User name"
                 profileEntity.bio = it.bio ?: ""
+                profileEntity.expertise = it.expertise ?: ""
                 profileEntity.channelName = it.channelName ?: "Channel Name"
                 profileEntity.photoUrl = it.profilePicture ?: ""
 
@@ -423,6 +426,7 @@ var currentId : String ="ID825560790000000104"
         followingText.value = "Follow"
         photoUrl.value = ""
         bio.value = ""
+        expertise.value = ""
         profileVideoListAPI.value?.clear()
         verified.value=false
     }

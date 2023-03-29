@@ -174,7 +174,7 @@
                             android:maxLines="3"
                             android:paddingHorizontal="@dimen/dimen_5"
                             android:paddingVertical="@dimen/dimen_3"
-                            android:text="@{ProfileViewModel.bio}"
+                            android:text="@{ProfileViewModel.bio + ProfileViewModel.expertise}"
                             android:textColor="@color/cpTextDark"
                             android:textSize="@dimen/font_size_16" />
 
