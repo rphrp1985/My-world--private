@@ -64,6 +64,7 @@ class EditUserProfileFragment(
     private lateinit var baseViewModel: BaseViewModel
 
     private var bottomSheet: ImageGalleryBottomSheetFragment? = null
+    private var bottomSheetExpertiseFragment:AreaOfExpertiseFragment?=null
 
     @Inject
     lateinit var sharedLocationManager: SharedLocationManager
@@ -303,6 +304,11 @@ class EditUserProfileFragment(
         binding.editProfileImage.setOnClickListener {
 
             setUpFragment()
+        }
+
+        binding.expertise.setOnClickListener {
+            bottomSheetExpertiseFragment = AreaOfExpertiseFragment(this)
+            bottomSheetExpertiseFragment!!.show(parentFragmentManager, bottomSheetExpertiseFragment!!.tag)
         }
 
         binding.uepUsername.addTextChangedListener(object : TextWatcher {
