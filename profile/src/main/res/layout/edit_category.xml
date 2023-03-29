@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+
+    <variable
+        name="viewModel"
+        type="cessini.technology.commonui.viewmodel.suggestionViewModel.SuggestionViewModel" />
+    <variable
+        name="categoryName"
+        type="cessini.technology.model.ListCategory"
+        />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/dimen_15"
+        android:paddingBottom="@dimen/dimen_12"
+        android:layout_marginTop="@dimen/dimen_3"
+        >
+        <TextView
+            android:id="@+id/category_name"
+            android:layout_width="@dimen/dimen_0"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dimen_30"
+            android:textStyle="bold"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/dimen_5"
+            android:text="@{categoryName.category}"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="@+id/technology"
+            app:layout_constraintTop_toBottomOf="@+id/etTechnnology" />
+
+        <EditText
+            android:id="@+id/edit_subcategory"
+            android:layout_width="@dimen/dimen_0"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:backgroundTint="#00000000"
+            android:gravity="center_vertical"
+            android:hint="Add"
+            android:maxLength="300"
+            android:maxLines="3"
+            android:textColor="@color/cpTextDark"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/category_name"
+            app:layout_constraintTop_toBottomOf="@+id/category_name"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
