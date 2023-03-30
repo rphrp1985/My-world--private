@@ -2,21 +2,30 @@ package cessini.technology.myspace.create
 
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import cessini.technology.commonui.adapter.RecAdapter
 import cessini.technology.commonui.common.*
 import cessini.technology.commonui.utils.Constant
 import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.model.PreviousProfile
 import cessini.technology.model.RequestProfile
 import cessini.technology.model.Room
+import cessini.technology.myspace.FriendsModel
 import cessini.technology.myspace.FriendsModel_
 import cessini.technology.myspace.R
 import cessini.technology.myspace.databinding.FragmentCreateRoomBinding
@@ -33,6 +42,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import java.util.ArrayList
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -65,6 +75,40 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         fetchPreviousUsers()
+        binding.connectButton.setOnClickListener {
+            val link="https://www.myworld.com/liveRoom?code=name_roomtitle_randomno"
+            val pm: PackageManager = requireActivity().packageManager
+            var finalLaunchables:ResolveInfo?=null
+//            val recAdapter= RecAdapter(pm,finalLaunchables,requireContext(),shareBody)
+            val main = Intent(Intent.ACTION_MAIN,null)
+            main.addCategory(Intent.CATEGORY_LAUNCHER)
+            val launchables: List<ResolveInfo> = pm.queryIntentActivities(main, 0)
+            for (resolveInfo in launchables){
+                val packageName=resolveInfo.activityInfo.packageName
+                if (packageName.contains("com.whatsapp")) {
+                    finalLaunchables=resolveInfo
+                }
+            }
+            if (finalLaunchables!=null){
+                val launchable = finalLaunchables as ResolveInfo
+                val activity: ActivityInfo = launchable.activityInfo
+                val i = Intent(Intent.ACTION_SEND)
+                i.type = "text/plain"
+                val packageName = activity.packageName
+                i.putExtra(Intent.EXTRA_TEXT, link)
+                i.setPackage(packageName)
+                context?.startActivity(i)
+            }
+            else{
+                Toast.makeText(context,"Whatsapp is not installed in your device",Toast.LENGTH_SHORT)
+            }
+
+        }
+        binding.editTextSearch.setOnClickListener {
+//            val searchFragment = SearchFragment(this@ShareFragment)
+//            searchFragment.show(parentFragmentManager, searchFragment.tag)
+        }
+
     }
 
     private fun setupRecyclerView() {
