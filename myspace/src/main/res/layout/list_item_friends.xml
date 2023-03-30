@@ -2,27 +2,27 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-<!--    <data>-->
-<!--        <variable-->
-<!--            name="onJoin"-->
-<!--            type="android.view.View.OnClickListener" />-->
+    <!--    <data>-->
+    <!--        <variable-->
+    <!--            name="onJoin"-->
+    <!--            type="android.view.View.OnClickListener" />-->
 
-<!--        <variable-->
-<!--            name="reqUserImage"-->
-<!--            type="String" />-->
+    <!--        <variable-->
+    <!--            name="reqUserImage"-->
+    <!--            type="String" />-->
 
-<!--        <variable-->
-<!--            name="reqUserName"-->
-<!--            type="String" />-->
+    <!--        <variable-->
+    <!--            name="reqUserName"-->
+    <!--            type="String" />-->
 
-<!--        <variable-->
-<!--            name="reqUserChannel"-->
-<!--            type="String" />-->
+    <!--        <variable-->
+    <!--            name="reqUserChannel"-->
+    <!--            type="String" />-->
 
-<!--        <variable-->
-<!--            name="onReqProfileClick"-->
-<!--            type="android.view.View.OnClickListener" />-->
-<!--    </data>-->
+    <!--        <variable-->
+    <!--            name="onReqProfileClick"-->
+    <!--            type="android.view.View.OnClickListener" />-->
+    <!--    </data>-->
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

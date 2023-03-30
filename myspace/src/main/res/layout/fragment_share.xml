@@ -142,7 +142,7 @@
                 android:overScrollMode="never"
                 android:translationZ="-5dp"
                 android:paddingBottom="@dimen/dimen_47"
-                tools:listitem="@layout/friends_list"
+                tools:listitem="@layout/list_item_friends"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 />
         </RelativeLayout>
