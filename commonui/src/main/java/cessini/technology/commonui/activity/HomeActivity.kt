@@ -97,6 +97,10 @@ class HomeActivity : AppCompatActivity(), ToFlowNavigable,
 
         _binding = DataBindingUtil.setContentView(this, R.layout.activity_home)
 
+        lifecycleScope.launch{
+            baseViewModel.getSubCategoryCode()
+        }
+
         // Navigate to on-boarding screen if applicable
         lifecycleScope.launch {
             baseViewModel.isOnBoardingFinished
@@ -183,6 +187,8 @@ class HomeActivity : AppCompatActivity(), ToFlowNavigable,
 //        setUpFirstNotifications()
 
         setUpNavIcon()
+
+
     }
 
     private fun setUpFirstNotifications() {

@@ -15,6 +15,7 @@ import androidx.paging.PagedList
 import androidx.paging.PagingData
 import androidx.paging.RxPagedListBuilder
 import cessini.technology.commonui.utils.networkutil.NetworkUtils
+import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.explore.controller.ChildRecyclerViewControllerPaged
 import cessini.technology.explore.controller.datasource.Live_RoomDataFactory
 import cessini.technology.explore.controller.datasource.TopProfileDataFactory
@@ -101,7 +102,8 @@ class SearchViewModel @Inject constructor(
         context: Context,
         fragment: Fragment,
         onClickListener: (event: ExploreOnClickEvents) -> Unit,
-        activity: FragmentActivity
+        activity: FragmentActivity,
+        baseViewModel: BaseViewModel
     ): ChildRecyclerViewControllerPaged? {
 
 
@@ -118,6 +120,7 @@ class SearchViewModel @Inject constructor(
                 context,
                 activity,
                 fragment,
+                baseViewModel,
                 onClickListener
 
             )
@@ -161,7 +164,11 @@ class SearchViewModel @Inject constructor(
 
 
     var multiGridController : MultiGridController?=null
-    fun SuggestedLiveRoom(fragment: Fragment, activity: FragmentActivity): MultiGridController? {
+    fun SuggestedLiveRoom(
+        fragment: Fragment,
+        activity: FragmentActivity,
+        baseViewModel: BaseViewModel
+    ): MultiGridController? {
 
         if(multiGridController!=null)
             return multiGridController
@@ -209,10 +216,13 @@ return multiGridController
 
 
     var TrendingRoomsRecyclerViewController :ChildRecyclerViewControllerPaged?=null
-    fun TrendingRooms( context: Context,
-                       fragment: Fragment,
-                       onClickListener: (event: ExploreOnClickEvents) -> Unit,
-                       activity: FragmentActivity): ChildRecyclerViewControllerPaged? {
+    fun TrendingRooms(
+        context: Context,
+        fragment: Fragment,
+        onClickListener: (event: ExploreOnClickEvents) -> Unit,
+        activity: FragmentActivity,
+        baseViewModel: BaseViewModel
+    ): ChildRecyclerViewControllerPaged? {
 
         if(TrendingRoomsRecyclerViewController!=null)
             return TrendingRoomsRecyclerViewController
@@ -227,6 +237,7 @@ return multiGridController
                 context,
                 activity,
                 fragment,
+                baseViewModel,
                 onClickListener
 
             )
@@ -280,10 +291,13 @@ return multiGridController
 
 
     var UpcommingchildRecyclerViewController :ChildRecyclerViewControllerPaged?=null
-    fun UpcomingRooms( context: Context,
-                       fragment: Fragment,
-                       onClickListener: (event: ExploreOnClickEvents) -> Unit,
-                       activity: FragmentActivity): ChildRecyclerViewControllerPaged? {
+    fun UpcomingRooms(
+        context: Context,
+        fragment: Fragment,
+        onClickListener: (event: ExploreOnClickEvents) -> Unit,
+        activity: FragmentActivity,
+        baseViewModel: BaseViewModel
+    ): ChildRecyclerViewControllerPaged? {
 
         if(UpcommingchildRecyclerViewController!=null)
             return UpcommingchildRecyclerViewController
@@ -298,6 +312,7 @@ return multiGridController
                 context,
                 activity,
                 fragment,
+                baseViewModel,
                 onClickListener
 
             )

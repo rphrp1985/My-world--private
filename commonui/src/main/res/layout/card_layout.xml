@@ -11,11 +11,18 @@
         android:layout_height="match_parent"
         android:elevation="@dimen/dimen_5">
 
+
+
             <org.webrtc.SurfaceViewRenderer
                 android:id="@+id/localView"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+        <ImageView
+            android:id="@+id/gif_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layout"

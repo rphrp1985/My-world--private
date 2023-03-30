@@ -5,6 +5,9 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.graphics.Color
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
+import android.graphics.drawable.shapes.RoundRectShape
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -27,10 +30,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.common.BaseFragment
 import cessini.technology.commonui.utils.ProfileConstants
+import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.model.Profile
 import cessini.technology.myspace.create.CreateRoomFragment
 import cessini.technology.navigation.NavigationFlow
@@ -59,6 +64,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
     private val profileViewModel : ProfileViewModel by activityViewModels()
     private val editUserProfileViewModel : EditUserProfileViewModel by activityViewModels()
+    private val baseViewModel:BaseViewModel by activityViewModels()
 
     private var tabLayout: TabLayout? = null
     private var shareMenuItem: MenuItem? = null
@@ -379,29 +385,76 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
     private fun modifyFont(expertise:String):SpannableStringBuilder{
         val arr=expertise.toCharArray()
-        val parts= mutableListOf<String>()
-        var i=0
-        while(i<arr.size){
-            var temp=""
-            while(i<arr.size && arr[i]!=' ' && arr[i]!=','){
-                while(i<expertise.length && arr[i]=='#'){
-                    i++
-                }
-                if (i<expertise.length){
-                    temp += arr[i]
-                    i++
-                }
-            }
-            i++
-            parts.add(temp)
-        }
+        var parts= mutableListOf<String>()
+//        var i=0
+//        while(i<arr.size){
+//            var temp=""
+//            while(i<arr.size && arr[i]!=' ' && arr[i]!=','){
+//                while(i<expertise.length && arr[i]=='#'){
+//                    i++
+//                }
+//                if (i<expertise.length){
+//                    temp += arr[i]
+//                    i++
+//                }
+//            }
+//            i++
+//            parts.add(temp)
+//        }
+
+        parts= expertise.split(',',' ').toMutableList()
+
         var ans=SpannableStringBuilder("")
-        for (str in parts){
+        val temporary_map= mutableMapOf<Int,String>()
+
+        Log.d(TAG,"parts size = ${parts.size}")
+        for (str in parts) {
+
+            Log.d(TAG,"parts  = ${str}")
+            if(str.trim()=="") {
+                continue
+            }
+            Log.d(TAG,"temp_map 1 = ${temporary_map}")
+
+
+            Log.d(TAG,"temp_map 2 = ${temporary_map}")
+
+                val it = baseViewModel.getSubCatCode(str)
+
+                    val x= temporary_map[it]
+
+                    if(x==null)
+                        temporary_map[it]= " ${str.trim()}"
+                    else
+                        temporary_map[it]= "$x ${str.trim()}"
+
+
+        }
+
+        Log.d(TAG,"temp_map = ${temporary_map}")
+        for(categories in temporary_map){
+
+            val str= categories.value
+            val cat_number= categories.key
+          val shape = ShapeDrawable(  OvalShape())
+            shape.paint.color = Color.RED
+                    when(cat_number){
+                    1-> shape.paint.color= Color.RED
+                    2-> shape.paint.color= Color.BLUE
+                    3-> shape.paint.color= Color.GREEN
+                     4-> shape.paint.color= Color.MAGENTA
+                     5-> shape.paint.color= Color.YELLOW
+                        6-> shape.paint.color= Color.CYAN
+                        7-> shape.paint.color= Color.GRAY
+                        else-> shape.paint.color= Color.BLACK
+
+                    }
+
             val spannableString = SpannableString(" $str ")
-            val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.experties)
             val lineHeight = binding.profileBio.lineHeight
-            drawable?.setBounds(0, 0, lineHeight, lineHeight)
-            val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
+
+            shape?.setBounds(0, 0, lineHeight, lineHeight)
+            val imageSpan = ImageSpan(shape!!, ImageSpan.ALIGN_CENTER)
             spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             ans.append(spannableString)
         }

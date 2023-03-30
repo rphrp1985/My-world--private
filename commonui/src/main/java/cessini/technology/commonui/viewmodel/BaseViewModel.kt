@@ -8,13 +8,16 @@ import android.graphics.Paint
 import android.util.Log
 import androidx.lifecycle.*
 import cessini.technology.commonui.utils.networkutil.connectivityStateFlow
+import cessini.technology.commonui.viewmodel.suggestionViewModel.SuggestionViewModel
 import cessini.technology.cvo.entity.AuthEntity
+import cessini.technology.model.Subcategory
 import cessini.technology.newapi.model.DataLN
 import cessini.technology.newapi.preferences.AuthPreferences
 import cessini.technology.newrepository.appRepository.AppRepository
 import cessini.technology.newrepository.authRepository.AuthRepository
 import cessini.technology.newrepository.datastores.ProfileStore
 import cessini.technology.newrepository.explore.ExploreRepository
+import cessini.technology.newrepository.explore.RegistrationRepository
 import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,10 +35,15 @@ class BaseViewModel @Inject constructor(
     profileRepository: ProfileRepository,
     private val userIdentifierPreferences: UserIdentifierPreferences,
     private val appRepository: AppRepository,
+    private val registrationRepository: RegistrationRepository
 ) : AndroidViewModel(application) {
 
     companion object {
         private const val TAG = "BaseViewModel"
+        private var subCategoryNumber:Map<String, List<Subcategory>> ?=null
+        var subCategoryToNumber: MutableMap<String,Int> = mutableMapOf()
+
+
     }
 
     lateinit var authEntity: AuthEntity
@@ -48,6 +56,8 @@ class BaseViewModel @Inject constructor(
             // the actual data is available form the flow
             initialValue = true
         )
+
+        // categogy color
 
     private val _authFlag = MutableLiveData(false)
     val authFlag: LiveData<Boolean> get() = _authFlag
@@ -281,4 +291,34 @@ class BaseViewModel @Inject constructor(
     fun setAuthFlag(flag: Boolean) {
         _authFlag.value = flag
     }
+
+
+    suspend fun getSubCategoryCode(){
+
+         if(subCategoryNumber==null){
+             Log.d(TAG,"get video cats")
+             subCategoryNumber = registrationRepository.getVideoCategories().data
+             var i=1
+             for( data in subCategoryNumber!!){
+                 for(sub in data.value){
+                  subCategoryToNumber[sub.subCategory.trim().toLowerCase()]= i
+                 }
+                i++
+             }
+
+         }
+
+
+    }
+
+    fun getSubCatCode(str:String): Int {
+        val x= subCategoryToNumber[str.trim().toLowerCase()]
+        if(x==null) {
+            return 0
+        } else
+            return x
+
+    }
+
+
 }

@@ -2,6 +2,8 @@ package cessini.technology.explore.epoxy
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -15,8 +17,10 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.utils.ProfileConstants
+import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.cvo.exploremodels.SearchCreatorApiResponse
 import cessini.technology.explore.R
 import cessini.technology.explore.states.ExploreOnClickEvents
@@ -26,6 +30,8 @@ import com.airbnb.epoxy.EpoxyHolder
 import com.airbnb.epoxy.EpoxyModelClass
 import com.airbnb.epoxy.EpoxyModelWithHolder
 import com.bumptech.glide.Glide
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.HashMap
 
 @EpoxyModelClass
@@ -43,6 +49,9 @@ abstract class VoiceModel : EpoxyModelWithHolder<VoiceModel.Holder>() {
 
     @EpoxyAttribute
     lateinit var title1: String
+
+    @EpoxyAttribute
+    lateinit var baseViewModel: BaseViewModel
 
     @EpoxyAttribute
      var vid: String=""
@@ -151,31 +160,72 @@ abstract class VoiceModel : EpoxyModelWithHolder<VoiceModel.Holder>() {
         }
     }
 
+
     private fun modifyFont(expertise: String, height: Int): SpannableStringBuilder {
         val arr=expertise.toCharArray()
-        val parts= mutableListOf<String>()
+        var parts= mutableListOf<String>()
         var i=0
-        while(i<arr.size){
-            var temp=""
-            while(i<arr.size && arr[i]!=' ' && arr[i]!=','){
-                while(i<expertise.length && arr[i]=='#'){
-                    i++
-                }
-                if (i<expertise.length){
-                    temp += arr[i]
-                    i++
-                }
-            }
-            i++
-            parts.add(temp)
+//        while(i<arr.size){
+//            var temp=""
+//            while(i<arr.size && arr[i]!=' ' && arr[i]!=','){
+//                while(i<expertise.length && arr[i]=='#'){
+//                    i++
+//                }
+//                if (i<expertise.length){
+//                    temp += arr[i]
+//                    i++
+//                }
+//            }
+//            i++
+//            parts.add(temp)
+//        }
+
+        parts= expertise.split(',',' ').toMutableList()
+
+        val temporary_map= mutableMapOf<Int,String>()
+
+        for (str in parts) {
+            if(str.trim()=="")
+                continue
+
+            val it = baseViewModel.getSubCatCode(str)
+
+            val x= temporary_map[it]
+
+            if(x==null)
+                temporary_map[it]= " ${str.trim()}"
+            else
+                temporary_map[it]= "$x ${str.trim()}"
+
         }
+
         var ans=SpannableStringBuilder("")
-        for (str in parts){
+        for(categories in temporary_map){
+
+            val str= categories.value
+            val cat_number= categories.key
+
             val spannableString = SpannableString(" $str ")
-            val drawable = ContextCompat.getDrawable(context, R.drawable.experties)
+//            val drawable = ContextCompat.getDrawable(context, R.drawable.experties)
+            val shape= ShapeDrawable(  OvalShape())
+            shape.paint.color = Color.BLACK
+
+                    when(cat_number){
+                        1-> shape.paint.color= Color.RED
+                        2-> shape.paint.color= Color.BLUE
+                        3-> shape.paint.color= Color.GREEN
+                        4-> shape.paint.color= Color.MAGENTA
+                        5-> shape.paint.color= Color.YELLOW
+                        6-> shape.paint.color= Color.CYAN
+                        7-> shape.paint.color= Color.GRAY
+                        else-> shape.paint.color= Color.BLACK
+
+                    }
+
+
             val lineHeight = height
-            drawable?.setBounds(0, 0, lineHeight, lineHeight)
-            val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
+            shape?.setBounds(0, 0, lineHeight, lineHeight)
+            val imageSpan = ImageSpan(shape!!, ImageSpan.ALIGN_CENTER)
             spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             ans.append(spannableString)
         }

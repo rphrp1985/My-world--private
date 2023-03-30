@@ -36,6 +36,7 @@ import cessini.technology.commonui.common.BaseFragment
 import cessini.technology.commonui.common.isInDarkTheme
 import cessini.technology.commonui.utils.Constant
 import cessini.technology.commonui.utils.ProfileConstants
+import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
 import cessini.technology.home.R
 import cessini.technology.home.controller.HomeEpoxyController
@@ -113,6 +114,7 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
 //    private val roomWaitingFragment = RoomWaitingFragment()
 
     private val homeFeedViewModel: HomeFeedViewModel by viewModels()
+    private val baseViewModel:BaseViewModel by activityViewModels()
     private val socketFeedViewModel: SocketFeedViewModel by viewModels()
     var mode= true
     var recyclerView: EpoxyRecyclerView?= null
@@ -144,6 +146,9 @@ class HomeFragment : BaseFragment<NewHomeFragmentBinding>(R.layout.new_home_frag
         binding.homeViewModel = homeFeedViewModel //attach your viewModel to xml
         /**Setting a lifecycleOwner as this Fragment.*/
         binding.lifecycleOwner = viewLifecycleOwner
+        lifecycleScope.launch{
+            baseViewModel.getSubCategoryCode()
+        }
 
         lifecycleScope.launch {
             profileRepository.profile.collectLatest {

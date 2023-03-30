@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.SnapHelper
 import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.common.BaseFragment
 import cessini.technology.commonui.utils.Constant
+import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.explore.R
 import cessini.technology.explore.controller.MainRecyclerViewController
 import cessini.technology.explore.databinding.FragmentSearchBinding
@@ -58,6 +59,7 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
 
     val viewModel: SearchViewModel by activityViewModels()
     var controller: MainRecyclerViewController? = null
+    val baseViewModel:BaseViewModel by activityViewModels()
 
     @Inject
     lateinit var userIdentifierPreferences: UserIdentifierPreferences
@@ -227,7 +229,8 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
             roomRepository,
             userIdentifierPreferences,
             videoViewModel,
-            exploreRepository
+            exploreRepository,
+            baseViewModel
         ) { onItemClick ->
             when (onItemClick) {
                 is ExploreOnClickEvents.ToAccessRoomFlow -> {
