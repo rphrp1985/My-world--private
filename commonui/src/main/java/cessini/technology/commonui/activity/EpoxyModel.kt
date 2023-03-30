@@ -1,28 +1,32 @@
 package cessini.technology.commonui.activity
 
+//import android.R
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import cessini.technology.commonui.R
+import cessini.technology.commonui.utils.networkutil.TAG
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyHolder
 import com.airbnb.epoxy.EpoxyModelClass
 import com.airbnb.epoxy.EpoxyModelWithHolder
-import com.amazonaws.mobile.auth.core.internal.util.ThreadUtils
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.Target
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.CornerFamily
 import de.hdodenhof.circleimageview.CircleImageView
-import org.kurento.client.RecorderEndpoint
-import org.kurento.client.WebRtcEndpoint
 import org.webrtc.*
+import java.util.Objects
+
 
 @EpoxyModelClass
 abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
@@ -64,6 +68,9 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
     lateinit var context1: Context
 
     @EpoxyAttribute
+    lateinit var gridActivity: GridActivity
+
+    @EpoxyAttribute
     var tL: Float = 0f
 
     @EpoxyAttribute
@@ -75,6 +82,7 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
     @EpoxyAttribute
     var bR: Float = 0f
 
+    var isVideoLoaded= false
 
     override fun getDefaultLayout(): Int
     {
@@ -95,31 +103,56 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
                     holder.imgPerson.setZOrderMediaOverlay(true)
                     track.addSink(holder.imgPerson)
 
+//                    val thread= Thread.currentThread()
+                    holder.imgPerson.addFrameListener({
+                          isVideoLoaded= true
+                gridActivity.runOnUiThread {
+                    holder.gif_image.visibility= View.GONE
+                    holder.name.visibility= View.VISIBLE
+                    holder.name_loading.visibility= View.GONE
+                    holder.imgPerson.removeFrameListener {  }
+                }
+                    },1f)
+
 
                 } catch (e: Exception) {
+                    Log.d(TAG,e.message.toString())
                 }
 
                 holder.cardView.layoutParams.height = height1.toInt()
                 holder.cardView.layoutParams.width = width1.toInt()
                 holder.name.text = name1
+                holder.name.visibility= View.GONE
+                holder.name_loading.text= name1
                 holder.profilePic.load(profile_picture){
                     transformations(CircleCropTransformation())
                 }
 
+                try {
+
+                    Glide.with(context1).load(cessini.technology.commonui.R.drawable.gif_temp).centerCrop().into(holder.gif_image)
+                }catch (e:Exception) {
+                    Log.d(TAG, e.message.toString())
+                }
+
+
                 if (!videoSwitch){
                     holder.profilePic.visibility=View.VISIBLE
+                    holder.gif_image.visibility= View.GONE
 //                    holder.imgPerson.visibility= View.GONE
                 }
                 else{
                     holder.profilePic.visibility=View.INVISIBLE
+                    if(!isVideoLoaded)
+                    holder.gif_image.visibility= View.VISIBLE
 //                    holder.imgPerson.visibility= View.VISIBLE
                 }
 
                 if (!microphoneSwitch){
-                    holder.audio.setImage(R.drawable.ic_removeaudio)
+                    holder.audio.setImage(cessini.technology.commonui.R.drawable.ic_removeaudio)
                 }
                 else{
-                    holder.audio.setImage(R.drawable.ic_addaudio)
+                    holder.audio.setImage(cessini.technology.commonui.R.drawable.ic_addaudio)
                 }
 
                 if (!handSwitch){
@@ -158,6 +191,8 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
         lateinit var profilePic: CircleImageView
         lateinit var audio:ImageView
         lateinit var handRaise:ImageView
+        lateinit var gif_image:ImageView
+        lateinit var name_loading:TextView
         lateinit var contraint_layout:ConstraintLayout
         override fun bindView(itemView: View) {
             cardView = itemView.findViewById(R.id.cardView)
@@ -167,6 +202,8 @@ abstract class EpoxyModel : EpoxyModelWithHolder<EpoxyModel.Holder>() {
             audio=itemView.findViewById(R.id.audio)
             handRaise=itemView.findViewById(R.id.iv_hand)
             contraint_layout=itemView.findViewById(R.id.layout)
+            gif_image= itemView.findViewById(R.id.gif_image)
+            name_loading = itemView.findViewById(R.id.name_loading)
 //          profession = itemView.findViewById(R.id.rView)
         }
     }

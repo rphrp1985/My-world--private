@@ -12,11 +12,18 @@
         android:layout_height="match_parent"
            >
 <!--        android:elevation="@dimen/dimen_5"-->
+
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/localView"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/gif_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layout"
@@ -53,6 +60,19 @@
             android:textColor="@color/white"
             android:textSize="18dp"
             android:layout_gravity="bottom"
+            android:padding="@dimen/dimen_15"
+            />
+
+        <TextView
+            android:id="@+id/name_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You"
+            android:textStyle="bold"
+            android:textColorHint="@color/white"
+            android:textColor="@color/white"
+            android:textSize="18dp"
+            android:layout_gravity="center"
             android:padding="@dimen/dimen_15"
             />
 

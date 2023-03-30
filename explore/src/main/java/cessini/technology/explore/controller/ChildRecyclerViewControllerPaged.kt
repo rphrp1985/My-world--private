@@ -2,8 +2,8 @@ package cessini.technology.explore.controller
 
 import android.content.Context
 import android.graphics.Color
-import android.provider.Settings.Global.getString
-import android.provider.Settings.System.getString
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -11,20 +11,15 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.util.Log
 import android.view.MotionEvent
-import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
-import androidx.core.text.set
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import cessini.technology.commonui.activity.HomeActivity
 import cessini.technology.commonui.utils.Constant
-import cessini.technology.commonui.utils.networkutil.TAG
+import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.commonui.viewmodel.basicViewModels.GalleryViewModel
 import cessini.technology.cvo.exploremodels.CategoryModel
 import cessini.technology.cvo.exploremodels.ProfileModel
@@ -33,26 +28,19 @@ import cessini.technology.explore.ExploreLoadingBindingModel_
 import cessini.technology.explore.R
 import cessini.technology.explore.UpcomingMyspaceBindingModel_
 import cessini.technology.explore.childItem2
-import cessini.technology.explore.childItemRoom
 import cessini.technology.explore.epoxy.VoiceModel_
-import cessini.technology.explore.epoxy.voice
 import cessini.technology.explore.fragment.ExploreSearchFragmentDirections
 import cessini.technology.explore.states.ExploreOnClickEvents
-import cessini.technology.explore.upcomingMyspace
 import cessini.technology.explore.viewmodel.SearchViewModel
-import cessini.technology.home.HomeLoadingBindingModel_
 import cessini.technology.model.*
 import cessini.technology.navigation.MainNavGraphDirections
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.ToFlowNavigable
-import cessini.technology.newapi.preferences.AuthPreferences
 import cessini.technology.newrepository.myspace.RoomRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import cessini.technology.newrepository.websocket.video.RoomViewerUpdaterWebSocket
-import com.airbnb.epoxy.AsyncEpoxyController
 import com.airbnb.epoxy.EpoxyModel
 import com.airbnb.epoxy.paging.PagedListEpoxyController
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -65,7 +53,9 @@ class ChildRecyclerViewControllerPaged(
     var context: Context,
     var activity: FragmentActivity,
     var fragment: Fragment,
-    var onClickListener: ((ExploreOnClickEvents) -> Unit)
+    val baseViewModel: BaseViewModel,
+    var onClickListener: ((ExploreOnClickEvents) -> Unit),
+
 ) : PagedListEpoxyController<ExplorePagedData>() {
 
 
@@ -143,119 +133,6 @@ class ChildRecyclerViewControllerPaged(
 
     }
 
-//    private fun setupUpcomingHub() {
-//
-//        rooms.forEach {
-//            if (it.listeners.isNotEmpty()) {
-//                it.listeners = it.listeners.toSet().toList()
-//            }
-//        }
-//        rooms.forEach { room ->
-//            //code for removing all myspaces
-////                    if(!room.time.compareDate(System.currentTimeMillis()))
-////                        return@forEach
-//            var text = ""
-//            var categorytext = ""
-//            authPreferences = context?.let { AuthPreferences(it) }!!
-//            roomViewerUpdaterWebSocket =
-//                RoomViewerUpdaterWebSocket(authPreferences, userIdentifierPreferences)
-//
-//            Log.d(
-//                "RoomViewerSocket",
-//                "inside room pager adapter:  ${
-//                    roomViewerUpdaterWebSocket.invoke(
-//                        room.id,
-//                        1
-//                    )
-//                }"
-//            )
-//            upcomingMyspace {
-//                id(room.id)
-//                creatorName(room.creator.name)
-//                time(room.time)
-//
-//                if (room.categories.isNotEmpty()) {
-//                    val category = StringBuilder()
-//                    room.categories.forEach {
-//
-//                        if(it.isNotEmpty())
-//                            category.append("$it#")
-//
-//                    }
-//                    val fh = category.indexOf("#")
-//                    val sh = category.indexOf("#", fh + 1)
-//                    val th = category.indexOf("#", sh + 1)
-//                    if(fh>1)
-//                    categorytext += "#" + category.substring(1, fh) + " "
-//                    if (sh != -1) {
-//                        categorytext += "#" + category.substring(fh + 2, sh) + " "
-//
-//                    } else
-//
-//                        if (th != -1) {
-//                            categorytext += "#" + category.substring(sh + 2, th) + " "
-//                        }
-//
-//                }
-//
-//                text = context?.getString(R.string.some_text, room.title, categorytext).toString()
-//
-//                span(HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY))
-//                listener1Image(room.creator.profilePicture)
-//                listener2Image(room.listeners.getOrNull(0)?.profile_picture ?: "")
-//                listener3Image(room.listeners.getOrNull(1)?.profile_picture ?: "")
-//
-//                onClick { _ ->
-//                    Log.e("RoomName", room.name)
-//
-//                    onClickListener?.let { it(ExploreOnClickEvents.ToAccessRoomFlow(room)) }
-//
-//                }
-//                onJoin { view ->
-//                    if (!userIdentifierPreferences.loggedIn) {
-//                        (activity as ToFlowNavigable).navigateToFlow(NavigationFlow.AuthFlow)
-//
-//                    } else {
-//                        activity?.lifecycleScope?.launch {
-//                            runCatching { roomRepository.joinRoom(room.name) }
-//                                .onSuccess {
-//                                    Toast.makeText(
-//                                        activity,
-//                                        "Join request sent",
-//                                        Toast.LENGTH_SHORT
-//                                    ).show()
-//                                    view.setBackgroundResource(R.drawable.round_enable_viewbutton)
-//                                }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-    private fun setupVoicesToFollow() {
-        topProfiles.forEachIndexed { index, topProfile ->
-            followingStatusID.put(topProfile.id, false)
-        }
-
-        topProfiles.forEachIndexed { index, topProfilesModel ->
-            if (topProfilesModel.id != (activity as HomeActivity).baseViewModel.id.value) {
-                voice {
-                    id(topProfilesModel.id)
-                    img(topProfilesModel.profilePicture)
-                    title1(topProfilesModel.name)
-                    vid(topProfilesModel.id)
-                    channelName(topProfilesModel.channelName)
-                    activity(activity)
-                    followingStatusId(followingStatusID)
-                    onClickListener?.let {
-                        onClickEvents(it)
-                    }
-                }
-            }
-        }
-    }
-
     override fun buildItemModel(currentPosition: Int, item: ExplorePagedData?): EpoxyModel<*> {
         item?.let {
 
@@ -268,6 +145,7 @@ class ChildRecyclerViewControllerPaged(
                    context(context).
                 img(item?.topProfilesModel?.profilePicture).
                 title1(item?.topProfilesModel?.name).
+                   baseViewModel(baseViewModel).
                 vid(item.topProfilesModel?.id.toString()).
                 channelName(item?.topProfilesModel?.channelName).
                 activity(activity).
@@ -337,67 +215,6 @@ class ChildRecyclerViewControllerPaged(
                 }
 
 
-//                childItemRoom {
-//                    id(item?.trendingRoom?.title)
-//                    roomTitle(item?.trendingRoom?.title)
-//                    val moreThan3Listener = if (item?.trendingRoom?.allowedUser?.size!! < 4) {
-//                        "0"
-//                    } else {
-//                        (5 - item?.trendingRoom?.allowedUser?.size!!).toString()
-//                    }
-//                    listenerCount(moreThan3Listener)
-//
-//                    listener1Image(item?.trendingRoom?.creator?.profilePicture)
-//                    listener2Image(item?.trendingRoom?.allowedUser!!.getOrNull(0)?.profilePicture ?: "")
-//                    listener3Image(item?.trendingRoom?.allowedUser!!.getOrNull(1)?.profilePicture ?: "")
-//                    listener4Image(item?.trendingRoom?.allowedUser!!.getOrNull(2)?.profilePicture ?: "")
-//                    listener5Image(item?.trendingRoom?.allowedUser!!.getOrNull(3)?.profilePicture ?: "")
-//                    searchViewModel(viewModel)
-//                    fragment(fragment)
-//
-//
-//                    onTouchDetected { view, event ->
-//
-//                        if (event.action == MotionEvent.ACTION_DOWN) {
-//                            view.animate().scaleX(0.98f).scaleY(0.98f).duration = 20
-//                            Log.i("ChildRecyclerViewRoom", "Pressed")
-//                            touchDownTime = System.currentTimeMillis()
-//
-//                        } else if (event.action == MotionEvent.ACTION_UP) {
-//                            view.animate().scaleX(1f).scaleY(1f).duration = 20
-//                            Log.i("ChildRecyclerViewRoom", "Released")
-//                            val isClickTime =
-//                                System.currentTimeMillis() - touchDownTime < touchTimeFactor
-//                            if (isClickTime) {
-//                                view.performClick()
-//                                Log.i("ChildRecyclerViewRoom", "Clicked")
-////                                    val intent = Intent(activity, LiveMyspaceActivity::class.java)
-////                                    intent.putExtra("ROOM_CODE",room.get(0).roomCode)
-////                                    activity.startActivity(intent)
-////                                    activity.overridePendingTransition(R.anim.slide_out_animation, R.anim.slide_in_animation)
-//////                                        (activity as ToFlowNavigable).navigateToFlow(
-////                                            NavigationFlow.AccessRoomFlow(room.room_code!!)
-////                                        )
-//
-//                                onClickListener(
-//
-////                                openLive()
-//                                    ExploreOnClickEvents.ExploreFragmentToLiveFragment(
-//                                        "Trending Rooms",
-//                                        "abc"
-//                                    )
-//                                )
-//
-//                            }
-//
-//                        }
-//                        false
-//                    }
-//
-//
-//                }
-
-
             }
             5 -> {
 //                setupUpcomingHub()
@@ -421,29 +238,29 @@ class ChildRecyclerViewControllerPaged(
 //                )
 
 
-                if (item?.room?.categories?.isNotEmpty() == true) {
-                    val category = StringBuilder()
-                    item?.room?.categories?.forEach {
-
-                        if(it.isNotEmpty())
-                            category.append("$it#")
-
-                    }
-                    val fh = category.indexOf("#")
-                    val sh = category.indexOf("#", fh + 1)
-                    val th = category.indexOf("#", sh + 1)
-                    if(fh>1)
-                        categorytext += "#" + category.substring(1, fh) + " "
-                    if (sh != -1) {
-                        categorytext += "#" + category.substring(fh + 2, sh) + " "
-
-                    } else
-
-                        if (th != -1) {
-                            categorytext += "#" + category.substring(sh + 2, th) + " "
-                        }
-
-                }
+//                if (item?.room?.categories?.isNotEmpty() == true) {
+//                    val category = StringBuilder()
+//                    item?.room?.categories?.forEach {
+//
+//                        if(it.isNotEmpty())
+//                            category.append("$it#")
+//
+//                    }
+//                    val fh = category.indexOf("#")
+//                    val sh = category.indexOf("#", fh + 1)
+//                    val th = category.indexOf("#", sh + 1)
+//                    if(fh>1)
+//                        categorytext += "#" + category.substring(1, fh) + " "
+//                    if (sh != -1) {
+//                        categorytext += "#" + category.substring(fh + 2, sh) + " "
+//
+//                    } else
+//
+//                        if (th != -1) {
+//                            categorytext += "#" + category.substring(sh + 2, th) + " "
+//                        }
+//
+//                }
 
 //                text = item?.room?.title.toString() + categorytext
                       text= context?.getString(R.string.some_text, item?.room?.title, categorytext).toString()
@@ -454,7 +271,7 @@ class ChildRecyclerViewControllerPaged(
                 for(str in item?.room?.categories!!)
                 {
 
-                    temp+= "${ str.substring(1)} "
+                    temp+= "${ str.substring(1)},"
                 }
 
 
@@ -555,30 +372,56 @@ class ChildRecyclerViewControllerPaged(
 
 
     private fun modifyFont(expertise: String, height: Int): SpannableStringBuilder {
-        val arr=expertise.toCharArray()
-        val parts= mutableListOf<String>()
-        var i=0
-        while(i<arr.size){
-            var temp=""
-            while(i<arr.size && arr[i]!=' ' && arr[i]!=','){
-                while(i<expertise.length && arr[i]=='#'){
-                    i++
-                }
-                if (i<expertise.length){
-                    temp += arr[i]
-                    i++
-                }
-            }
-            i++
-            parts.add(temp)
-        }
+//        val arr=expertise.toCharArray()
+        var parts= mutableListOf<String>()
+//        var i=0
+        parts= expertise.split(",").toTypedArray().toMutableList()
+
         var ans=SpannableStringBuilder("")
-        for (str in parts){
+
+        val temporary_map= mutableMapOf<Int,String>()
+
+        for (str in parts) {
+
+            if(str.trim()=="")
+                continue
+
+            val it = baseViewModel.getSubCatCode(str)
+
+            val x= temporary_map[it]
+
+            if(x==null)
+                temporary_map[it]= " ${str.trim()}"
+            else
+                temporary_map[it]= "$x ${str.trim()}"
+
+        }
+
+           for( categories in temporary_map ){
+
+               val str= categories.value
+               val cat_number= categories.key
+
             val spannableString = SpannableString(" $str ")
-            val drawable = ContextCompat.getDrawable(context, R.drawable.experties)
-            val lineHeight = height
-            drawable?.setBounds(0, 0, lineHeight, lineHeight)
-            val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
+//            val drawable = ContextCompat.getDrawable(context, R.drawable.experties)
+            val shape= ShapeDrawable(  OvalShape())
+                shape.paint.color = Color.BLACK
+
+               Log.d("ChildRecyclerView","str= $str  $cat_number")
+
+                    when(cat_number){
+                        1-> shape.paint.color= Color.RED
+                        2-> shape.paint.color= Color.BLUE
+                        3-> shape.paint.color= Color.GREEN
+                        4-> shape.paint.color= Color.MAGENTA
+                        5-> shape.paint.color= Color.YELLOW
+                        6-> shape.paint.color= Color.CYAN
+                        7-> shape.paint.color= Color.GRAY
+                        else-> shape.paint.color= Color.BLACK
+                    }
+
+               shape?.setBounds(0, 0, height, height)
+            val imageSpan = ImageSpan(shape!!, ImageSpan.ALIGN_CENTER)
             spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             ans.append(spannableString)
         }

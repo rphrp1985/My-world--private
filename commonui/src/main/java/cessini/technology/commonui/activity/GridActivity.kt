@@ -4,9 +4,7 @@ package cessini.technology.commonui.activity
 import android.Manifest
 import android.annotation.TargetApi
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
@@ -19,15 +17,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
@@ -41,6 +36,7 @@ import cessini.technology.commonui.activity.live.SdpAdapter
 import cessini.technology.commonui.activity.live.SignalingClient
 import cessini.technology.commonui.activity.services.screen_share.MediaProjectionService
 import cessini.technology.commonui.adapter.RecAdapter
+import cessini.technology.commonui.compression.RoomNameEncoder
 import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
 //import cessini.technology.commonui.fragment.RoomJoinRequestFragment
 //import cessini.technology.commonui.fragment.RoomJoinWaiting
@@ -66,9 +62,6 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.amazonaws.regions.Region
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3Client
-import com.android.volley.Request
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
@@ -172,7 +165,7 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
         val screenWidth: Int = Resources.getSystem().displayMetrics.widthPixels
         val screenHeight: Int = Resources.getSystem().displayMetrics.heightPixels
 
-         controller = EpoxyController(screenHeight, screenWidth, applicationContext)
+         controller = EpoxyController(screenHeight, screenWidth, applicationContext, this)
 
         epoxyRecyclerView = findViewById<EpoxyRecyclerView>(R.id.idCourseRV)
 
@@ -224,13 +217,19 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             try {
                 hubViewModel.rname = intent.getStringExtra("Room Name").toString()
 
-
                 Log.e("room name", hubViewModel.rname)
 
             } catch (e: Exception) {
 
             }
         }
+
+        val x= RoomNameEncoder()  .encode(hubViewModel.rname)
+        Toast.makeText(this@GridActivity, "encoded  ${x.length}= ${RoomNameEncoder().encode(hubViewModel.rname)}",Toast.LENGTH_LONG).show()
+        Toast.makeText(this@GridActivity, "decoded  ${RoomNameEncoder().decode(x).length}= ${RoomNameEncoder().decode(x)}",Toast.LENGTH_LONG).show()
+
+
+
         if(hubViewModel.user_id=="user"){
             try {
                 hubViewModel.user_id = intent.getStringExtra("user_id").toString()

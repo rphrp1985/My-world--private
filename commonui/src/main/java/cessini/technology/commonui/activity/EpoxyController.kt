@@ -9,7 +9,8 @@ import com.airbnb.epoxy.AsyncEpoxyController
 class EpoxyController(
     val screenHeight: Int,
     val screenWidth: Int,
-    private val context: Context
+    private val context: Context,
+   val gridActivity: GridActivity
 ) : AsyncEpoxyController() {
     var images: MutableList<data> = mutableListOf()
         set(value) {
@@ -44,6 +45,7 @@ class EpoxyController(
           bL(bl)
           bR(br)
           context1(context)
+          gridActivity(gridActivity)
           context(it.con)
           profile_picture(it.profilepic)
           videoSwitch(it.videoSwitch)

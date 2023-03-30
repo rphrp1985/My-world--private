@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.cvo.exploremodels.CategoryModel
 import cessini.technology.explore.R
 import cessini.technology.explore.adapter.MainRecyclerHeaderAdapter
@@ -31,7 +32,9 @@ class MainRecyclerViewController(
     val userIdentifierPreferences: UserIdentifierPreferences,
     var videoViewModel: ExploreSearchViewModel,
     val exploreRepository: ExploreRepository,
-    var onClickListener: (event: ExploreOnClickEvents) -> Unit
+    val baseViewModel: BaseViewModel,
+    var onClickListener: (event: ExploreOnClickEvents) -> Unit,
+
 ) : TypedEpoxyController<Explore>() {
 
 //    var allCategory = Explore()
@@ -47,7 +50,7 @@ class MainRecyclerViewController(
         // Live
         // Rooms
 
-        val TrendingRoomsCongroller= viewModel!!.TrendingRooms(context!!,fragment!!,onClickListener,activity!!)
+        val TrendingRoomsCongroller= viewModel!!.TrendingRooms(context!!,fragment!!,onClickListener,activity!!, baseViewModel)
 
         childViewItemPaged {
             id("room")
@@ -62,7 +65,7 @@ class MainRecyclerViewController(
 
 
 
-        val multiGridController= viewModel!!.SuggestedLiveRoom(fragment!!, activity!!)
+        val multiGridController= viewModel!!.SuggestedLiveRoom(fragment!!, activity!!, baseViewModel)
 
 //        allCategory.categoryRooms.forEachIndexed { index, room ->
 //
@@ -123,7 +126,7 @@ class MainRecyclerViewController(
 
         // upcoming room epoxy
 
-        val upcomingCongroller= viewModel!!.UpcomingRooms(context!!,fragment!!,onClickListener,activity!!)
+        val upcomingCongroller= viewModel!!.UpcomingRooms(context!!,fragment!!,onClickListener,activity!!, baseViewModel)
 
         childViewItemPaged {
             Log.e("Upcoming", "It is here")
@@ -140,7 +143,7 @@ class MainRecyclerViewController(
 
         // voices to follow pages epoxy
 
-     val top_profilechildRecyclerViewController= viewModel!!.Top_profiles(context!!,fragment,onClickListener,activity!!)
+     val top_profilechildRecyclerViewController= viewModel!!.Top_profiles(context!!,fragment,onClickListener,activity!!, baseViewModel)
 
         childViewItemPaged {
             Log.e("Voices", allCategory.topProfiles.toMutableList().toString())
