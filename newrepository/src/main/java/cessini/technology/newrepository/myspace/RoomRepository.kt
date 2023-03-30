@@ -1,5 +1,6 @@
 package cessini.technology.newrepository.myspace
 
+import cessini.technology.model.PreviousProfile
 import cessini.technology.model.RequestProfile
 import cessini.technology.model.Room
 import cessini.technology.model.UserUpiData
@@ -48,6 +49,9 @@ class RoomRepository @Inject constructor(
     suspend fun roomRequests(roomName: String): List<RequestProfile> {
         return roomApi.roomRequest(roomName).getOrThrow().data.firstOrNull()?.
             requests?.map { it.toModel() }.orEmpty()
+    }
+    suspend fun previousRoomUsers(): List<PreviousProfile>{
+        return roomApi.getPreviousUsers().getOrThrow().message.map { it.toModel() }.orEmpty()
     }
 
     suspend fun sendSnapShot(roomName: String,file: File): String {

@@ -10,6 +10,7 @@
         <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:visibility="gone"
                 android:backgroundTint="@color/cpWhite"
                 >
 
@@ -142,7 +143,7 @@
                 android:overScrollMode="never"
                 android:translationZ="-5dp"
                 android:paddingBottom="@dimen/dimen_47"
-                tools:listitem="@layout/list_item_friends"
+                tools:listitem="@layout/myspace_view_holder_friends"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 />
         </RelativeLayout>

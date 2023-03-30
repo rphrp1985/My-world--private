@@ -11,14 +11,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import cessini.technology.commonui.common.BaseBottomSheet
-import cessini.technology.commonui.common.BottomSheetLevelInterface
-import cessini.technology.commonui.common.navigateToProfile
-import cessini.technology.commonui.common.toast
+import cessini.technology.commonui.common.*
 import cessini.technology.commonui.utils.Constant
 import cessini.technology.commonui.viewmodel.BaseViewModel
+import cessini.technology.model.PreviousProfile
 import cessini.technology.model.RequestProfile
 import cessini.technology.model.Room
+import cessini.technology.myspace.FriendsModel_
 import cessini.technology.myspace.R
 import cessini.technology.myspace.databinding.FragmentCreateRoomBinding
 import cessini.technology.myspace.databinding.FragmentShareBinding
@@ -27,6 +26,7 @@ import cessini.technology.newrepository.myspace.RoomRepository
 import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.airbnb.epoxy.EpoxyController
+import com.airbnb.epoxy.TypedEpoxyController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,7 +44,7 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
     companion object {
         private const val TAG = "ShareFragment"
     }
-
+    private lateinit var epoxyController: MyEpoxyController
     private val baseViewModel by activityViewModels<BaseViewModel>()
 
     @Inject
@@ -71,100 +71,41 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
         binding.friends.apply {
             layoutManager = LinearLayoutManager(context)
         }
+        epoxyController = MyEpoxyController()
+
+        binding.friends.setController(epoxyController)
+
     }
     private fun fetchPreviousUsers(){
         Log.e(TAG, "Inside fetchRooms()")
-        val roomsDeffered = viewLifecycleOwner.lifecycleScope.async {
+        val previousUsers = viewLifecycleOwner.lifecycleScope.async {
             Log.e(
                 TAG,
-                "fetchRooms: ${profileRepository.getProfileRooms(userIdentifierPreferences.id)}"
+                "fetchRooms: ${roomRepository.previousRoomUsers()}"
             )
-            runCatching { profileRepository.getProfileRooms(userIdentifierPreferences.id) }
+            runCatching { roomRepository.previousRoomUsers() }
                 .onFailure {
-// toast(it.message.orEmpty())
+                    toast(it.message.orEmpty())
                 }
                 .getOrDefault(emptyList())
         }
-
         viewLifecycleOwner.lifecycleScope.launch {
-            val rooms = roomsDeffered.await()
-
-            val roomWithRequests =
-                rooms?.map {
-                    async { Pair(it, roomRepository.roomRequests(it.name)) }
-                }?.awaitAll()
-
-            if (roomWithRequests != null) {
-                Log.e("build model room", roomWithRequests.toString())
-                buildRequestModels(roomWithRequests)
+            val users = previousUsers.await()
+            Log.e(TAG, "fetchRooms: $users")
+            if (users != null) {
+                if (users.isNotEmpty()) {
+                    epoxyController.setData(users)
+                    //buildRoomModels(users)
+                } else {
+                    binding.apply {
+//                        manageRoomText.visibility = View.VISIBLE
+//                        noRoomsLabel.visibility = View.VISIBLE
+//                        manageRoomsRecyclerView.visibility = View.GONE
+                    }
+                }
             }
         }
     }
-    private fun buildRequestModels(roomWithRequests: List<Pair<Room, List<RequestProfile>>>) {
-        binding.friends.withModels {
-            roomWithRequests
-                .filter { it.second.isNotEmpty() }
-                .onEach { (room, requests) ->
-//                    buildRequestSeperator(room.title, room.name)
-//                    buildRequests(room.title, requests)
-                }
-        }
-    }
-
-//    private fun EpoxyController.buildRequestSeperator(roomName: String, roomCode: String) {
-//         {
-//            id(roomName.hashCode())
-//            title("${roomName.trimEnd()} requests")
-//
-//            if (acceptedRequets[roomName].isNullOrEmpty()) {
-//                liveStatus(false)
-//            } else {
-//                liveStatus(true)
-//            }
-//
-//            onClick { _ ->
-//                if (acceptedRequets[roomName].isNullOrEmpty()) {
-//                    toast(message = "Please accept one request.")
-//                    return@onClick
-//                }
-//
-//                viewLifecycleOwner.lifecycleScope.launch {
-//                    runCatching {
-//                        roomRepository.acceptRoomRequests(
-//                            roomCode,
-//                            acceptedRequets[roomName].orEmpty()
-//                        )
-//                    }.onSuccess {
-//                        acceptedRequets[roomName] = mutableListOf()
-//
-//                        runCatching { fetchRequests() }
-//                        toast(message = "Request accepted.")
-//                    }.onFailure {
-//                        toast(message = it.message.orEmpty())
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    private fun EpoxyController.buildRequests(roomName: String, requests: List<RequestProfile>) {
-//        requests.forEach {
-//            listItemRequest {
-//                id(it.id)
-//                reqUserImage(it.picture)
-//                reqUserChannel(it.channel)
-//                reqUserName(it.name)
-//                onReqProfileClick { _ ->
-//                    navigateToProfile(
-//                        it.id,
-//                        baseViewModel.id.value.orEmpty()
-//                    )
-//                }
-//                onAccept { _ -> addOrRemoveUser(roomName, it.id) }
-//            }
-//        }
-//    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
 
@@ -222,4 +163,14 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
     }
 
 
+}
+class MyEpoxyController : TypedEpoxyController<List<PreviousProfile>>() {
+    override fun buildModels(data: List<PreviousProfile>) {
+        data.forEach { myData ->
+            FriendsModel_()
+                .id(myData.id)
+                .data(myData)
+                .addTo(this)
+        }
+    }
 }
