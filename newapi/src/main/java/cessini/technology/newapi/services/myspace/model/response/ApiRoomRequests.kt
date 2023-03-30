@@ -8,6 +8,20 @@ data class ApiRoomRequests(
     val status: Boolean,
 )
 
+data class ApiPreviousUsers(
+    val message: List<PreviousUserData> = emptyList(),
+    val status: Boolean,
+)
+data class PreviousUserData(
+    @SerializedName(value="id") val id:String,
+    @SerializedName(value="name") val name:String,
+    @SerializedName(value = "channelName") val channelName: String,
+    @SerializedName(value = "profilePicture") val profilePicture: String,
+    @SerializedName(value = "follower") val follower: Int,
+    @SerializedName(value = "following") val following: Int,
+    @SerializedName(value = "area_of_expert") val area_of_expert: String
+)
+
 data class RoomRequestData(
     @SerializedName(value="_id") val _id:ID,
     @SerializedName(value="id") val id:String,

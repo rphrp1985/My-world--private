@@ -16,4 +16,5 @@ object MySpaceConstants {
     const val DELETE_ROOM = "delete_room/"
     const val GET_LIKES = "user/room_likes/"
     const val LIKE_ROOM = "like/"
+    const val PREVIOUS_USERS = "listners/"
 }
