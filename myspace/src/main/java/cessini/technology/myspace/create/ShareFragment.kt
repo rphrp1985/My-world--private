@@ -105,8 +105,8 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
 
         }
         binding.editTextSearch.setOnClickListener {
-//            val searchFragment = SearchFragment(this@ShareFragment)
-//            searchFragment.show(parentFragmentManager, searchFragment.tag)
+            val searchFragment = SearchUsersFragment(this@ShareFragment)
+            searchFragment.show(parentFragmentManager, searchFragment.tag)
         }
 
     }
