@@ -1,8 +1,10 @@
 package cessini.technology.myspace
 
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import cessini.technology.commonui.activity.setImage
 import cessini.technology.commonui.common.navigateToProfile
@@ -41,11 +43,14 @@ abstract class FriendsModel: EpoxyModelWithHolder<FriendsModel.FriendsModelHolde
         holder.followers.text=data.follower.toString()
         holder.following.text=data.following.toString()
 
-        holder.constraintLayout.setOnClickListener {
-//            fragment.navigateToProfile(
-//                data.id,
-//                userId.id
-//            )
+        holder.send.setOnClickListener {
+            if (holder.send.text=="Send"){
+
+                holder.send.text="Undo"
+            }
+            else{
+                holder.send.text="Send"
+            }
         }
 
     }
@@ -57,8 +62,10 @@ abstract class FriendsModel: EpoxyModelWithHolder<FriendsModel.FriendsModelHolde
         lateinit var followers: TextView
         lateinit var following: TextView
         lateinit var constraintLayout: ConstraintLayout
+        lateinit var send:AppCompatButton
 
         override fun bindView(itemView: View) {
+            send=itemView.findViewById(R.id.button4)
             constraintLayout=itemView.findViewById(R.id.cl_item)
             picture=itemView.findViewById(R.id.userImage)
             name=itemView.findViewById(R.id.user_name)
