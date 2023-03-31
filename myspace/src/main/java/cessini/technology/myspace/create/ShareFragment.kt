@@ -32,6 +32,7 @@ import cessini.technology.myspace.databinding.FragmentCreateRoomBinding
 import cessini.technology.myspace.databinding.FragmentShareBinding
 import cessini.technology.navigation.Navigator
 import cessini.technology.newrepository.myspace.RoomRepository
+import cessini.technology.newrepository.myworld.FollowRepository
 import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.airbnb.epoxy.EpoxyController
@@ -54,7 +55,8 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
     companion object {
         private const val TAG = "ShareFragment"
     }
-    private lateinit var epoxyController: MyEpoxyController
+    private lateinit var epoxyControllerPrevious: MyEpoxyController
+    private lateinit var epoxyControllerFollower: MyEpoxyController
     private val baseViewModel by activityViewModels<BaseViewModel>()
 
     @Inject
@@ -67,6 +69,9 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
     lateinit var roomRepository: RoomRepository
 
     @Inject
+    lateinit var followRepository: FollowRepository
+
+    @Inject
     lateinit var navigator: Navigator
 
     private val acceptedRequets: MutableMap<String, MutableList<String>> = mutableMapOf()
@@ -75,6 +80,7 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         fetchPreviousUsers()
+        fetchFollowers()
         binding.connectButton.setOnClickListener {
             val link="https://www.myworld.com/liveRoom?code=name_roomtitle_randomno"
             val pm: PackageManager = requireActivity().packageManager
@@ -115,13 +121,19 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
         binding.friends.apply {
             layoutManager = LinearLayoutManager(context)
         }
-        epoxyController = MyEpoxyController()
+        epoxyControllerPrevious = MyEpoxyController()
 
-        binding.friends.setController(epoxyController)
+        binding.friends.setController(epoxyControllerPrevious)
+        binding.followers.apply {
+            layoutManager = LinearLayoutManager(context)
+        }
+        epoxyControllerFollower = MyEpoxyController()
+
+        binding.followers.setController(epoxyControllerFollower)
 
     }
     private fun fetchPreviousUsers(){
-        Log.e(TAG, "Inside fetchRooms()")
+        Log.e(TAG, "Inside previousUsers()")
         val previousUsers = viewLifecycleOwner.lifecycleScope.async {
             Log.e(
                 TAG,
@@ -136,16 +148,48 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
         viewLifecycleOwner.lifecycleScope.launch {
             val users = previousUsers.await()
             Log.e(TAG, "fetchRooms: $users")
-            if (users != null) {
-                if (users.isNotEmpty()) {
-                    epoxyController.setData(users)
-                    //buildRoomModels(users)
-                } else {
-                    binding.apply {
+            if (users.isNotEmpty()) {
+                binding.apply {
+                    rlFriends.visibility=View.VISIBLE
+                }
+                epoxyControllerPrevious.setData(users)
+                //buildRoomModels(users)
+            } else {
+                binding.apply {
+                    rlFriends.visibility=View.GONE
+                }
+            }
+        }
+    }
+    private fun fetchFollowers(){
+        Log.e(TAG, "Inside followers()")
+        val followers = viewLifecycleOwner.lifecycleScope.async {
+            Log.e(
+                TAG,
+                "fetchFollowers: ${followRepository.getFollowers(userIdentifierPreferences.id)}"
+            )
+            runCatching { followRepository.getFollowers(userIdentifierPreferences.id) }
+                .onFailure {
+                    toast(it.message.orEmpty())
+                }
+                .getOrDefault(emptyList())
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val users = followers.await()
+            val data=ArrayList<PreviousProfile>()
+            users.forEach {
+                val profile=profileRepository.getProfile(it.id)
+                data.add(PreviousProfile(it.id,it.name,it.channelName,it.profilePicture,profile.followerCount,profile.followingCount,profile.expertise))
+            }
+            Log.e(TAG, "fetchFollowers: $data")
+            if (users.isNotEmpty()) {
+                epoxyControllerFollower.setData(data)
+                //buildRoomModels(users)
+            } else {
+                binding.apply {
 //                        manageRoomText.visibility = View.VISIBLE
 //                        noRoomsLabel.visibility = View.VISIBLE
 //                        manageRoomsRecyclerView.visibility = View.GONE
-                    }
                 }
             }
         }

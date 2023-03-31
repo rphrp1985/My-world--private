@@ -5,34 +5,14 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/shareConstraint"
         android:layout_width="match_parent"
+        android:background="@drawable/rounded_dialog"
         android:layout_height="match_parent">
-
-        <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone"
-                android:backgroundTint="@color/cpWhite"
-                >
-
-                <com.airbnb.epoxy.EpoxyRecyclerView
-                    android:id="@+id/recyclerViewParent"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:visibility="gone"
-                    android:overScrollMode="never"
-                    android:translationZ="-5dp"
-                    android:paddingBottom="@dimen/dimen_47"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    />
-            </RelativeLayout>
-
-
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
-            android:background="@color/cpWhite"
+            android:background="@drawable/rounded_dialog"
             app:elevation="@dimen/dimen_0"
             app:layout_constraintTop_toTopOf="parent"
             app:theme="@style/ThemeOverlay.AppCompat.ActionBar">
@@ -129,34 +109,63 @@
                 android:text="Connect" />
 
         </LinearLayout>
-        <TextView
-            android:id="@+id/previous_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Previously Joined Users"
-            android:textStyle="bold"
-            android:layout_margin="@dimen/dimen_10"
-            android:textColor="@color/black"
-            android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/whatsapp_layout"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/rl_friends"
-            android:textSize="20dp"
-            />
         <RelativeLayout
             android:id="@+id/rl_friends"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:backgroundTint="@color/cpWhite"
-            app:layout_constraintTop_toBottomOf="@id/previous_tv"
+            app:layout_constraintTop_toBottomOf="@id/whatsapp_layout"
             >
-
+            <TextView
+                android:id="@+id/previous_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Previously Joined Users"
+                android:textStyle="bold"
+                android:layout_margin="@dimen/dimen_10"
+                android:textColor="@color/black"
+                android:gravity="center"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:textSize="20dp"
+                />
             <com.airbnb.epoxy.EpoxyRecyclerView
                 android:id="@+id/friends"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:overScrollMode="never"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/previous_tv"
+                android:translationZ="-5dp"
+                android:paddingBottom="@dimen/dimen_47"
+                tools:listitem="@layout/myspace_view_holder_friends"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/rl_followers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/cpWhite"
+            app:layout_constraintTop_toBottomOf="@id/rl_friends"
+            >
+            <TextView
+                android:id="@+id/followers_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Followers"
+                android:textStyle="bold"
+                android:layout_margin="@dimen/dimen_10"
+                android:textColor="@color/black"
+                android:gravity="center"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:textSize="20dp"
+                />
+            <com.airbnb.epoxy.EpoxyRecyclerView
+                android:id="@+id/followers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/followers_tv"
                 android:translationZ="-5dp"
                 android:paddingBottom="@dimen/dimen_47"
                 tools:listitem="@layout/myspace_view_holder_friends"
