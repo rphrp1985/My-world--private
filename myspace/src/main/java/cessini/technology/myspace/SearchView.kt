@@ -13,21 +13,23 @@ import cessini.technology.model.search.CreatorSearch
 import cessini.technology.model.search.SearchResult
 import cessini.technology.model.search.SearchType
 import cessini.technology.model.search.VideoSearch
-import cessini.technology.myspace.create.SearchFragment
+import cessini.technology.myspace.create.SearchUsersFragment
 import cessini.technology.newrepository.explore.SearchRepository
 import cessini.technology.newrepository.websocket.search.SearchWebSocket
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class SearchViewModel @Inject constructor(
+@HiltViewModel
+class SearchView @Inject constructor(
     private val searchRepository: SearchRepository
-) : ViewModel()  {
+) : ViewModel() {
     companion object {
-        private const val TAG = "SearchVM"
+        private const val TAG = "ExploreSearchVM"
     }
 
-    lateinit var context: SearchFragment
+    lateinit var context: SearchUsersFragment
     val titles = MutableLiveData<ArrayList<String>>()
     var listWords = ArrayList<SearchResponse>()
     var viewPagerCounter = MutableLiveData<Int>(0)
