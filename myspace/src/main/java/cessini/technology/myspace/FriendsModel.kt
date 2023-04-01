@@ -11,6 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import cessini.technology.model.PreviousProfile
 import cessini.technology.model.Profile
+import cessini.technology.myspace.create.CreateRoomFragment
 import cessini.technology.myspace.create.ShareFragment
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyHolder
@@ -70,7 +71,7 @@ abstract class FriendsModel(user_id:String,private val context: Context): EpoxyM
         if (mSocket.connected()) {
             Log.d("socket", "already connected ")
             mSocket.emit("message", message(id,
-                data.id, "Hiii ${data.name}").getMessage())
+                data.id,"https://www.myworld.com/liveRoom?code=${CreateRoomFragment.current_room_code}").getMessage())
 
         }
     }
