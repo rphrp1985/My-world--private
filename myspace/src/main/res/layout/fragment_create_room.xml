@@ -347,6 +347,26 @@
                 app:layout_constraintTop_toTopOf="@+id/textView16" />
 
 
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/addBtn"
+                android:layout_width="70dp"
+                android:layout_height="@dimen/dimen_45"
+                android:layout_alignParentBottom="true"
+                android:layout_marginHorizontal="@dimen/dimen_20"
+                android:layout_marginBottom="104dp"
+                android:background="@drawable/round_enable_viewbutton"
+                android:elevation="@dimen/dimen_0"
+                android:gravity="center"
+                android:stateListAnimator="@null"
+                android:text="Add"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="24dp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintStart_toStartOf="parent" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnNext"

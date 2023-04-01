@@ -11,6 +11,7 @@ import cessini.technology.newapi.services.myspace.model.body.RoomBody
 import cessini.technology.newapi.services.myspace.model.body.RoomNameBody
 import cessini.technology.newapi.services.myspace.model.body.UserLikeBody
 import cessini.technology.newapi.services.myspace.model.response.ApiGetRoom
+import cessini.technology.newapi.services.myspace.model.response.ApiPreviousUsers
 import cessini.technology.newapi.services.myspace.model.response.ApiRoomName
 import cessini.technology.newapi.services.myspace.model.response.ApiRoomRequests
 import okhttp3.MultipartBody
@@ -53,6 +54,11 @@ interface MySpaceService {
     suspend fun roomRequest(
         @Path(value = "name") name: String,
     ): Response<ApiRoomRequests>
+
+
+    @GET(value = "${MySpaceConstants.PREVIOUS_USERS}")
+    suspend fun getPreviousUsers(
+    ) : Response<ApiPreviousUsers>
 
     @POST(MySpaceConstants.ACCEPT_JOIN_REQUEST_ENDPOINT)
     suspend fun acceptRequest(

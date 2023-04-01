@@ -33,7 +33,7 @@ abstract class BaseBottomSheet<T : ViewDataBinding>(
     @LayoutRes private val layoutId: Int,
 ) : BottomSheetDialogFragment() {
     private var _binding: T? = null
-    protected val binding get() = _binding!!
+    val binding get() = _binding!!
     final override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(DialogFragment.STYLE_NORMAL, R.style.AppBottomSheetDialogTheme)

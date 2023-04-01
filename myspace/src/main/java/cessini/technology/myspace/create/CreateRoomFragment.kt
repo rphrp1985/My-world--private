@@ -29,6 +29,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_create_room.*
+import kotlinx.android.synthetic.main.fragment_myspace.*
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -98,6 +99,10 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
                 val bottomSheet = MySpaceAreaFragment(this@CreateRoomFragment)
                 bottomSheet.show(parentFragmentManager,bottomSheet.tag)
 //                Log.e("MySpaceFrag","navToSuggestion")
+            }
+            addBtn.setOnClickListener {
+                val shareFragment = ShareFragment(this@CreateRoomFragment)
+                shareFragment.show(parentFragmentManager, shareFragment.tag)
             }
         }
 
