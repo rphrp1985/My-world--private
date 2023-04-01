@@ -36,7 +36,6 @@ import cessini.technology.commonui.activity.live.SdpAdapter
 import cessini.technology.commonui.activity.live.SignalingClient
 import cessini.technology.commonui.activity.services.screen_share.MediaProjectionService
 import cessini.technology.commonui.adapter.RecAdapter
-import cessini.technology.commonui.compression.RoomNameEncoder
 import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
 //import cessini.technology.commonui.fragment.RoomJoinRequestFragment
 //import cessini.technology.commonui.fragment.RoomJoinWaiting
@@ -224,9 +223,9 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
             }
         }
 
-        val x= RoomNameEncoder()  .encode(hubViewModel.rname)
-        Toast.makeText(this@GridActivity, "encoded  ${x.length}= ${RoomNameEncoder().encode(hubViewModel.rname)}",Toast.LENGTH_LONG).show()
-        Toast.makeText(this@GridActivity, "decoded  ${RoomNameEncoder().decode(x).length}= ${RoomNameEncoder().decode(x)}",Toast.LENGTH_LONG).show()
+//        val x= RoomNameEncoder()  .encode(hubViewModel.rname)
+//        Toast.makeText(this@GridActivity, "encoded  ${x.length}= ${RoomNameEncoder().encode(hubViewModel.rname)}",Toast.LENGTH_LONG).show()
+//        Toast.makeText(this@GridActivity, "decoded  ${RoomNameEncoder().decode(x).length}= ${RoomNameEncoder().decode(x)}",Toast.LENGTH_LONG).show()
 
 
 

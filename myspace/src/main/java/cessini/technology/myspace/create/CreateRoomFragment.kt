@@ -23,6 +23,8 @@ import cessini.technology.myspace.R
 import cessini.technology.myspace.create.CreateRoomSharedViewModel.Event.*
 import cessini.technology.myspace.databinding.FragmentCreateRoomBinding
 import cessini.technology.newrepository.myworld.ProfileRepository
+import cessini.technology.newrepository.preferences.UserIdentifierPreferences
+import cessini.technology.newrepository.preferences.UserIdentifierPreferences_Factory
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,6 +40,11 @@ import javax.inject.Inject
 class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
     BaseBottomSheet<FragmentCreateRoomBinding>(R.layout.fragment_create_room),
     BottomSheetLevelInterface {
+
+    @Inject
+    lateinit var userIdentifierPreferences: UserIdentifierPreferences
+
+
 
     @Inject
     lateinit var profileRepository: ProfileRepository
@@ -57,6 +64,7 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        createRoomCode()
         preference = requireContext().getSharedPreferences(
             shared_pref_name_for_know_more,
             MODE_PRIVATE
@@ -408,6 +416,25 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
 
     companion object{
         const val CAPTURE_PERMISSION_REQUEST_CODE = 160
+        var current_room_code=""
+    }
+
+
+    fun createRoomCode(){
+        val userid= userIdentifierPreferences.id.toCharArray()
+        var time= System.currentTimeMillis().toString().toCharArray()
+
+        for(i in time.indices){
+            time[i]= ( time[i]-'0'+97  ).toChar()
+        }
+
+        for(i in userid.indices){
+            if(userid[i].isDigit()){
+                userid[i] = (userid[i]-'0'+97 ).toChar()
+            }
+        }
+
+        current_room_code= "${time.toString()}${userid.toString()}"
 
     }
 
