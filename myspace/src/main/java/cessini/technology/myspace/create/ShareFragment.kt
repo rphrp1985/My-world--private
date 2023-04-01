@@ -1,6 +1,7 @@
 package cessini.technology.myspace.create
 
 import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -23,6 +24,7 @@ import cessini.technology.commonui.common.*
 import cessini.technology.commonui.utils.Constant
 import cessini.technology.commonui.viewmodel.BaseViewModel
 import cessini.technology.model.PreviousProfile
+import cessini.technology.model.Profile
 import cessini.technology.model.RequestProfile
 import cessini.technology.model.Room
 import cessini.technology.myspace.FriendsModel
@@ -121,13 +123,13 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
         binding.friends.apply {
             layoutManager = LinearLayoutManager(context)
         }
-        epoxyControllerPrevious = MyEpoxyController()
+        epoxyControllerPrevious = MyEpoxyController(userIdentifierPreferences.id,requireContext())
 
         binding.friends.setController(epoxyControllerPrevious)
         binding.followers.apply {
             layoutManager = LinearLayoutManager(context)
         }
-        epoxyControllerFollower = MyEpoxyController()
+        epoxyControllerFollower = MyEpoxyController(userIdentifierPreferences.id,requireContext())
 
         binding.followers.setController(epoxyControllerFollower)
 
@@ -252,10 +254,10 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
 
 
 }
-class MyEpoxyController : TypedEpoxyController<List<PreviousProfile>>() {
+class MyEpoxyController(var id:String,var context: Context) : TypedEpoxyController<List<PreviousProfile>>() {
     override fun buildModels(data: List<PreviousProfile>) {
         data.forEach { myData ->
-            FriendsModel_()
+            FriendsModel_(id,context)
                 .id(myData.id)
                 .data(myData)
                 .addTo(this)

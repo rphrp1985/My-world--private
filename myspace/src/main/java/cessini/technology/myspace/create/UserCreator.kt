@@ -22,18 +22,23 @@ import cessini.technology.myspace.R
 import cessini.technology.myspace.databinding.FragmentUserCreatorBinding
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.ToFlowNavigable
+import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.airbnb.epoxy.AsyncEpoxyController
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UserCreator : Fragment() {
     private var _binding: FragmentUserCreatorBinding? = null
     val binding get() = _binding!!
 
+    @Inject
+    lateinit var userIdentifierPreferences: UserIdentifierPreferences
+
     var controllerHistory: UserSearchHistoryController? = null
     var controller: UserSearchCreatorController? = null
     var history: ArrayList<SearchHistoryEntity> = arrayListOf()
-    lateinit var parentFrag: SearchUsersFragment
+    lateinit var parentFrag:SearchUsersFragment
     val viewModel: cessini.technology.myspace.SearchView by activityViewModels()
 
     override fun onCreateView(
@@ -67,7 +72,7 @@ class UserCreator : Fragment() {
         binding.recyclerViewCreator.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
-            controller = UserSearchCreatorController(context, activity)
+            controller = UserSearchCreatorController(userIdentifierPreferences.id,context, activity)
             binding.recyclerViewCreator.setController(controller!!)
 
         }
@@ -238,7 +243,7 @@ class UserSearchHistoryController(var context: Context?, var parentFrag: SearchU
         }
     }
 }
-class UserSearchCreatorController(var context: Context, var activity: FragmentActivity?) :
+class UserSearchCreatorController(var id:String,var context: Context, var activity: FragmentActivity?) :
     AsyncEpoxyController() {
 
     var allCreators = emptyList<SearchCreatorApiResponse>()
@@ -266,7 +271,7 @@ class UserSearchCreatorController(var context: Context, var activity: FragmentAc
 //                        )
 //                    }
 //                }
-                FriendsModel_()
+                FriendsModel_(id,context)
                     .id(searchCreatorModel.id)
                     .data(data)
                     .addTo(this)
