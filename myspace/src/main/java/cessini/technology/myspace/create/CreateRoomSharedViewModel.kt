@@ -59,7 +59,8 @@ class CreateRoomSharedViewModel @Inject constructor(
                     title = roomTitle.value!!,
                     time = time.value!!,
                     private = false,
-                    categories = categorySet
+                    categories = categorySet,
+                    roomCode = CreateRoomFragment.current_room_code
 
                 )
             },
@@ -87,7 +88,8 @@ class CreateRoomSharedViewModel @Inject constructor(
                     time =System.currentTimeMillis(),
                     private = false,
 
-                    categories = categorySet
+                    categories = categorySet,
+                    roomCode = CreateRoomFragment.current_room_code
 
                 )
             },

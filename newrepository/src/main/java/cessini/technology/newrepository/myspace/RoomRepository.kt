@@ -33,9 +33,10 @@ class RoomRepository @Inject constructor(
         title: String,
         time: Long,
         private: Boolean = false,
+        roomCode: String,
 
         categories: MutableSet<String>
-    ) = roomApi.createRoom(RoomBody(title =title, schedule = time, private = private, category = categories))
+    ) = roomApi.createRoom(RoomBody(title =title, schedule = time, private = private, category = categories, room_code= roomCode))
         .getOrThrow().data.name
 
     suspend fun getRoom(name: String): Room =
