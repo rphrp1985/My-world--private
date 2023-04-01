@@ -86,7 +86,6 @@
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="@dimen/dimen_5"
                 android:layout_marginTop="@dimen/dimen_1"
-                android:background="@drawable/round_enable_viewbutton"
                 android:elevation="@dimen/dimen_0" />
 
             <TextView
@@ -125,6 +124,6 @@
             app:layout_constraintBottom_toBottomOf="@+id/userImage"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/userImage"
-            android:text="Join"
+            android:text="Send"
             />
 </androidx.constraintlayout.widget.ConstraintLayout>
