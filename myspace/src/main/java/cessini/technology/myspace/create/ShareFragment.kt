@@ -84,7 +84,7 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
         fetchPreviousUsers()
         fetchFollowers()
         binding.connectButton.setOnClickListener {
-            val link="https://www.myworld.com/liveRoom?code=name_roomtitle_randomno"
+            val link=CreateRoomFragment.current_room_code.toString()
             val pm: PackageManager = requireActivity().packageManager
             var finalLaunchables:ResolveInfo?=null
 //            val recAdapter= RecAdapter(pm,finalLaunchables,requireContext(),shareBody)
@@ -108,7 +108,7 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
                 context?.startActivity(i)
             }
             else{
-                Toast.makeText(context,"Whatsapp is not installed in your device",Toast.LENGTH_SHORT)
+                Toast.makeText(context,"Whatsapp is not installed in your device",Toast.LENGTH_SHORT).show()
             }
 
         }
