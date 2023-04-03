@@ -34,6 +34,7 @@ import cessini.technology.commonui.R
 import cessini.technology.commonui.activity.live.PeerConnectionAdapter
 import cessini.technology.commonui.activity.live.SdpAdapter
 import cessini.technology.commonui.activity.live.SignalingClient
+//import cessini.technology.commonui.activity.live.kurentoobs
 import cessini.technology.commonui.activity.services.screen_share.MediaProjectionService
 import cessini.technology.commonui.adapter.RecAdapter
 import cessini.technology.commonui.databinding.CommonChatSnackviewBinding
@@ -67,6 +68,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import dagger.hilt.android.AndroidEntryPoint
+//import fi.vtt.nubomedia.webrtcpeerandroid.NBMMediaConfiguration
+//import fi.vtt.nubomedia.webrtcpeerandroid.NBMWebRTCPeer
 import io.socket.client.Socket
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -638,6 +641,16 @@ class GridActivity : AppCompatActivity() , SignalingClient.Callback {
 
         hubViewModel.mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStream")
         hubViewModel.mediaStream?.addTrack(hubViewModel.videoTrackScreen)
+
+//       val  mediaConfiguration = NBMMediaConfiguration()
+//
+//        val nbmWebRTCPeer = NBMWebRTCPeer(mediaConfiguration, this,  localView, kurentoobs())
+//
+//        nbmWebRTCPeer.initialize()
+//
+//        nbmWebRTCPeer.setActiveMasterStream(hubViewModel.mediaStream)
+
+
 //        hubViewModel.mediaStream?.addTrack(hubViewModel.localAudioTrackScreen)
         userDataScreen = data("userScreen", 0, hubViewModel.videoTrackScreen!!,
             creater = true,

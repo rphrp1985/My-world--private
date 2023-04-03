@@ -22,14 +22,16 @@ class ExpertVideoController(val activity: FragmentActivity?,
         items.forEachIndexed { index, it ->
             expert{
                 Log.d("ExpertModel",it.toString())
-                id(index)
-                img(it.thumbnail)
+                id(index) 
+                img(it.thumbnail?:" ")
                 title1(it.title)
                 user1(it.profile?.name)
-                view1(it.category?.get(0))
+                view1(it.category?.getOrNull(0)?:"Technology")
                 time1(it.duration)
                 activity(activity)
                 viewModel(viewModel)
+                allData(it)
+
             }
         }
     }

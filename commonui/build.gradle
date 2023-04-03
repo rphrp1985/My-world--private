@@ -183,6 +183,16 @@ dependencies {
     implementation  "com.skyfishjy.ripplebackground:library:1.0.1"
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     implementation "androidx.multidex:multidex:2.0.1"
+
+    //kurento
+//    implementation 'fi.vtt.nubomedia:kurento-room-client-android:1.1.2'
+//
+//    implementation "fi.vtt.nubomedia:webrtcpeer-android:1.1.2"
+
+    implementation 'com.google.android.exoplayer:exoplayer-dash:r2.4.0'
+    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:r2.4.0'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:r2.4.0'
+
 }
 repositories {
     mavenCentral()

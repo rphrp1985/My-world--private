@@ -9,14 +9,15 @@ import cessini.technology.commonui.R
 import cessini.technology.commonui.databinding.CommonVideoAdapterBinding
 import cessini.technology.model.Video
 import com.bumptech.glide.Glide
-import kohii.v1.core.Common
+import com.google.android.exoplayer2.SimpleExoPlayer
 import kohii.v1.core.Playback
 import kohii.v1.core.controller
 import kohii.v1.exoplayer.Kohii
 
 class CommonVideoDisplayAdapter(
     private val listener: Listener,
-    private val exoProvider: Kohii
+    private val exoProvider: Kohii,
+    val simpleExoPlayer: SimpleExoPlayer
 ) :
     RecyclerView.Adapter<CommonVideoDisplayAdapter.MyViewHolder>() {
 
@@ -91,10 +92,11 @@ class CommonVideoDisplayAdapter(
                 listener.onCommentButtonPressed(video.id)
             }
 
+//            binding.playerView.player= simpleExoPlayer
             exoProvider.setUp(video.url) {
                 tag = "${video.url}$bindingAdapterPosition"
-                preload = true
-                repeatMode = Common.REPEAT_MODE_ALL
+//                preload = true
+//                repeatMode = Common.REPEAT_MODE_ALL
                 controller = controller { playback, _ ->
                     binding.root.setOnClickListener {
                         with(playback.playable) {

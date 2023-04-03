@@ -15,7 +15,8 @@ data class Explore(
     var recordMyspcaeGrid : MutableList<viewpagerItem> =mutableListOf(),
     var recordCommonMyspcaeGrid : MutableList<viewpagerItem> =mutableListOf(),
     var visibleItemIndex: Int = 0,
-    var trendingRooms: List<MessageT> = mutableListOf()
+    var trendingRooms: List<MessageT> = mutableListOf(),
+    var itemRecorded: Set<List<HealthFitness>?>? = null,
 
 
     )

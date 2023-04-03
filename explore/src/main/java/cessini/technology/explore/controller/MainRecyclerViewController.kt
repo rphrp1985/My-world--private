@@ -217,6 +217,33 @@ class MainRecyclerViewController(
             })
         }
 
+
+        carousel {
+            id("redorded room video")
+            hasFixedSize(true)
+            models(allCategory.itemRecorded!!.mapIndexed { index, item ->
+                val expertController = ExpertVideoController(
+                    this@MainRecyclerViewController.activity,
+                    this@MainRecyclerViewController.videoViewModel,
+                )
+                expertController.items = item!!
+                val title = this@MainRecyclerViewController.setTitle(item)
+                ExpertViewPagerModel_()
+                    .id(index)
+                    .categoryTitle(title)
+                    .controller(expertController)
+                    .position(index)
+//                    .onVisibilityStateChanged { _, _, visibilityState ->
+//                        if (visibilityState == VisibilityState.FOCUSED_VISIBLE) {
+//                            allCategory.visibleItemIndex = index
+//                            this@MainRecyclerViewController.setData(allCategory)
+//                        }
+//                    }
+
+
+            })
+        }
+
         carousel {
             id("Common Record Grid view pager.")
             hasFixedSize(true)
@@ -341,17 +368,7 @@ class MainRecyclerViewController(
     }
 
     private fun setTitle(item: List<HealthFitness>): String? {
-        if (item.get(0).category?.get(0) == "1")
-            return "Trending Technology"
-        else if (item.get(0).category?.get(0) == "2")
-            return "Trending News"
-        else if (item.get(0).category?.get(0) == "3")
-            return "Health & Fitness"
-        else if (item.get(0).category?.get(0) == "4")
-            return "Knowledge & Careers"
-        else
-            return "Entertainment"
-
+        return "Technology"
     }
 
 

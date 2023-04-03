@@ -45,6 +45,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        tools:replace="android:theme"
         android:theme="@style/Theme.Myworld.Splash"
         android:usesCleartextTraffic="true"
         android:localeConfig="@xml/locale_config"

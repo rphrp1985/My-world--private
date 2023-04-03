@@ -72,7 +72,7 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
 
     val videoViewModel: ExploreSearchViewModel by activityViewModels()
 
-    private lateinit var allCategory: Explore
+    private var allCategory: Explore?=null
 
     private var y: Int = 0
 
@@ -83,6 +83,7 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
     private lateinit var trendingRooms: TrendingRooms
 
     private var items: MutableSet<List<HealthFitness>?> = mutableSetOf()
+    private var itemsRecorded: MutableSet<List<HealthFitness>?> = mutableSetOf()
     private var suggestedRooms: MutableList<SuggestionCategoryRooms> = mutableListOf()
     private var infoItems: MutableSet<List<MessageI>> = mutableSetOf()
     private var recordMyspaceRooms: MutableList<viewpagerItem> = mutableListOf()
@@ -260,6 +261,7 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
                     /*  Click Event of Voices to Follow Profile Image */
                     /**we will navigate to the global public profile.*/
 
+
                     (requireActivity() as ToFlowNavigable).navigateToFlow(
                         NavigationFlow.GlobalProfileFlow
                     )
@@ -297,7 +299,21 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
 //
 //            )
 
+        viewModel.allComponent.observe(viewLifecycleOwner){
+            addItems()
+            if(allCategory!=null)
+            controller?.setData(allCategory)
 
+
+        }
+
+        viewModel.allComponentRecordedRooms.observe(viewLifecycleOwner){
+            addItems()
+
+            if(allCategory!=null)
+            controller?.setData(allCategory)
+
+        }
         addItems()
         addInfoItems()
         addSuggestedRooms()
@@ -311,21 +327,21 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
             if(it!=null)
             {
                 allCategory = it
-                if (allCategory.categoryRooms.isEmpty()) {
+                if (allCategory?.categoryRooms!!.isEmpty()) {
                     addSuggestedRooms()
 
-                    allCategory.categoryRooms = suggestedRooms
+                    allCategory?.categoryRooms = suggestedRooms
 
                     Log.d(TAG,"suggested room  = ${suggestedRooms}")
 
                 }
-                if (allCategory.recordMyspcaeGrid.isEmpty()) {
+                if (allCategory?.recordMyspcaeGrid!!.isEmpty()) {
                     addrecordMySpaceItems()
-                    allCategory.recordMyspcaeGrid = recordMyspaceRooms
+                    allCategory?.recordMyspcaeGrid = recordMyspaceRooms
                 }
-                if (allCategory.recordCommonMyspcaeGrid.isEmpty()) {
+                if (allCategory?.recordCommonMyspcaeGrid!!.isEmpty()) {
                     addrecordCommonMySpaceItems()
-                    allCategory.recordCommonMyspcaeGrid = recordCommonMyspaceRooms
+                    allCategory?.recordCommonMyspcaeGrid = recordCommonMyspaceRooms
                 }
                 // Labeling items which is first and which is last
                 it.videos.forEachIndexed { _, pair ->
@@ -347,14 +363,15 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
             Log.d(TAG, "setMainCategoryRecycler Not paging: $it")
 
             if (it != null) {
-                allCategory.liveRooms = it
+                allCategory?.liveRooms = it
             }
 //                controller!!.allCategory = allCategory
-            allCategory.items = items
+            allCategory?.items = items
+            allCategory?.itemRecorded= itemsRecorded
             addSuggestedRooms()
-            allCategory.categoryRooms = suggestedRooms
-            allCategory.itemsInfo = infoItems
-            allCategory.visibleItemIndex = 0
+            allCategory?.categoryRooms = suggestedRooms
+            allCategory?.itemsInfo = infoItems
+            allCategory?.visibleItemIndex = 0
 //            allCategory.trendingRooms = mutableListOf(trendingRooms.message.toMutableList())
             recyclerViewParent.setController(controller!!.also { mainRecyclerViewController->
                 mainRecyclerViewController.setData(allCategory)
@@ -628,6 +645,55 @@ class ExploreFragment : BaseFragment<FragmentSearchBinding>(R.layout.fragment_se
             if (viewModel.allComponent.value?.message?.trendingNews != null && viewModel.allComponent.value?.message?.trendingNews?.size!! > 0)
                 items.add(viewModel.allComponent.value?.message?.trendingNews)
         }
+
+        if (viewModel.allComponentRecordedRooms.value != null) {
+//            items.clear()
+            itemsRecorded
+            if (viewModel.allComponent.value?.message?.trendingTechnology != null && viewModel.allComponent.value?.message?.trendingTechnology?.size!! > 0){
+
+                val list= mutableListOf<HealthFitness>()
+
+                for(i  in 0 until viewModel.allComponentRecordedRooms.value?.message?.trendingTechnology!!.size){
+                    val data = viewModel.allComponentRecordedRooms.value?.message?.trendingTechnology!![i]
+                    list.add(HealthFitness(
+                        id="${System.currentTimeMillis()}",
+                        profile = data.creator,
+                        title = data.title,
+                        description = "",
+                        thumbnail = data.thumbnail,
+                        duration = "0",
+                        category = emptyList(),
+                        uploadFile = data.record,
+                        timestamp = 0.0
+                    ))
+
+                    if((i+1)%3==0 || i== viewModel.allComponentRecordedRooms.value?.message?.trendingTechnology!!.size-1) {
+                      val temp= mutableListOf<HealthFitness>()
+                        temp.addAll(list)
+                        itemsRecorded.add(temp)
+                        list.clear()
+
+                    }
+                }
+
+
+            }
+//                itemsRecorded.add(viewModel.allComponentRecordedRooms.value?.message?.trendingTechnology)
+
+//            if (viewModel.allComponent.value?.message?.entertainment != null && viewModel.allComponent.value?.message?.entertainment?.size!! > 0)
+//                itemsRecorded.add(viewModel.allComponent.value?.message?.entertainment)
+//
+//            if (viewModel.allComponent.value?.message?.healthFitness != null && viewModel.allComponent.value?.message?.healthFitness?.size!! > 0)
+//                itemsRecorded.add(viewModel.allComponent.value?.message?.healthFitness)
+//
+//            if (viewModel.allComponent.value?.message?.knowledgeCareers != null && viewModel.allComponent.value?.message?.knowledgeCareers?.size!! > 0)
+//                itemsRecorded.add(viewModel.allComponent.value?.message?.knowledgeCareers)
+//
+//            if (viewModel.allComponent.value?.message?.trendingNews != null && viewModel.allComponent.value?.message?.trendingNews?.size!! > 0)
+//                itemsRecorded.add(viewModel.allComponent.value?.message?.trendingNews)
+        }
+
+
         //Log.e("SettingItems",items.toString())
     }
 

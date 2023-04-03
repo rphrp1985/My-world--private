@@ -61,6 +61,7 @@ class SearchViewModel @Inject constructor(
     var allCategory = MutableLiveData<Explore>()
     var liveRooms = MutableLiveData<List<LiveRoom>?>()
     var allComponent = MutableLiveData<Component>()
+    var allComponentRecordedRooms = MutableLiveData<ComponentRecorded>()
 
     var allTrendingRooms = MutableLiveData<TrendingRooms>()
 
@@ -497,6 +498,32 @@ return UpcommingchildRecyclerViewController
                 }
 
             }
+
+            // recorded rooms
+
+            val res = exploreRepository.getRecordedRooms()
+            res.collectLatest { result ->
+                when (result) {
+                    is Resource.Success -> {
+
+                        allComponentRecordedRooms.value = result.data
+
+
+                        Log.e("ComponentRegister", result.data.toString())
+                    }
+
+                    is Resource.Error -> {
+                        Log.e(
+                            "Component",
+                            "Error in fetching component when signed in  ${result.data}"
+                        )
+                    }
+                }
+            }
+
+
+
+
 
         }
     }

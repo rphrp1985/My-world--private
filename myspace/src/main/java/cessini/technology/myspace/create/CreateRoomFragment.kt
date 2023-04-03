@@ -425,18 +425,37 @@ class CreateRoomFragment(private val listener: BottomSheetLevelInterface?) :
         var time= System.currentTimeMillis().toString().toCharArray()
 
         for(i in time.indices){
-            time[i]= ( time[i]-'0'+97  ).toChar()
+            time[i]= numberToLetter(userid[i])
         }
 
         for(i in userid.indices){
             if(userid[i].isDigit()){
-                userid[i] = (userid[i]-'0'+97 ).toChar()
+                userid[i] = numberToLetter(userid[i])
             }
         }
 
         current_room_code= "${time.toString()}${userid.toString()}"
 
     }
+
+    fun numberToLetter(num:Char): Char {
+        when(num){
+            '0'-> return 'a'
+            '1'-> return 'b'
+            '2'-> return 'c'
+            '3'-> return 'd'
+            '4'-> return 'e'
+            '5'-> return 'f'
+            '6'-> return 'g'
+            '7'-> return 'h'
+            '8'-> return 'i'
+            '9'-> return 'k'
+
+        }
+
+        return num
+    }
+
 
 
 }

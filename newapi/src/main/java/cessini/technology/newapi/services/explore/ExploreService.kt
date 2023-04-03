@@ -63,12 +63,20 @@ interface ExploreService {
         @Path(value="page") page: Int
     ):suggestionroomresponse
 
-    @GET(value = "${ExploreConstants.COMPONENT_END_POINT}{id}")
+    @GET(value = "${ExploreConstants.COMPONENT_END_POINT}{id}/1")
     suspend fun getComponentAuth(
         @Path(value = "id") id: String
     ) : Component
 
-    @GET(value = "${ExploreConstants.COMPONENT_END_POINT}{id}")
+
+    @GET(value = "${ExploreConstants.RECORDED_ROOMS}1")
+    suspend fun getRecordedRooms(
+
+    ) : ComponentRecorded
+
+
+
+    @GET(value = "${ExploreConstants.COMPONENT_END_POINT}{id}/1")
     suspend fun getComponentUnAuth(
         @Path(value = "id") id: String
     ) : Component

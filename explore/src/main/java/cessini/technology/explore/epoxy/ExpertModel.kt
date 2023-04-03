@@ -11,6 +11,7 @@ import cessini.technology.cvo.exploremodels.ProfileModel
 import cessini.technology.cvo.exploremodels.SearchVideoModel
 import cessini.technology.explore.R
 import cessini.technology.explore.viewmodel.ExploreSearchViewModel
+import cessini.technology.model.HealthFitness
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.ToFlowNavigable
 import com.airbnb.epoxy.EpoxyAttribute
@@ -43,6 +44,9 @@ abstract class ExpertModel : EpoxyModelWithHolder<ExpertModel.Holder>() {
     @EpoxyAttribute
     lateinit var viewModel: ExploreSearchViewModel
 
+    @EpoxyAttribute
+    lateinit var allData: HealthFitness
+
 
     override fun getDefaultLayout(): Int {
         return R.layout.expert_view_item
@@ -57,6 +61,7 @@ abstract class ExpertModel : EpoxyModelWithHolder<ExpertModel.Holder>() {
             this.user.text = user1
             this.view.text = "${view1} views"
             this.duration.text = time1
+
             image.setOnClickListener {
                 val galleryViewModel = activity.run {
                     ViewModelProvider(this)[GalleryViewModel::class.java]
@@ -68,20 +73,20 @@ abstract class ExpertModel : EpoxyModelWithHolder<ExpertModel.Holder>() {
                 //runCatching {
                 //val video = videoRepository.detail("")
                 val dummy = SearchVideoModel(
-                    id = "video.id",
-                    title = "Tabish",
-                    description = "video.description",
+                    id = "$title1",
+                    title = title1,
+                    description = allData.description,
                     category = CategoryModel(1, "VideoCategory"),
-                    duration = 0,
-                    thumbnail = "video.thumbnail",
-                    upload_file = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                    duration = allData.duration?.toInt()?:0,
+                    thumbnail = allData.thumbnail,
+                    upload_file = allData.uploadFile,
                     //upload_file = "https://new-myworld-bucket.s3.amazonaws.com/Videos/VideoID678088500000000062_1639131472/VideoID678088500000000062_1639131472.mpd",
-                    timestamp = "video.timestamp.toString()",
+                    timestamp = allData.timestamp.toString(),
                     profile = ProfileModel(
-                        id = "video.profile.id",
-                        name = "video.profile.name",
-                        channel_name = "video.profile.channel",
-                        profile_picture = " video.profile.picture",
+                        id = allData.profile?.id,
+                        name = allData.profile?.name,
+                        channel_name = allData.profile?.channelName,
+                        profile_picture = allData.profile?.profilePicture,
                     )
                 )
                 //}.onSuccess {

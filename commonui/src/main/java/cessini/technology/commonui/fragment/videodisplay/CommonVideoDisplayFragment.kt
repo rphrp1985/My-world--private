@@ -1,5 +1,6 @@
 package cessini.technology.commonui.fragment.videodisplay
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -19,9 +20,21 @@ import cessini.technology.model.Video
 import cessini.technology.model.VideoProfile
 import cessini.technology.navigation.NavigationFlow
 import cessini.technology.navigation.ToFlowNavigable
+import com.google.android.exoplayer2.ExoPlayerFactory
+import com.google.android.exoplayer2.source.dash.DashMediaSource
+import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.trackselection.TrackSelector
+import com.google.android.exoplayer2.upstream.BandwidthMeter
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Util
 import dagger.hilt.android.AndroidEntryPoint
 import kohii.v1.core.MemoryMode
 import kohii.v1.exoplayer.Kohii
+
 
 @AndroidEntryPoint
 class CommonVideoDisplayFragment :
@@ -37,7 +50,6 @@ class CommonVideoDisplayFragment :
     private val baseViewModel by activityViewModels<BaseViewModel>()
 
     private val exoProvider: Kohii by lazy { ExoProvider.get(requireContext()) }
-    private val videoAdapter by lazy { CommonVideoDisplayAdapter(this, exoProvider) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -48,6 +60,22 @@ class CommonVideoDisplayFragment :
 
         exoProvider.register(this, MemoryMode.HIGH)
             .addBucket(binding.profileViewpager)
+
+        val dataSourceFactory: DataSource.Factory =
+            DefaultDataSourceFactory(requireContext(),Util.getUserAgent(requireContext(), "ExoPlayer"))
+        val uri: Uri = Uri.parse(galleryViewModel.videoDisplay.value?.upload_file)
+        val dashMediaSource = DashMediaSource(uri, dataSourceFactory,
+            DefaultDashChunkSource.Factory(dataSourceFactory), null, null)
+
+        val bandwidthMeter: BandwidthMeter = DefaultBandwidthMeter()
+        val trackSelector: TrackSelector =
+            DefaultTrackSelector(AdaptiveTrackSelection.Factory(bandwidthMeter))
+
+        val simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(requireContext(), trackSelector)
+
+
+        simpleExoPlayer.prepare(dashMediaSource)
+        val videoAdapter by lazy { CommonVideoDisplayAdapter(this, exoProvider,simpleExoPlayer) }
 
         /**Flags for transition from different modules-
          * 0->Incoming from Explore Search Module

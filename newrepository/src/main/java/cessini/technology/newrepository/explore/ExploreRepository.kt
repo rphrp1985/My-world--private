@@ -157,6 +157,26 @@ class ExploreRepository @Inject constructor(
         return exploreService.getNotificationPlease()
     }
 
+    suspend fun getRecordedRooms(): Flow<Resource<ComponentRecorded>>{
+        return flow {
+            try {
+
+                val response = exploreService.getRecordedRooms()
+
+                Log.d("RecordedRoom","RecordedRoom= $response")
+                emit(Resource.Success(data = response))
+            }
+            catch (e: IOException) {
+                e.printStackTrace()
+                //emit custom error message here according to exception or error that may be displayed to the user or data ( dummy or empty data if required)
+                emit(Resource.Error("Couldn't load  Rdcorded data"))
+            } catch (e: HttpException) {
+                e.printStackTrace()
+                emit(Resource.Error("Couldn't load Recorded  data"))
+            }
+        }
+    }
+
     suspend fun componentSignedUser(): Flow<Resource<Component>> {
         Log.e("UserId", userIdentifierPreferences.id)
         return flow {

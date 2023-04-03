@@ -11,13 +11,13 @@ data class MessageD (
     @SerializedName("Technology")
     val trendingTechnology: List<HealthFitness>? = null,
 
-    @SerializedName("Trending News")
+    @SerializedName("Trending Technology")
     val trendingNews: List<HealthFitness>? = null,
 
     @SerializedName("Entertainment")
     val entertainment: List<HealthFitness>? = null,
 
-    @SerializedName("Health & Fitness")
+    @SerializedName("Food")
     val healthFitness: List<HealthFitness>? = null,
 
     @SerializedName("Knowledge & Careers")
@@ -53,4 +53,45 @@ data class ProfileI (
 
     @SerializedName("profile_picture")
     val profilePicture: String? = null
+)
+
+
+
+
+data class ComponentRecorded (
+    val message: MessageRecorded? = null,
+    val status: Boolean? = null
+)
+
+data class MessageRecorded (
+    @SerializedName("Technology")
+    val trendingTechnology: List<itemRecorded>? = null,
+
+    @SerializedName("Trending Technology")
+    val trendingNews: List<itemRecorded>? = null,
+
+    @SerializedName("Entertainment")
+    val entertainment: List<itemRecorded>? = null,
+
+    @SerializedName("Food")
+    val healthFitness: List<itemRecorded>? = null,
+
+    @SerializedName("Knowledge & Careers")
+    val knowledgeCareers: List<itemRecorded>? = null
+)
+
+
+
+data class itemRecorded(
+    @SerializedName("title")
+    val title:String?=null,
+
+    @SerializedName("thumbnail")
+    val thumbnail: String?=null,
+
+    @SerializedName("recordingsFilePath")
+    val record: String? = null,
+
+    @SerializedName("creator")
+    val creator:ProfileI
 )

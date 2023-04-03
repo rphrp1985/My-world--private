@@ -42,7 +42,8 @@ class VideoRepository @Inject constructor(
     }
 
     suspend fun liked(videoId: String): Boolean {
-        return userIdentifierPreferences.loggedIn && videoService.liked(videoId).getOrThrow().data
+        return false
+//        return userIdentifierPreferences.loggedIn && videoService.liked(videoId).getOrThrow().data
     }
 
     suspend fun delete(videoId: String) {
