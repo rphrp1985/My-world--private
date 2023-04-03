@@ -61,21 +61,21 @@ class CommonVideoDisplayFragment :
         exoProvider.register(this, MemoryMode.HIGH)
             .addBucket(binding.profileViewpager)
 
-        val dataSourceFactory: DataSource.Factory =
-            DefaultDataSourceFactory(requireContext(),Util.getUserAgent(requireContext(), "ExoPlayer"))
-        val uri: Uri = Uri.parse(galleryViewModel.videoDisplay.value?.upload_file)
-        val dashMediaSource = DashMediaSource(uri, dataSourceFactory,
-            DefaultDashChunkSource.Factory(dataSourceFactory), null, null)
+//        val dataSourceFactory: DataSource.Factory =
+//            DefaultDataSourceFactory(requireContext(),Util.getUserAgent(requireContext(), "ExoPlayer"))
+//        val uri: Uri = Uri.parse(galleryViewModel.videoDisplay.value?.upload_file)
+//        val dashMediaSource = DashMediaSource(uri, dataSourceFactory,
+//            DefaultDashChunkSource.Factory(dataSourceFactory), null, null)
+//
+//        val bandwidthMeter: BandwidthMeter = DefaultBandwidthMeter()
+//        val trackSelector: TrackSelector =
+//            DefaultTrackSelector(AdaptiveTrackSelection.Factory(bandwidthMeter))
+//
+//        val simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(requireContext(), trackSelector)
 
-        val bandwidthMeter: BandwidthMeter = DefaultBandwidthMeter()
-        val trackSelector: TrackSelector =
-            DefaultTrackSelector(AdaptiveTrackSelection.Factory(bandwidthMeter))
 
-        val simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(requireContext(), trackSelector)
-
-
-        simpleExoPlayer.prepare(dashMediaSource)
-        val videoAdapter by lazy { CommonVideoDisplayAdapter(this, exoProvider,simpleExoPlayer) }
+//        simpleExoPlayer.prepare(dashMediaSource)
+        val videoAdapter by lazy { CommonVideoDisplayAdapter(this, exoProvider) }
 
         /**Flags for transition from different modules-
          * 0->Incoming from Explore Search Module

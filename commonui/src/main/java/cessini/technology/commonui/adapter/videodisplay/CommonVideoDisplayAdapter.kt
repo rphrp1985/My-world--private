@@ -17,7 +17,7 @@ import kohii.v1.exoplayer.Kohii
 class CommonVideoDisplayAdapter(
     private val listener: Listener,
     private val exoProvider: Kohii,
-    val simpleExoPlayer: SimpleExoPlayer
+
 ) :
     RecyclerView.Adapter<CommonVideoDisplayAdapter.MyViewHolder>() {
 
