@@ -84,7 +84,7 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
         fetchPreviousUsers()
         fetchFollowers()
         binding.connectButton.setOnClickListener {
-            val link=CreateRoomFragment.current_room_code.toString()
+            val link="https://www.myworld.com/liveRoom?code=${CreateRoomFragment.current_room_code}"
             val pm: PackageManager = requireActivity().packageManager
             var finalLaunchables:ResolveInfo?=null
 //            val recAdapter= RecAdapter(pm,finalLaunchables,requireContext(),shareBody)
