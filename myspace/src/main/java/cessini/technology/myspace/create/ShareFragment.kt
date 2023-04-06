@@ -185,6 +185,9 @@ class ShareFragment(private val listener: BottomSheetLevelInterface?) :
             }
             Log.e(TAG, "fetchFollowers: $data")
             if (users.isNotEmpty()) {
+                binding.apply {
+                    rlFollowers.visibility=View.VISIBLE
+                }
                 epoxyControllerFollower.setData(data)
                 //buildRoomModels(users)
             } else {
