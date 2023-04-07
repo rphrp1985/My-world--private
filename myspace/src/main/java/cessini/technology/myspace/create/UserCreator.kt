@@ -17,6 +17,7 @@ import cessini.technology.commonui.utils.ProfileConstants
 import cessini.technology.cvo.entity.SearchHistoryEntity
 import cessini.technology.cvo.exploremodels.SearchCreatorApiResponse
 import cessini.technology.model.PreviousProfile
+import cessini.technology.myspace.CreatorModel_
 import cessini.technology.myspace.FriendsModel_
 import cessini.technology.myspace.R
 import cessini.technology.myspace.databinding.FragmentUserCreatorBinding
@@ -271,7 +272,7 @@ class UserSearchCreatorController(var id:String,var context: Context, var activi
 //                        )
 //                    }
 //                }
-                FriendsModel_(id,context)
+                CreatorModel_(id,context)
                     .id(searchCreatorModel.id)
                     .data(data)
                     .addTo(this)
