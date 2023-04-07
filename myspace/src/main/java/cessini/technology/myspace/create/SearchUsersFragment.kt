@@ -123,9 +123,9 @@ class SearchUsersFragment(private val listener: BottomSheetLevelInterface?) :
         binding.searchViewHeader.queryHint = "Search Creators"
 
         /** Navigating user back to Explore Section. */
-//        binding.backButton.setOnClickListener {
-//            findNavController().navigateUp()
-//        }
+        binding.backButton.setOnClickListener {
+            dismiss()
+        }
 
 
     }
