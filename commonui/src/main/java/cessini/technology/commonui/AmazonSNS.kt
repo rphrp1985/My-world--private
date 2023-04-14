@@ -205,7 +205,7 @@ class AmazonSNSImpl @Inject constructor(userIdentifierPreferences: UserIdentifie
                 Log.e(TAG,profile_image)
                 Log.e(TAG,username)
                 newdocRef.collection("NotificationData")
-                    .document(userId)
+                    .document()
                     .set(MyWorldNotification(userId,message,username,profile_image))
                     .addOnCompleteListener {
                         if (it.isSuccessful) {

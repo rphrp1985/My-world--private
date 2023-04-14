@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import cessini.technology.commonui.AmazonSNSImpl
 import cessini.technology.commonui.adapter.RecAdapter
 import cessini.technology.commonui.common.BaseBottomSheet
 import cessini.technology.commonui.common.navigateToProfile
@@ -35,6 +36,8 @@ import cessini.technology.newrepository.myworld.ProfileRepository
 import cessini.technology.newrepository.preferences.UserIdentifierPreferences
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.*
@@ -229,8 +232,34 @@ internal class MySpaceFragment :
             }
             if (roomListeners.find { it._id == userIdentifierPreferences.id } == null && room.creator.id != userIdentifierPreferences.id) {
                 viewModel.joinRoom(room.name)
+                addRequestData(room.creator.id,userIdentifierPreferences.id,room.title)
             }
         })
+    }
+    private fun addRequestData(creatorId:String,listenerId:String,title: String){
+        var profile_image=""
+        var username=""
+        var message=""
+        val colRef=Firebase.firestore.collection("GlobalNotifications")
+        val olddocRef=colRef.document("${listenerId}")
+        val newdocRef=colRef.document("${creatorId}")
+        olddocRef.get()            .addOnSuccessListener { doc ->
+                profile_image=doc.getString("profile_image").toString()
+                username=doc.getString("username").toString()
+                message="$username is requested to join in room : $title"
+                newdocRef.collection("NotificationData")
+                    .document()
+                    .set(MyWorldNotification(listenerId,message,username,profile_image))
+                    .addOnCompleteListener {
+                        if (it.isSuccessful) {
+                        } else {
+                        }
+                    }
+            }
+            .addOnFailureListener {
+//                Log.d(AmazonSNSImpl.TAG, "Data not present in Firestore ${it.message}")
+            }
+
     }
 
     private fun createListener(
@@ -381,5 +410,12 @@ internal class MySpaceFragment :
     }
 
 }
+data class MyWorldNotification (
+    val id: String,
+    val message: String,
+    val username: String,
+    val profile_image: String
+)
+
 
 
