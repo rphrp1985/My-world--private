@@ -136,8 +136,6 @@ class SignInViewModel @Inject constructor(
                 val profileImage=it.photoUrl
                 updateFirebaseData(getToken,userId,displayName)
                 addGlobalNotification(userId,profileImage,displayName)
-                val name=it.displayName
-                updateFirebaseData(getToken,userId,name)
             }
 
             result.onFailure {
